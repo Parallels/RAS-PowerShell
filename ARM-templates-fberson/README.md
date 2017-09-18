@@ -1,0 +1,1 @@
+# Parallels RAS - ARM Templates
