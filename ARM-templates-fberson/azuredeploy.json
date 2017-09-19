@@ -1,0 +1,1192 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentversion": "1.0.0.1",
+  "parameters": {
+    "adDomainName": {
+      "type": "string",
+      "defaultValue": "contoso.com",
+      "metadata": {
+        "description": "The name of the AD domain. For example contoso.com"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password for the administrator account of the new VM and the domain"
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "defaultValue": "adm_ras",
+      "metadata": {
+        "description": "The name of the administrator of the new VM and the domain."
+      }
+    },
+    "assetLocation": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/Parallels/RAS-PowerShell/master/ARM-templates-fberson/",
+      "metadata": {
+        "description": "Asset location (Azure Blog Storage) where PS1 files are stored"
+      }
+    },
+    "existingCustomImageNameRDSH": {
+      "type": "string",
+      "defaultValue": "RDSH-RDSG-Template-Image",
+      "metadata": {
+        "description": "Custom template image name to be used for RDSH servers (Managed Disk)"
+      }
+    },
+    "existingCustomImageResourceGroup": {
+      "type": "string",
+      "defaultValue": "RDSH-RDSG-Template-Image-Resource-Group",
+      "metadata": {
+        "description": "Resource Group where the specified RDSH Custom template image is located."
+      }
+    },
+    "existingSubnetName": {
+      "type": "string",
+      "defaultValue": "ras-subnet",
+      "metadata": {
+        "description": "The name of the existing Subnet (case sensitive)"
+      }
+    },
+    "existingVnetName": {
+      "type": "string",
+      "defaultValue": "ras-vnet",
+      "metadata": {
+        "description": "The name of the existing Vnet"
+      }
+    },
+    "existingVnetResourceGroupName": {
+      "type": "string",
+      "defaultValue": "Parallels-RAS-Prod",
+      "metadata": {
+        "description": "The name of the existing Resourcegroup where the existing Vnet lives"
+      }
+    },
+    "hostNamePrefixConsole": {
+      "type": "string",
+      "defaultValue": "RAS-CON-",
+      "metadata": {
+        "description": "Hostname prefix for RD Session Host Servers"
+      }
+    },
+    "hostNamePrefixPublishingAgent": {
+      "type": "string",
+      "defaultValue": "RAS-PA-",
+      "metadata": {
+        "description": "Hostname prefix for Publishing Agent Servers"
+      }
+    },
+    "hostNamePrefixRDSessionHost": {
+      "type": "string",
+      "defaultValue": "RAS-RDSH-",
+      "metadata": {
+        "description": "Hostname prefix for RD Session Host Servers"
+      }
+    },
+    "hostNamePrefixSecureClientGateway": {
+      "type": "string",
+      "defaultValue": "RAS-SCG-",
+      "metadata": {
+        "description": "Hostname prefix for Secure Client Gateway Servers"
+      }
+    },
+    "imageSKU": {
+      "type": "string",
+      "allowedValues": [
+        "2012-R2-Datacenter",
+        "2016-Datacenter"
+      ],
+      "metadata": {
+        "description": "The Windows server SKU, for example 2016-Datacenter"
+      },
+      "defaultValue": "2016-Datacenter"
+    },
+    "internalIPAddressPrefix/24": {
+      "type": "string",
+      "defaultValue": "10.40.40.",
+      "metadata": {
+        "description": "prefix of the internal IP Address /24 range to be used"
+      }
+    },
+    "numberOfInstancesPublishingAgent": {
+      "type": "int",
+      "defaultValue": 2,
+      "metadata": {
+        "description": "Number of Publishing Agent instances, by default 2"
+      }
+    },
+    "numberOfInstancesRDSessionHost": {
+      "type": "int",
+      "defaultValue": 2,
+      "metadata": {
+        "description": "Number of RD Session Hosy instances, by default 2"
+      }
+    },
+    "numberOfInstancesSecureClientGateway": {
+      "type": "int",
+      "defaultValue": 2,
+      "metadata": {
+        "description": "Number of Secure Client Gateway instances, by default 2"
+      }
+    },
+    "ouLocationConsole": {
+      "type": "string",
+      "defaultValue": "OU=Console Server,OU=RAS,OU=Servers,OU=RDSG,DC=rdsgurus,DC=com",
+      "metadata": {
+        "description": "OU Location to store the RAS Console Server"
+      }
+    },
+    "ouLocationPublishingAgent": {
+      "type": "string",
+      "defaultValue": "OU=Publishing Agents,OU=RAS,OU=Servers,OU=RDSG,DC=rdsgurus,DC=com",
+      "metadata": {
+        "description": "OU Location to store the Publishing Agent Servers"
+      }
+    },
+    "ouLocationRDSessionHost": {
+      "type": "string",
+      "defaultValue": "OU=RD Session Host,OU=RAS,OU=Servers,OU=RDSG,DC=rdsgurus,DC=com",
+      "metadata": {
+        "description": "OU Location to store the RD Session Host Servers"
+      }
+    },
+    "ouLocationSecureClientGateway": {
+      "type": "string",
+      "defaultValue": "OU=Secure Client Gateways,OU=RAS,OU=Servers,OU=RDSG,DC=rdsgurus,DC=com",
+      "metadata": {
+        "description": "OU Location to store the Secure Client Gateway Servers"
+      }
+    },
+    "projectTag": {
+      "type": "string",
+      "defaultValue": "RAS Deployment",
+      "metadata": {
+        "description": "The tag you want to assign to all resources deployed by this template"
+      }
+    },
+    "RASGroupNameRDSH": {
+      "type": "string",
+      "defaultValue": "RDS Gurus RDSH Group",
+      "metadata": {
+        "description": "The name of the RDSH Group in RAS"
+      }
+    },
+    "RASLicenseEmail": {
+      "type": "string",
+      "metadata": {
+        "description": "The e-mail address to activate RAS"
+      }
+    },
+    "RASLicensePassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The licensing password to activate RAS"
+      }
+    },
+    "useExistingCustomImage": {
+      "type": "string",
+      "defaultValue": "No",
+      "allowedValues": [
+        "Yes",
+        "No"
+      ],
+      "metadata": {
+        "description": "Select whether the RDSH is based on a custom image or not."
+      }
+    },
+    "virtualMachineSizeConsole": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_D1",
+        "Standard_DS1",
+        "Standard_DS1_V2",
+        "Standard_DS2_V2",
+        "Standard_DS3_V2"
+      ],
+      "defaultValue": "Standard_DS2_V2",
+      "metadata": {
+        "description": "VM Size for the Console role"
+      }
+    },
+    "virtualMachineSizePublishingAgent": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_D1",
+        "Standard_DS1",
+        "Standard_DS1_V2",
+        "Standard_DS2_V2",
+        "Standard_DS3_V2"
+      ],
+      "defaultValue": "Standard_DS2_V2",
+      "metadata": {
+        "description": "VM Size for the Publishing Agent role"
+      }
+    },
+    "virtualMachineSizeRDSessionHost": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_D1",
+        "Standard_DS1",
+        "Standard_DS1_V2",
+        "Standard_DS2_V2",
+        "Standard_DS3_V2"
+      ],
+      "defaultValue": "Standard_DS2_V2",
+      "metadata": {
+        "description": "VM Size for the RD Session Host role"
+      }
+    },
+    "virtualMachineSizeSecureClientGateway": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_D1",
+        "Standard_DS1",
+        "Standard_DS1_V2",
+        "Standard_DS2_V2",
+        "Standard_DS3_V2"
+      ],
+      "defaultValue": "Standard_DS2_V2",
+      "metadata": {
+        "description": "VM Size for the Secure Client Gateway role"
+      }
+    }
+  },
+  "variables": {
+    "availabilitySetNamePublishingAgent": "PA-AvailabilitySet",
+    "availabilitySetNameRDSessionHost": "RDSH-AvailabilitySet",
+    "availabilitySetNameSecureClientGateway": "SCG-AvailabilitySet",
+    "dnsLabelPrefix": "[concat(uniquestring(resourceGroup().id), 'ras')]",
+    "loadbalancer": {
+      "backendAddressPoolName": "LBBAPSCG",
+      "DistributionType": "SourceIPProtocol",
+      "FrontEndIPName": "LBFESCG",
+      "NumberOfProbes": 2,
+      "ProbeInterval": 5,
+      "Name": "SCGLoadbalancer",
+      "HTTPSPort": 443,
+      "HTTPSPortProbeName": "SCG-HTTPS-Probe",
+      "HTTPSPortProbePort": 443,
+      "HTTPSPortRuleName": "SCG-HTTPS-Rule",
+      "HTTPPortSCG": 80,
+      "HTTPPortProbeNameSCG": "SCG-HTTP-Probe",
+      "HTTPPortProbePortSCG": 80,
+      "HTTPPortRuleNameSCG": "SCG-HTTP-Rule",
+      "HTTPPortWeb": 81,
+      "HTTPPortProbeNameWeb": "Web-HTTP-Probe",
+      "HTTPPortProbePortWeb": 81,
+      "HTTPPortRuleNameWeb": "Web-HTTP-Rule",
+      "RuleFloatingIP": "false",
+      "RuleIdleTimeOut": 5
+    },
+    "virtualmachineosdisk": {
+      "cacheOption": "ReadWrite",
+      "createOption": "FromImage",
+      "diskName": "OS_Disk"
+    },
+    "image": {
+      "offer": "WindowsServer",
+      "publisher": "MicrosoftWindowsServer",
+      "version": "latest"
+    },
+    "storage": {
+      "name": "[concat(uniquestring(resourceGroup().id), 'ras')]",
+      "type": "Premium_LRS"
+    },
+    "networkAdapterNamePostFix": "-nic",
+    "networkAdapterIPConfigName": "ipconfig",
+    "networkAdapterIPAllocationMethod": "static",
+    "networkVnetId": "[resourceId(parameters('existingVnetResourceGroupName') ,'Microsoft.Network/virtualNetworks',parameters('existingVnetName'))]",
+    "networkSubnetId": "[concat(variables('networkVnetId'), '/subnets/', parameters('existingSubnetName'))]",
+    "apiVersion": "2015-06-15",
+    "apiVersionPreview": "2016-04-30-preview",
+    "impersonateUserScript": "https://gallery.technet.microsoft.com/scriptcenter/Impersonate-a-User-9bfeff82/file/127189/1/New-ImpersonateUser.ps1",
+    "publicIpRef": "publicIPSCG",
+    "domainJoinOptions": 3,
+    "sku": "Aligned",
+    "installPublishingAgentPowershellScript": "Install-PublishingAgent.ps1",
+    "installRDSessionHostPowershellScript": "Install-RDSessionHost.ps1",
+    "installSecureClientGatewayPowershellScript": "Install-SecureClientGateway.ps1",
+    "deploymentPowershellScriptRAS": "Create-RASDeployment.ps1"
+  },
+  "resources": [
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('publicIpRef')]",
+      "comments": "This resources created a Public Static IP Address that is used by the Secure Client Gateway role",
+      "tags": {
+        "displayName": "Public Static IP Address",
+        "Project": "[parameters('projectTag')]"
+      },
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+      }
+    },
+    {
+      "apiVersion": "[variables('apiVersionPreview')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('availabilitySetNameSecureClientGateway')]",
+      "comments": "This resources creates an availability set that is used to make the Secure Client Gateway Servers Highly Available",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "Secure Client Gateway AVSet",
+        "Project": "[parameters('projectTag')]"
+      },
+      "properties": {
+        "platformUpdateDomainCount": 2,
+        "platformFaultDomainCount": 2
+      },
+      "sku": {
+        "name": "[variables('sku')]"
+      }
+    },
+    {
+      "apiVersion": "[variables('apiVersionPreview')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('availabilitySetNamePublishingAgent')]",
+      "comments": "This resources creates an availability set that is used to make the Publishing Agent Servers Highly Available",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "Publishing Agent AVSet",
+        "Project": "[parameters('projectTag')]"
+      },
+      "properties": {
+        "platformUpdateDomainCount": 2,
+        "platformFaultDomainCount": 2
+      },
+      "sku": {
+        "name": "[variables('sku')]"
+      }
+    },
+    {
+      "apiVersion": "2016-04-30-preview",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('availabilitySetNameRDSessionHost')]",
+      "comments": "This resources creates an availablity set that is used to make the RDSH Server Highly Available",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "RD Session Host AVSet"
+      },
+      "properties": {
+        "platformUpdateDomainCount": 2,
+        "platformFaultDomainCount": 2
+      },
+      "sku": {
+        "name": "[variables('sku')]"
+      }
+    },
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "name": "[variables('loadbalancer').Name]",
+      "comments": "This resources creates a external load balancer that is used to load balance the Secure Client Gateway role",
+      "tags": {
+        "displayName": "Secure Client Gateway Load Balancer",
+        "Project": "[parameters('projectTag')]"
+      },
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/',variables('publicIpRef'))]"
+      ],
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('loadbalancer').FrontEndIPName]",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIpRef'))]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('loadbalancer').backendAddressPoolName]"
+          }
+        ],
+
+        "loadBalancingRules": [
+          {
+            "name": "[variables('loadbalancer').HTTPSPortRuleName]",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers/',variables('loadbalancer').Name),'/frontendIPConfigurations/',variables('loadbalancer').FrontEndIPName)]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers/',variables('loadbalancer').Name),'/backendAddressPools/',variables('loadbalancer').backendAddressPoolName)]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": "[variables('loadbalancer').HTTPSPortProbePort]",
+              "backendPort": "[variables('loadbalancer').HTTPSPortProbePort]",
+              "enableFloatingIP": "[variables('loadbalancer').RuleFloatingIP]",
+              "idleTimeoutInMinutes": "[variables('loadbalancer').RuleIdleTimeOut]",
+              "loadDistribution": "[variables('loadbalancer').DistributionType]",
+              "probe": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers/',variables('loadbalancer').Name),'/probes/',variables('loadbalancer').HTTPSPortProbeName)]"
+              }
+            }
+          },
+          {
+            "name": "[variables('loadbalancer').HTTPPortRuleNameSCG]",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers/',variables('loadbalancer').Name),'/frontendIPConfigurations/',variables('loadbalancer').FrontEndIPName)]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers/',variables('loadbalancer').Name),'/backendAddressPools/',variables('loadbalancer').backendAddressPoolName)]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": "[variables('loadbalancer').HTTPPortProbePortSCG]",
+              "backendPort": "[variables('loadbalancer').HTTPPortProbePortSCG]",
+              "enableFloatingIP": "[variables('loadbalancer').RuleFloatingIP]",
+              "idleTimeoutInMinutes": "[variables('loadbalancer').RuleIdleTimeOut]",
+              "loadDistribution": "[variables('loadbalancer').DistributionType]",
+              "probe": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers/',variables('loadbalancer').Name),'/probes/',variables('loadbalancer').HTTPPortProbeNameSCG)]"
+              }
+            }
+          },
+          {
+            "name": "[variables('loadbalancer').HTTPPortRuleNameWeb]",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers/',variables('loadbalancer').Name),'/frontendIPConfigurations/',variables('loadbalancer').FrontEndIPName)]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers/',variables('loadbalancer').Name),'/backendAddressPools/',variables('loadbalancer').backendAddressPoolName)]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": "[variables('loadbalancer').HTTPPortProbePortWeb]",
+              "backendPort": "[variables('loadbalancer').HTTPPortProbePortWeb]",
+              "enableFloatingIP": "[variables('loadbalancer').RuleFloatingIP]",
+              "idleTimeoutInMinutes": "[variables('loadbalancer').RuleIdleTimeOut]",
+              "loadDistribution": "[variables('loadbalancer').DistributionType]",
+              "probe": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers/',variables('loadbalancer').Name),'/probes/',variables('loadbalancer').HTTPPortProbeNameWeb)]"
+              }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "[variables('loadbalancer').HTTPSPortProbeName]",
+            "properties": {
+              "protocol": "Tcp",
+              "port": "[variables('loadbalancer').HTTPSPortProbePort]",
+              "intervalInSeconds": "[variables('loadbalancer').ProbeInterval]",
+              "numberOfProbes": "[variables('loadbalancer').NumberOfProbes]"
+            }
+          },
+          {
+            "name": "[variables('loadbalancer').HTTPPortProbeNameSCG]",
+            "properties": {
+              "protocol": "Tcp",
+              "port": "[variables('loadbalancer').HTTPPortProbePortSCG]",
+              "intervalInSeconds": "[variables('loadbalancer').ProbeInterval]",
+              "numberOfProbes": "[variables('loadbalancer').NumberOfProbes]"
+            }
+          },
+          {
+            "name": "[variables('loadbalancer').HTTPPortProbeNameWeb]",
+            "properties": {
+              "protocol": "Tcp",
+              "port": "[variables('loadbalancer').HTTPPortProbePortWeb]",
+              "intervalInSeconds": "[variables('loadbalancer').ProbeInterval]",
+              "numberOfProbes": "[variables('loadbalancer').NumberOfProbes]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(parameters('hostNamePrefixSecureClientGateway'),'0', copyindex(1), variables('networkAdapterNamePostFix'))]",
+      "comments": "This resources creates Virtual Network Adapters uased by the Secure Client Access Vitual Machines",
+      "tags": {
+        "displayName": "Secure Client Gateway Network interfaces",
+        "Project": "[parameters('projectTag')]"
+      },
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "[concat(parameters('hostNamePrefixSecureClientGateway'),'nic-loop')]",
+        "count": "[parameters('numberOfInstancesSecureClientGateway')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers/', variables('loadbalancer').Name)]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "[variables('networkAdapterIPConfigName')]",
+            "properties": {
+              "privateIPAllocationMethod": "[variables('networkAdapterIPAllocationMethod')]",
+              "PrivateIpAddress": "[concat(parameters('internalIPAddressPrefix/24'), copyindex(20))]",
+              "subnet": {
+                "id": "[variables('networkSubnetId')]"
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[concat(resourceId('Microsoft.Network/loadBalancers/',variables('loadbalancer').Name),'/backendAddressPools/',variables('loadbalancer').backendAddressPoolName)]"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(parameters('hostNamePrefixPublishingAgent'),'0', copyindex(1), variables('networkAdapterNamePostFix'))]",
+      "comments": "This resources creates Virtual Network Adapters uased by the Publishing Agent Vitual Machines",
+      "tags": {
+        "displayName": "Publishing Agent Network interfaces",
+        "Project": "[parameters('projectTag')]"
+      },
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "[concat(parameters('hostNamePrefixPublishingAgent'),'nic-loop')]",
+        "count": "[parameters('numberOfInstancesPublishingAgent')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers/', variables('loadbalancer').Name)]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "[variables('networkAdapterIPConfigName')]",
+            "properties": {
+              "privateIPAllocationMethod": "[variables('networkAdapterIPAllocationMethod')]",
+              "PrivateIpAddress": "[concat(parameters('internalIPAddressPrefix/24'), copyindex(10))]",
+              "subnet": {
+                "id": "[variables('networkSubnetId')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(parameters('hostNamePrefixRDSessionHost'),'0', copyindex(1), variables('networkAdapterNamePostFix'))]",
+      "comments": "This resources creates Virtual Network Adapters uased by the RD Session Host Vitual Machines",
+      "tags": {
+        "displayName": "RD Session Host Network interfaces",
+        "Project": "[parameters('projectTag')]"
+      },
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "[concat(parameters('hostNamePrefixRDSessionHost'),'nic-loop')]",
+        "count": "[parameters('numberOfInstancesRDSessionHost')]"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "[variables('networkAdapterIPConfigName')]",
+            "properties": {
+              "privateIPAllocationMethod": "[variables('networkAdapterIPAllocationMethod')]",
+              "PrivateIpAddress": "[concat(parameters('internalIPAddressPrefix/24'), copyindex(30))]",
+              "subnet": {
+                "id": "[variables('networkSubnetId')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(parameters('hostNamePrefixConsole'),'01', variables('networkAdapterNamePostFix'))]",
+      "comments": "This resources creates Virtual Network Adapters uased by the Console machines",
+      "tags": {
+        "displayName": "RAS Console Network Interfaces",
+        "Project": "[parameters('projectTag')]"
+      },
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "[variables('networkAdapterIPConfigName')]",
+            "properties": {
+              "privateIPAllocationMethod": "[variables('networkAdapterIPAllocationMethod')]",
+              "PrivateIpAddress": "[concat(parameters('internalIPAddressPrefix/24'), '40')]",
+              "subnet": {
+                "id": "[variables('networkSubnetId')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('apiVersionPreview')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(parameters('hostNamePrefixSecureClientGateway'),'0', copyindex(1))]",
+      "comments": "This resources creates Virtual Machines that wil host the Secure Client Gateway role",
+      "tags": {
+        "displayName": "Secure Client Gateway Virtual Machines",
+        "Project": "[parameters('projectTag')]"
+      },
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "[concat(parameters('hostNamePrefixSecureClientGateway'),'vm-loop')]",
+        "count": "[parameters('numberOfInstancesSecureClientGateway')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetNameSecureClientGateway'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', parameters('hostNamePrefixSecureClientGateway'),'0', copyindex(1), variables('networkAdapterNamePostFix'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualMachineSizeSecureClientGateway')]"
+        },
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetNameSecureClientGateway'))]"
+        },
+        "osProfile": {
+          "computerName": "[concat(parameters('hostNamePrefixSecureClientGateway'),'0', copyindex(1))]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('image').publisher]",
+            "offer": "[variables('image').offer]",
+            "sku": "[parameters('imageSKU')]",
+            "version": "[variables('image').version]"
+          },
+          "osDisk": {
+            "name": "[concat(parameters('hostNamePrefixSecureClientGateway'),'0', copyindex(1),'-',variables('virtualmachineosdisk').diskName)]",
+            "managedDisk": {
+              "storageAccountType": "[variables('storage').type]"
+            },
+            "caching": "[variables('virtualmachineosdisk').cacheOption]",
+            "createOption": "[variables('virtualmachineosdisk').createOption]"
+          },
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(parameters('hostNamePrefixSecureClientGateway'),'0', copyindex(1), variables('networkAdapterNamePostFix')))]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "apiVersion": "[variables('apiVersion')]",
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('hostNamePrefixSecureClientGateway'),'0', copyindex(1),'/domainjoin')]",
+          "comments": "This resources creates a Custom Extention to join the connected Virtual Machine to ADDS",
+          "tags": {
+            "displayName": "DomainJoin Extension"
+          },
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('hostNamePrefixSecureClientGateway'),'0', copyindex(1)))]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "JsonADDomainExtension",
+            "typeHandlerversion": "1.3",
+            "autoUpgradeMinorversion": true,
+            "settings": {
+              "Name": "[parameters('adDomainName')]",
+              "OUPath": "[parameters('ouLocationSecureClientGateway')]",
+              "User": "[concat(parameters('adminUsername'), '@', parameters('adDomainName'))]",
+              "Restart": "true",
+              "Options": "[variables('domainJoinOptions')]"
+            },
+            "protectedsettings": {
+              "Password": "[parameters('adminPassword')]"
+            }
+          }
+        },
+        {
+          "apiVersion": "[variables('apiVersion')]",
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('hostNamePrefixSecureClientGateway'),'0',copyindex(1), '/SCG')]",
+          "comments": "This resources creates Firewalls Rules",
+          "tags": {
+            "displayName": "PowerShell Extension"
+          },
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('hostNamePrefixSecureClientGateway'),'0',copyindex(1)))]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixSecureClientGateway'),'0',copyindex(1),'/extensions/domainjoin')]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixPublishingAgent'),'01','/extensions/PA')]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "CustomScriptExtension",
+            "typeHandlerversion": "1.8",
+            "autoUpgradeMinorversion": true,
+            "settings": {
+              "fileUris": [
+                "[variables('impersonateUserScript')]",
+                "[concat(parameters('assetLocation'),variables('installSecureClientGatewayPowershellScript'))]"
+              ]
+            },
+            "protectedSettings": {
+              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installSecureClientGatewayPowershellScript'),' ',parameters('adDomainName'),' ',parameters('adminPassword'),' ',parameters('adminUsername'),' ',parameters('hostNamePrefixPublishingAgent'),' >> ',variables('installSecureClientGatewayPowershellScript'),'.log 2>&1')]",
+            }
+          }
+        },
+        {
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('hostNamePrefixSecureClientGateway'),'0', copyindex(1),'/BGInfo')]",
+          "comments": "This resources install the BGInfo extension on the connected Virtual machine",
+          "apiVersion": "[variables('apiVersion')]",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('hostNamePrefixSecureClientGateway'),'0', copyindex(1)))]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixSecureClientGateway'),'0',copyindex(1),'/extensions/domainjoin')]"
+          ],
+          "tags": {
+            "displayName": "BGInfo Extension"
+          },
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "BGInfo",
+            "typeHandlerversion": "2.1",
+            "autoUpgradeMinorversion": true,
+            "settings": {
+              "Properties": [
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "apiVersion": "2017-03-30",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(parameters('hostNamePrefixRDSessionHost'),'0', copyindex(1))]",
+      "comments": "This resources creates Virtual Machines that wil host the RDSH role",
+      "tags": {
+        "displayName": "RD Session Host Virtual Machines",
+        "Project": "[parameters('projectTag')]"
+      },
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "[concat(parameters('hostNamePrefixRDSessionHost'),'vm-loop')]",
+        "count": "[parameters('numberOfInstancesRDSessionHost')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetNameRDSessionHost'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', parameters('hostNamePrefixRDSessionHost'),'0', copyindex(1), variables('networkAdapterNamePostFix'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualMachineSizeRDSessionHost')]"
+        },
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetNameRDSessionHost'))]"
+        },
+        "osProfile": {
+          "computerName": "[concat(parameters('hostNamePrefixRDSessionHost'),'0', copyindex(1))]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[if(equals(parameters('useExistingCustomImage'), 'No'), variables('image').publisher, json('null'))]",
+            "offer": "[if(equals(parameters('useExistingCustomImage'), 'No'), variables('image').offer, json('null'))]",
+            "version": "latest",
+            "sku": "[if(equals(parameters('useExistingCustomImage'), 'No'), variables('image').version, json('null'))]"
+          },
+          "osDisk": {
+            "name": "[concat(parameters('hostNamePrefixRDSessionHost'),'0', copyindex(1),'-',variables('virtualmachineosdisk').diskName)]",
+            "managedDisk": {
+              "storageAccountType": "[variables('storage').type]"
+            },
+            "caching": "[variables('virtualmachineosdisk').cacheOption]",
+            "createOption": "[variables('virtualmachineosdisk').createOption]"
+          },
+          "imageReference": {
+            "id": "[if(equals(parameters('useExistingCustomImage'), 'Yes'), resourceId(parameters('existingCustomImageResourceGroup'),'Microsoft.Compute/images/',parameters('existingCustomImageNameRDSH')), json('null'))]",
+          },
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(parameters('hostNamePrefixRDSessionHost'), '0', copyindex(1), variables('networkAdapterNamePostFix')))]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "apiVersion": "[variables('apiVersion')]",
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('hostNamePrefixRDSessionHost'),'0', copyindex(1),'/domainjoin')]",
+          "comments": "This resources creates a Custom Extention to join the connected Virtual Machine to ADDS",
+          "tags": {
+            "displayName": "DomainJoin Extension"
+          },
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('hostNamePrefixRDSessionHost'),'0', copyindex(1)))]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "JsonADDomainExtension",
+            "typeHandlerversion": "1.3",
+            "autoUpgradeMinorversion": true,
+            "settings": {
+              "Name": "[parameters('adDomainName')]",
+              "OUPath": "[parameters('ouLocationRDSessionHost')]",
+              "User": "[concat(parameters('adminUsername'), '@', parameters('adDomainName'))]",
+              "Restart": "true",
+              "Options": "[variables('domainJoinOptions')]"
+            },
+            "protectedsettings": {
+              "Password": "[parameters('adminPassword')]"
+            }
+          }
+        },
+        {
+          "apiVersion": "[variables('apiVersion')]",
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('hostNamePrefixRDSessionHost'),'0',copyindex(1), '/RDSH')]",
+          "comments": "This resources creates Firewalls Rules",
+          "tags": {
+            "displayName": "PowerShell Extension"
+          },
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('hostNamePrefixRDSessionHost'),'0',copyindex(1)))]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixRDSessionHost'),'0',copyindex(1),'/extensions/domainjoin')]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "CustomScriptExtension",
+            "typeHandlerversion": "1.8",
+            "autoUpgradeMinorversion": true,
+            "settings": {
+              "fileUris": [
+                "[variables('impersonateUserScript')]",
+                "[concat(parameters('assetLocation'),variables('installRDSessionHostPowershellScript'))]"
+              ]
+            },
+            "protectedSettings": {
+              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installRDSessionHostPowershellScript'),' ',parameters('adDomainName'),' ',' ',parameters('adminPassword'),' ',parameters('adminUsername'),' >> ',variables('installRDSessionHostPowershellScript'),'.log 2>&1')]",
+            }
+          }
+        },
+        {
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('hostNamePrefixRDSessionHost'),'0', copyindex(1),'/BGInfo')]",
+          "comments": "This resources install the BGInfo extension on the connected Virtual machine",
+          "apiVersion": "[variables('apiVersion')]",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('hostNamePrefixRDSessionHost'),'0', copyindex(1)))]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixRDSessionHost'),'0',copyindex(1),'/extensions/domainjoin')]"
+          ],
+          "tags": {
+            "displayName": "BGInfo Extension"
+          },
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "BGInfo",
+            "typeHandlerversion": "2.1",
+            "autoUpgradeMinorversion": true,
+            "settings": {
+              "Properties": [
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "apiVersion": "[variables('apiVersionPreview')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(parameters('hostNamePrefixPublishingAgent'),'0', copyindex(1))]",
+      "comments": "This resources creates a Virtual Machine that will host the Publishing Agent roles",
+      "tags": {
+        "displayName": "Publishing Agent Virtual Machines",
+        "Project": "[parameters('projectTag')]"
+      },
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "[concat(parameters('hostNamePrefixPublishingAgent'),'vm-loop')]",
+        "count": "[parameters('numberOfInstancesPublishingAgent')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetNamePublishingAgent'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', parameters('hostNamePrefixPublishingAgent'),'0', copyindex(1), variables('networkAdapterNamePostFix'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualMachineSizePublishingAgent')]"
+        },
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetNamePublishingAgent'))]"
+        },
+        "osProfile": {
+          "computerName": "[concat(parameters('hostNamePrefixPublishingAgent'),'0', copyindex(1))]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('image').publisher]",
+            "offer": "[variables('image').offer]",
+            "sku": "[parameters('imageSKU')]",
+            "version": "[variables('image').version]"
+          },
+          "osDisk": {
+            "name": "[concat(parameters('hostNamePrefixPublishingAgent'),'0',copyindex(1),'-',variables('virtualmachineosdisk').diskName)]",
+            "managedDisk": {
+              "storageAccountType": "[variables('storage').type]"
+            },
+            "caching": "[variables('virtualmachineosdisk').cacheOption]",
+            "createOption": "[variables('virtualmachineosdisk').createOption]"
+          },
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(parameters('hostNamePrefixPublishingAgent'),'0', copyindex(1), variables('networkAdapterNamePostFix')))]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "apiVersion": "[variables('apiVersion')]",
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('hostNamePrefixPublishingAgent'),'0',copyindex(1),'/domainjoin')]",
+          "comments": "This resources creates a Custom Extention to join the connected Virtual Machine to ADDS",
+          "tags": {
+            "displayName": "DomainJoin Extension"
+          },
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('hostNamePrefixPublishingAgent'),'0',copyindex(1)))]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "JsonADDomainExtension",
+            "typeHandlerversion": "1.3",
+            "autoUpgradeMinorversion": true,
+            "settings": {
+              "Name": "[parameters('adDomainName')]",
+              "OUPath": "[parameters('ouLocationPublishingAgent')]",
+              "User": "[concat(parameters('adminUsername'), '@', parameters('adDomainName'))]",
+              "Restart": "true",
+              "Options": "[variables('domainJoinOptions')]"
+            },
+            "protectedsettings": {
+              "Password": "[parameters('adminPassword')]"
+            }
+          }
+        },
+        {
+          "apiVersion": "[variables('apiVersion')]",
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('hostNamePrefixPublishingAgent'),'0',copyindex(1), '/PA')]",
+          "comments": "This resources creates Firewalls Rules",
+          "tags": {
+            "displayName": "PowerShell Extension"
+          },
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('hostNamePrefixPublishingAgent'),'0',copyindex(1)))]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixPublishingAgent'),'0',copyindex(1),'/extensions/domainjoin')]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "CustomScriptExtension",
+            "typeHandlerversion": "1.8",
+            "autoUpgradeMinorversion": true,
+            "settings": {
+              "fileUris": [
+                "[variables('impersonateUserScript')]",
+                "[concat(parameters('assetLocation'),variables('installPublishingAgentPowershellScript'))]"
+              ]
+            },
+            "protectedSettings": {
+              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installPublishingAgentPowershellScript'),' ',parameters('adDomainName'),' ',' ',parameters('adminPassword'),' ',parameters('adminUsername'),' >> ',variables('installPublishingAgentPowershellScript'),'.log 2>&1')]",
+            }
+          }
+        },
+        {
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('hostNamePrefixPublishingAgent'),'0', copyindex(1),'/BGInfo')]",
+          "comments": "This resources install the BGInfo extension on the connected Virtual machine",
+          "apiVersion": "[variables('apiVersion')]",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('hostNamePrefixPublishingAgent'),'0', copyindex(1)))]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixPublishingAgent'),'0',copyindex(1),'/extensions/domainjoin')]"
+          ],
+          "tags": {
+            "displayName": "BGInfo Extension"
+          },
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "BGInfo",
+            "typeHandlerversion": "2.1",
+            "autoUpgradeMinorversion": true,
+            "settings": {
+              "Properties": [
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "apiVersion": "[variables('apiVersionPreview')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(parameters('hostNamePrefixConsole'),'01')]",
+      "comments": "This resources creates a Virtual Machine that will host the RAS Console roles",
+      "tags": {
+        "displayName": "RAS Console Virtual Machine",
+        "Project": "[parameters('projectTag')]"
+      },
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', parameters('hostNamePrefixConsole'),'01', variables('networkAdapterNamePostFix'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualMachineSizeConsole')]"
+        },
+        "osProfile": {
+          "computerName": "[concat(parameters('hostNamePrefixConsole'),'01')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('image').publisher]",
+            "offer": "[variables('image').offer]",
+            "sku": "[parameters('imageSKU')]",
+            "version": "[variables('image').version]"
+          },
+          "osDisk": {
+            "name": "[concat(parameters('hostNamePrefixConsole'),'01','-',variables('virtualmachineosdisk').diskName)]",
+            "managedDisk": {
+              "storageAccountType": "[variables('storage').type]"
+            },
+            "caching": "[variables('virtualmachineosdisk').cacheOption]",
+            "createOption": "[variables('virtualmachineosdisk').createOption]"
+          },
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(parameters('hostNamePrefixConsole'),'01', variables('networkAdapterNamePostFix')))]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "apiVersion": "[variables('apiVersion')]",
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('hostNamePrefixConsole'),'01','/domainjoin')]",
+          "comments": "This resources creates a Custom Extention to join the connected Virtual Machine to ADDS",
+          "tags": {
+            "displayName": "DomainJoin Extension"
+          },
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('hostNamePrefixConsole'),'01'))]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "JsonADDomainExtension",
+            "typeHandlerversion": "1.3",
+            "autoUpgradeMinorversion": true,
+            "settings": {
+              "Name": "[parameters('adDomainName')]",
+              "OUPath": "[parameters('ouLocationConsole')]",
+              "User": "[concat(parameters('adminUsername'), '@', parameters('adDomainName'))]",
+              "Restart": "true",
+              "Options": "[variables('domainJoinOptions')]"
+            },
+            "protectedsettings": {
+              "Password": "[parameters('adminPassword')]"
+            }
+          }
+        },
+        {
+          "apiVersion": "[variables('apiVersion')]",
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('hostNamePrefixConsole'),'01', '/rasdeployment')]",
+          "comments": "This resources creates the RAS Deploymeny",
+          "tags": {
+            "displayName": "PowerShell Extension"
+          },
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('hostNamePrefixConsole'),'01'))]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixConsole'),'01','/extensions/domainjoin')]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixPublishingAgent'),'01','/extensions/PA')]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixRDSessionHost'),'01','/extensions/RDSH')]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixSecureClientGateway'),'01','/extensions/SCG')]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixPublishingAgent'),'02','/extensions/PA')]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixRDSessionHost'),'02','/extensions/RDSH')]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixSecureClientGateway'),'02','/extensions/SCG')]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "CustomScriptExtension",
+            "typeHandlerversion": "1.8",
+            "autoUpgradeMinorversion": true,
+            "settings": {
+              "fileUris": [
+                "[variables('impersonateUserScript')]",
+                "[concat(parameters('assetLocation'),variables('deploymentPowershellScriptRAS'))]"
+              ]
+            },
+            "protectedSettings": {
+              "commandToExecute": "[concat('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -ExecutionPolicy Unrestricted -File ',variables('deploymentPowershellScriptRAS'),' ',parameters('adDomainName'),' ',parameters('adminPassword'),' ',parameters('adminUsername'),' ',parameters('numberOfInstancesSecureClientGateway'),' ',parameters('hostNamePrefixSecureClientGateway'),' ',parameters('numberOfInstancesRDSessionHost'),' ',parameters('hostNamePrefixRDSessionHost'),' ',parameters('hostNamePrefixPublishingAgent'),' ',parameters('RASLicenseEmail'),' ',parameters('RASLicensePassword'),' ',parameters('RASGroupNameRDSH'),' ',parameters('numberOfInstancesPublishingAgent'),' >> ',variables('deploymentPowershellScriptRAS'),'.log 2>&1')]",
+            }
+          }
+        },
+        {
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('hostNamePrefixConsole'),'01', '/BGInfo')]",
+          "comments": "This resources install the BGInfo extension on the connected Virtual machine",
+          "apiVersion": "[variables('apiVersion')]",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('hostNamePrefixConsole'),'01'))]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('hostNamePrefixConsole'),'01','/extensions/domainjoin')]"
+          ],
+          "tags": {
+            "displayName": "BGInfo Extension"
+          },
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "BGInfo",
+            "typeHandlerversion": "2.1",
+            "autoUpgradeMinorversion": true,
+            "settings": {
+              "Properties": [
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+    "outputs": {
+    }
+  }
