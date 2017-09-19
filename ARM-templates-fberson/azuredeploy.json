@@ -297,7 +297,7 @@
     "networkAdapterNamePostFix": "-nic",
     "networkAdapterIPConfigName": "ipconfig",
     "networkAdapterIPAllocationMethod": "static",
-    "networkVnetId": "[resourceId(parameters('existingVnetResourceGroupName') ,'Microsoft.Network/virtualNetworks',parameters('existingVnetName'))]",
+    "networkVnetId": "[resourceId(publicIPAllocationMethodparameters('existingVnetResourceGroupName') ,'Microsoft.Network/virtualNetworks',parameters('existingVnetName'))]",
     "networkSubnetId": "[concat(variables('networkVnetId'), '/subnets/', parameters('existingSubnetName'))]",
     "apiVersion": "2015-06-15",
     "apiVersionPreview": "2016-04-30-preview",
@@ -322,7 +322,7 @@
       },
       "location": "[resourceGroup().location]",
       "properties": {
-        "publicIPAllocationMethod": "Static",
+        "publicIPAllocationMethod": "Static"
       }
     },
     {
@@ -735,7 +735,7 @@
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installSecureClientGatewayPowershellScript'),' ',parameters('adDomainName'),' ',parameters('adminPassword'),' ',parameters('adminUsername'),' ',parameters('hostNamePrefixPublishingAgent'),' >> ',variables('installSecureClientGatewayPowershellScript'),'.log 2>&1')]",
+              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installSecureClientGatewayPowershellScript'),' ',parameters('adDomainName'),' ',parameters('adminPassword'),' ',parameters('adminUsername'),' ',parameters('hostNamePrefixPublishingAgent'),' >> ',variables('installSecureClientGatewayPowershellScript'),'.log 2>&1')]"
             }
           }
         },
@@ -811,7 +811,7 @@
             "createOption": "[variables('virtualmachineosdisk').createOption]"
           },
           "imageReference": {
-            "id": "[if(equals(parameters('useExistingCustomImage'), 'Yes'), resourceId(parameters('existingCustomImageResourceGroup'),'Microsoft.Compute/images/',parameters('existingCustomImageNameRDSH')), json('null'))]",
+            "id": "[if(equals(parameters('useExistingCustomImage'), 'Yes'), resourceId(parameters('existingCustomImageResourceGroup'),'Microsoft.Compute/images/',parameters('existingCustomImageNameRDSH')), json('null'))]"
           },
           "dataDisks": []
         },
@@ -878,7 +878,7 @@
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installRDSessionHostPowershellScript'),' ',parameters('adDomainName'),' ',' ',parameters('adminPassword'),' ',parameters('adminUsername'),' >> ',variables('installRDSessionHostPowershellScript'),'.log 2>&1')]",
+              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installRDSessionHostPowershellScript'),' ',parameters('adDomainName'),' ',' ',parameters('adminPassword'),' ',parameters('adminUsername'),' >> ',variables('installRDSessionHostPowershellScript'),'.log 2>&1')]"
             }
           }
         },
@@ -1018,7 +1018,7 @@
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installPublishingAgentPowershellScript'),' ',parameters('adDomainName'),' ',' ',parameters('adminPassword'),' ',parameters('adminUsername'),' >> ',variables('installPublishingAgentPowershellScript'),'.log 2>&1')]",
+              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installPublishingAgentPowershellScript'),' ',parameters('adDomainName'),' ',' ',parameters('adminPassword'),' ',parameters('adminUsername'),' >> ',variables('installPublishingAgentPowershellScript'),'.log 2>&1')]"
             }
           }
         },
@@ -1156,7 +1156,7 @@
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[concat('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -ExecutionPolicy Unrestricted -File ',variables('deploymentPowershellScriptRAS'),' ',parameters('adDomainName'),' ',parameters('adminPassword'),' ',parameters('adminUsername'),' ',parameters('numberOfInstancesSecureClientGateway'),' ',parameters('hostNamePrefixSecureClientGateway'),' ',parameters('numberOfInstancesRDSessionHost'),' ',parameters('hostNamePrefixRDSessionHost'),' ',parameters('hostNamePrefixPublishingAgent'),' ',parameters('RASLicenseEmail'),' ',parameters('RASLicensePassword'),' ',parameters('RASGroupNameRDSH'),' ',parameters('numberOfInstancesPublishingAgent'),' >> ',variables('deploymentPowershellScriptRAS'),'.log 2>&1')]",
+              "commandToExecute": "[concat('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -ExecutionPolicy Unrestricted -File ',variables('deploymentPowershellScriptRAS'),' ',parameters('adDomainName'),' ',parameters('adminPassword'),' ',parameters('adminUsername'),' ',parameters('numberOfInstancesSecureClientGateway'),' ',parameters('hostNamePrefixSecureClientGateway'),' ',parameters('numberOfInstancesRDSessionHost'),' ',parameters('hostNamePrefixRDSessionHost'),' ',parameters('hostNamePrefixPublishingAgent'),' ',parameters('RASLicenseEmail'),' ',parameters('RASLicensePassword'),' ',parameters('RASGroupNameRDSH'),' ',parameters('numberOfInstancesPublishingAgent'),' >> ',variables('deploymentPowershellScriptRAS'),'.log 2>&1')]"
             }
           }
         },
