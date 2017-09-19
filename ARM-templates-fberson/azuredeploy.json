@@ -797,10 +797,11 @@
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "[if(equals(parameters('useExistingCustomImage'), 'No'), variables('image').publisher, json('null'))]",
-            "offer": "[if(equals(parameters('useExistingCustomImage'), 'No'), variables('image').offer, json('null'))]",
-            "version": "latest",
-            "sku": "[if(equals(parameters('useExistingCustomImage'), 'No'), variables('image').version, json('null'))]"
+            "publisher": "[if(equals(parameters('useExistingCustomImage'), 'Yes'), json('null'), variables('image').publisher)]",
+            "offer": "[if(equals(parameters('useExistingCustomImage'), 'Yes'), json('null'), variables('image').offer)]",
+            "version": "[if(equals(parameters('useExistingCustomImage'), 'Yes'), json('null'), variables('image').version)]",
+            "sku": "[if(equals(parameters('useExistingCustomImage'), 'Yes'), json('null'), parameters('imageSKU'))]",
+            "id": "[if(equals(parameters('useExistingCustomImage'), 'Yes'), resourceId(parameters('existingCustomImageResourceGroup'),'Microsoft.Compute/images/',parameters('existingCustomImageNameRDSH')), json('null'))]"
           },
           "osDisk": {
             "name": "[concat(parameters('hostNamePrefixRDSessionHost'),'0', copyindex(1),'-',variables('virtualmachineosdisk').diskName)]",
@@ -809,9 +810,6 @@
             },
             "caching": "[variables('virtualmachineosdisk').cacheOption]",
             "createOption": "[variables('virtualmachineosdisk').createOption]"
-          },
-          "imageReference": {
-            "id": "[if(equals(parameters('useExistingCustomImage'), 'Yes'), resourceId(parameters('existingCustomImageResourceGroup'),'Microsoft.Compute/images/',parameters('existingCustomImageNameRDSH')), json('null'))]"
           },
           "dataDisks": []
         },
