@@ -38,7 +38,7 @@
     },
     "existingCustomImageResourceGroup": {
       "type": "string",
-      "defaultValue": "RDSH-RDSG-Template-Image-Resource-Group",
+      "defaultValue": "RDSonAzureIaaS",
       "metadata": {
         "description": "Resource Group where the specified RDSH Custom template image is located."
       }
