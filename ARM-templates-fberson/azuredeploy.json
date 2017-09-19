@@ -811,7 +811,7 @@
             "createOption": "[variables('virtualmachineosdisk').createOption]"
           },
           "imageReference": {
-            "id": "[if(equals(parameters('useExistingCustomImage'), 'Yes'), resourceId(parameters('existingCustomImageResourceGroup'),'Microsoft.Compute/images/',parameters('existingCustomImageNameRDSH')), json('null'))]",
+            "id": "[if(equals(parameters('useExistingCustomImage'), 'Yes'), resourceId(parameters('existingCustomImageResourceGroup'),'Microsoft.Compute/images/',parameters('existingCustomImageNameRDSH')), json('null'))]"
           },
           "dataDisks": []
         },
