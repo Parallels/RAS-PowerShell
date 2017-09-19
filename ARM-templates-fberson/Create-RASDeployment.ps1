@@ -41,7 +41,6 @@ log "Creating credentials"
 $secAdminPassword = ConvertTo-SecureString $RasAdminPassword -AsPlainText -Force
 $mycreds = New-Object System.Management.Automation.PSCredential ($RasAdminUser, $secAdminPassword)
 
-#Impersonate user
 log "Impersonate user '$RasAdminUser'"
 .\New-ImpersonateUser.ps1 -Credential $mycreds
 
@@ -78,7 +77,8 @@ for ($i=1; $i -le $numberOfInstancesRDSessionHost; $i++)
 }
 Invoke-Apply
 
-#Add Secure Client Gateway Servers and set SCG port to TCP 81
+#Add Secure Client Gateway Servers
+#Impersonate user
 for ($i=1; $i -le $numberOfInstancesSecureClientGateway; $i++)
 {
     $SecureClientGateway = $hostNamePrefixSecureClientGateway + "0" + $i + "." + $adDomainName
