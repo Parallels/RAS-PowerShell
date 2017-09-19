@@ -12,21 +12,21 @@
     "adminPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "The password for the administrator account of the new VM and the domain"
+        "description": "The password for the administrator account of the new VM's and the domain"
       }
     },
     "adminUsername": {
       "type": "string",
       "defaultValue": "adm_ras",
       "metadata": {
-        "description": "The name of the administrator of the new VM and the domain."
+        "description": "The name of the administrator of the new VM's and the domain."
       }
     },
     "assetLocation": {
       "type": "string",
       "defaultValue": "https://raw.githubusercontent.com/Parallels/RAS-PowerShell/master/ARM-templates-fberson/",
       "metadata": {
-        "description": "Asset location (Azure Blog Storage) where PS1 files are stored"
+        "description": "Asset location (GitHUb) where Extension files are stored"
       }
     },
     "existingCustomImageNameRDSH": {
@@ -133,28 +133,28 @@
     },
     "ouLocationConsole": {
       "type": "string",
-      "defaultValue": "OU=Console Server,OU=RAS,OU=Servers,OU=RDSG,DC=rdsgurus,DC=com",
+      "defaultValue": "OU=Console Server,OU=RAS,OU=Servers,OU=RDSG,DC=contoso,DC=com",
       "metadata": {
         "description": "OU Location to store the RAS Console Server"
       }
     },
     "ouLocationPublishingAgent": {
       "type": "string",
-      "defaultValue": "OU=Publishing Agents,OU=RAS,OU=Servers,OU=RDSG,DC=rdsgurus,DC=com",
+      "defaultValue": "OU=Publishing Agents,OU=RAS,OU=Servers,OU=RDSG,DC=contoso,DC=com",
       "metadata": {
         "description": "OU Location to store the Publishing Agent Servers"
       }
     },
     "ouLocationRDSessionHost": {
       "type": "string",
-      "defaultValue": "OU=RD Session Host,OU=RAS,OU=Servers,OU=RDSG,DC=rdsgurus,DC=com",
+      "defaultValue": "OU=RD Session Host,OU=RAS,OU=Servers,OU=RDSG,DC=contoso,DC=com",
       "metadata": {
         "description": "OU Location to store the RD Session Host Servers"
       }
     },
     "ouLocationSecureClientGateway": {
       "type": "string",
-      "defaultValue": "OU=Secure Client Gateways,OU=RAS,OU=Servers,OU=RDSG,DC=rdsgurus,DC=com",
+      "defaultValue": "OU=Secure Client Gateways,OU=RAS,OU=Servers,OU=RDSG,DC=contoso,DC=com",
       "metadata": {
         "description": "OU Location to store the Secure Client Gateway Servers"
       }
@@ -193,7 +193,7 @@
         "No"
       ],
       "metadata": {
-        "description": "Select whether the RDSH is based on a custom image or not."
+        "description": "Select whether the RDSH is based on a custom image or not , if Yes also specify existingCustomImageNameRDSH"
       }
     },
     "virtualMachineSizeConsole": {
@@ -322,7 +322,7 @@
       },
       "location": "[resourceGroup().location]",
       "properties": {
-        "publicIPAllocationMethod": "Static",
+        "publicIPAllocationMethod": "Static"
       }
     },
     {
@@ -735,7 +735,7 @@
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installSecureClientGatewayPowershellScript'),' ',parameters('adDomainName'),' ',parameters('adminPassword'),' ',parameters('adminUsername'),' ',parameters('hostNamePrefixPublishingAgent'),' >> ',variables('installSecureClientGatewayPowershellScript'),'.log 2>&1')]",
+              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installSecureClientGatewayPowershellScript'),' ',parameters('adDomainName'),' ',parameters('adminPassword'),' ',parameters('adminUsername'),' ',parameters('hostNamePrefixPublishingAgent'),' >> ',variables('installSecureClientGatewayPowershellScript'),'.log 2>&1')]"
             }
           }
         },
@@ -876,7 +876,7 @@
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installRDSessionHostPowershellScript'),' ',parameters('adDomainName'),' ',' ',parameters('adminPassword'),' ',parameters('adminUsername'),' >> ',variables('installRDSessionHostPowershellScript'),'.log 2>&1')]",
+              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installRDSessionHostPowershellScript'),' ',parameters('adDomainName'),' ',' ',parameters('adminPassword'),' ',parameters('adminUsername'),' >> ',variables('installRDSessionHostPowershellScript'),'.log 2>&1')]"
             }
           }
         },
@@ -1016,7 +1016,7 @@
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installPublishingAgentPowershellScript'),' ',parameters('adDomainName'),' ',' ',parameters('adminPassword'),' ',parameters('adminUsername'),' >> ',variables('installPublishingAgentPowershellScript'),'.log 2>&1')]",
+              "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ',variables('installPublishingAgentPowershellScript'),' ',parameters('adDomainName'),' ',' ',parameters('adminPassword'),' ',parameters('adminUsername'),' >> ',variables('installPublishingAgentPowershellScript'),'.log 2>&1')]"
             }
           }
         },
@@ -1154,7 +1154,7 @@
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[concat('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -ExecutionPolicy Unrestricted -File ',variables('deploymentPowershellScriptRAS'),' ',parameters('adDomainName'),' ',parameters('adminPassword'),' ',parameters('adminUsername'),' ',parameters('numberOfInstancesSecureClientGateway'),' ',parameters('hostNamePrefixSecureClientGateway'),' ',parameters('numberOfInstancesRDSessionHost'),' ',parameters('hostNamePrefixRDSessionHost'),' ',parameters('hostNamePrefixPublishingAgent'),' ',parameters('RASLicenseEmail'),' ',parameters('RASLicensePassword'),' ',parameters('RASGroupNameRDSH'),' ',parameters('numberOfInstancesPublishingAgent'),' >> ',variables('deploymentPowershellScriptRAS'),'.log 2>&1')]",
+              "commandToExecute": "[concat('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -ExecutionPolicy Unrestricted -File ',variables('deploymentPowershellScriptRAS'),' ',parameters('adDomainName'),' ',parameters('adminPassword'),' ',parameters('adminUsername'),' ',parameters('numberOfInstancesSecureClientGateway'),' ',parameters('hostNamePrefixSecureClientGateway'),' ',parameters('numberOfInstancesRDSessionHost'),' ',parameters('hostNamePrefixRDSessionHost'),' ',parameters('hostNamePrefixPublishingAgent'),' ',parameters('RASLicenseEmail'),' ',parameters('RASLicensePassword'),' ',parameters('RASGroupNameRDSH'),' ',parameters('numberOfInstancesPublishingAgent'),' >> ',variables('deploymentPowershellScriptRAS'),'.log 2>&1')]"
             }
           }
         },
