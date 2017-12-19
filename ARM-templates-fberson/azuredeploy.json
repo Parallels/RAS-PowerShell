@@ -168,7 +168,7 @@
     },
     "RASGroupNameRDSH": {
       "type": "string",
-      "defaultValue": "RDS Gurus RDSH Group",
+      "defaultValue": "RDSH-Group",
       "metadata": {
         "description": "The name of the RDSH Group in RAS"
       }
