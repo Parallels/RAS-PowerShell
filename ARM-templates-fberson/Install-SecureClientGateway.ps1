@@ -54,7 +54,7 @@ CD C:\Packages\Plugins\
 
 #Downloading RAS Web Portal
 log "Downloading RAS installer"
-Invoke-WebRequest -Uri "http://download.parallels.com/ras/v16/16.0.0.18324/RASWebPortal-x64-16.0.18324.msi" -OutFile "C:\Packages\Plugins\RASWebPortal-x64-16.0.18324.msi"
+Invoke-WebRequest -Uri "http://download.parallels.com/ras/v16/16.2.0.19039/RASInstaller-16.2.19039.msi" -OutFile "C:\Packages\Plugins\RASWebPortal-x64-16.0.18324.msi"
 sleep -Seconds 3
 
 #Install RAS Web Portal prerequisites
