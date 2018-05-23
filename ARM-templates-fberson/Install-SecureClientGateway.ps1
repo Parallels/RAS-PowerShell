@@ -1,3 +1,10 @@
+// ==================================================================
+//
+// Copyright (c) 2005-2018 Parallels Software International, Inc.
+// Released under the terms of MIT license (see LICENSE for details)
+//
+// ==================================================================
+
 <#  
 .SYNOPSIS  
     Installs the RAS Secure Client Gateway prerequisites
