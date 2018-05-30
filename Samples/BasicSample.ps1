@@ -1,9 +1,9 @@
-﻿// ==================================================================
-//
-// Copyright (c) 2005-2018 Parallels Software International, Inc.
-// Released under the terms of MIT license (see LICENSE for details)
-//
-// ==================================================================
+﻿## ==================================================================
+##
+## Copyright (c) 2005-2018 Parallels Software International, Inc.
+## Released under the terms of MIT license (see LICENSE for details)
+##
+## ==================================================================
 
 <#  
 .SYNOPSIS  
