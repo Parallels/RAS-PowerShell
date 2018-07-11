@@ -1,0 +1,79 @@
+﻿<Window 
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Parallels RAS - RDS Session Management" SizeToContent="WidthAndHeight" ResizeMode="NoResize" >
+    <Grid>
+        <Grid.Resources>
+            <Style TargetType="{x:Type GroupBox}">
+                <Setter Property="Margin" Value="5,0,0,0"/>
+            </Style>
+            <Style TargetType="{x:Type StackPanel}">
+                <Setter Property="Margin" Value="5,0,5,5"/>
+            </Style>            
+            <Style TargetType="{x:Type Label}">
+                <Setter Property="Padding" Value="0,0,5,0"/>
+                <Setter Property="Width" Value="auto"/>
+            </Style>
+            <Style TargetType="{x:Type Button}">
+                <Setter Property="Margin" Value="0,5,5,0"/>
+                <Setter Property="Height" Value="20"/>
+                <Setter Property="Width" Value="125"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+            </Style>
+            <Style TargetType="{x:Type PasswordBox}">
+                <Setter Property="Height" Value="20"/>
+                <Setter Property="Width" Value="160"/>
+            </Style>
+            <Style TargetType="{x:Type TextBox}">
+                <Setter Property="Height" Value="20"/>
+                <Setter Property="Margin" Value="0,0,10,0"/>
+                <Setter Property="Width" Value="150"/>
+            </Style>
+        </Grid.Resources>
+        <StackPanel Margin="0">
+            <GroupBox Header="Connection" Height="auto" Padding="0,2,0,2" Margin="0,0,0,5">
+                <DockPanel>
+                    <DockPanel.Resources>
+                        <!--<Style TargetType="{x:Type Button}">
+                            <Setter Property="Margin" Value="5,0,0,0"/>
+                        </Style>-->
+                    </DockPanel.Resources>
+                    <DockPanel LastChildFill="True">
+                        <Label Content="Server:"/>
+                        <TextBox Name="txtServer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                    </DockPanel>
+                    <DockPanel LastChildFill="True">
+                        <Label Content="Username:"/>
+                        <TextBox Name="txtUsername" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                    </DockPanel>
+                    <DockPanel LastChildFill="True">
+                        <Label Content="Password:"/>
+                        <PasswordBox Name="txtPassword" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                    </DockPanel>
+                    <Button x:Name="btnLogin" Content="Connect" HorizontalAlignment="Right" Margin="0"/>
+                </DockPanel>
+            </GroupBox>
+            <DockPanel>
+                <StackPanel>
+                    <Label Content="Sessions:"/>
+                    <DataGrid Name="dtSessions" Width="640" Height="145" ColumnWidth="*" HorizontalAlignment="Stretch" AutoGenerateColumns="True" CanUserAddRows="False"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical"  Margin="5,0,0,0" Width="Auto">
+                    <Label Content="Control panel:"/>
+                    <Button Name="btnRefresh" Content="Refresh Sessions"/>
+                    <Button Name="btnGetApps" Content="Get Applications" />
+                    <Button Name="btnSendMessage" Content="Send Message"/>
+                    <Button Name="btnDisconnect" Content="Disconnect Session"/>
+                    <Button Name="btnLogoff" Content="Logoff Session"/>
+                </StackPanel>
+            </DockPanel>
+            <StackPanel>
+                <Label Content="Commands history:"/>
+                <TextBox Name="txtCmd" VerticalContentAlignment="Center" IsReadOnly="True" Margin="0" TextWrapping="Wrap" Height="25" Width="auto"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
