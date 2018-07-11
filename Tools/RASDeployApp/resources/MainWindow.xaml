@@ -1,0 +1,235 @@
+<Window 
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp1"
+        mc:Ignorable="d"
+        Title="Parallels RAS Quick Deployment Tool" SizeToContent="WidthAndHeight" ResizeMode="NoResize" >
+    <Grid HorizontalAlignment="Left">
+        <Grid.Resources>
+            <Style TargetType="{x:Type GroupBox}">
+                <Setter Property="Padding" Value="7"/>
+                <Setter Property="Margin" Value="2"/>
+            </Style>
+            <Style TargetType="{x:Type TextBox}">
+                <Setter Property="Width" Value="275"/>
+                <Setter Property="Height" Value="20"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+            <Style TargetType="{x:Type PasswordBox}">
+                <Setter Property="Width" Value="275"/>
+                <Setter Property="Height" Value="20"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+        </Grid.Resources>
+        <DockPanel HorizontalAlignment="Left">
+            <StatusBar  DockPanel.Dock="Bottom">
+            </StatusBar>
+            <DockPanel>
+                <StatusBar DockPanel.Dock="Bottom" Height="30">
+                    <StatusBarItem>
+                        <DockPanel Height="25">
+                            <!--<Label Name="txtInfo" Content=""  VerticalContentAlignment="Center" FontSize="10" />-->
+                            <TextBlock Name="txtInfo" Text="" TextWrapping="WrapWithOverflow" MaxWidth="400" TextTrimming="WordEllipsis">
+                                <TextBlock.ToolTip>
+                                    <ToolTip DataContext="{Binding Path=PlacementTarget, RelativeSource={x:Static RelativeSource.Self}}">
+                                        <TextBlock Text="{Binding Text}"/>
+                                        <!-- tooltip content -->
+                                    </ToolTip>
+                                </TextBlock.ToolTip>
+                            </TextBlock>
+                        </DockPanel>
+                    </StatusBarItem>
+                </StatusBar>
+                <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel>
+                            <StackPanel.Resources>
+                                <Style TargetType="{x:Type DockPanel}">
+                                    <Setter Property="Width" Value="auto"/>
+                                </Style>
+
+                                <Style TargetType="{x:Type Label}">
+                                    <Setter Property="Width" Value="125"/>
+                                </Style>
+
+                                <Style TargetType="{x:Type ListBox}">
+                                    <Setter Property="Width" Value="200"/>
+                                </Style>
+
+                                <Style TargetType="{x:Type Button}">
+                                    <Setter Property="Margin" Value="3, 0, 0, 0"/>
+                                </Style>
+                            </StackPanel.Resources>
+                            <GroupBox Header="RAS Installer">
+                                <GroupBox.Resources>
+                                    <Style TargetType="{x:Type Button}">
+                                        <Setter Property="Width" Value="100"/>
+                                        <Setter Property="Margin" Value="5,0,0,0"/>
+                                    </Style>
+                                </GroupBox.Resources>
+                                <StackPanel>
+                                    <DockPanel>
+                                        <Label Content="MSI installer"/>
+                                        <StackPanel>
+                                            <DockPanel>
+                                                <TextBox Name="txtPath" Width="205"/>
+                                                <Button Name="btnBrowseMsi" Content="Browse" Width="65"/>
+                                            </DockPanel>
+                                            <Button Width="auto" Name="btnDownloadMsi" Margin="0, 5, 5, 0" Content="Download latest Parallels RAS installer" FontSize="10" Cursor="Hand">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <TextBlock TextDecorations="Underline">
+                                                    <ContentPresenter />
+                                                        </TextBlock>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Foreground" Value="Blue" />
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="true">
+                                                                <Setter Property="Foreground" Value="Red" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+
+                                        </StackPanel>
+                                    </DockPanel>
+
+                                    <!--<Button Name="btnDownloadMsi" Content="Download Latest" Margin="0,0,300,0" />-->
+                                    <!--<Grid>-->
+
+                                    <!--<Button Name="btnBrowseMsi" Content="Browse" HorizontalAlignment="Left"/>
+                                        <TextBlock Text="OR" HorizontalAlignment="Center"/>
+                                        <Button Name="btnDownloadMsi" Content="Download Latest" HorizontalAlignment="Right"/>-->
+                                    <!--</Grid>-->
+                                    <!--<DockPanel>
+                                        <TextBlock Text="Using path: "/>
+                                        <TextBlock Name="txtPath" Text="No path specified."></TextBlock>
+                                    </DockPanel>-->
+                                </StackPanel>
+                            </GroupBox>
+                            <DockPanel>
+                                <GroupBox Header="Parallels Account">
+                                    <StackPanel>
+                                        <StackPanel.Resources>
+                                            <Style TargetType="{x:Type Button}">
+                                                <Setter Property="Width" Value="100"/>
+                                                <Setter Property="Margin" Value="5,0,0,0"/>
+                                            </Style>
+                                            <Style TargetType="{x:Type DockPanel}">
+                                                <Setter Property="Width" Value="auto"/>
+                                                <Setter Property="Margin" Value="0, 3, 0, 0"/>
+                                            </Style>
+                                        </StackPanel.Resources>
+                                        <DockPanel HorizontalAlignment="Left">
+                                            <Label Content="Email"/>
+                                            <TextBox Name="txtPrlsEmail"/>
+                                        </DockPanel>
+                                        <DockPanel HorizontalAlignment="Left">
+                                            <Label Content="Password"/>
+                                            <PasswordBox Name="txtPrlsPassword" />
+                                        </DockPanel>
+                                        <DockPanel HorizontalAlignment="Left">
+                                            <Label Content="License Key"/>
+                                            <StackPanel Height="auto">
+                                                <TextBox Name="txtLicenseKey" Text="Trial"/>
+                                                <Label Padding="0,2" Name="lblLicenseStatus" HorizontalAlignment="Left" Content="" Width="auto" FontSize="9" Foreground="Red" Visibility="Hidden" />
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </GroupBox>
+                            </DockPanel>
+                            <GroupBox Header="Domain Administrator Details">
+                                <StackPanel>
+                                    <StackPanel.Resources>
+                                        <Style TargetType="{x:Type DockPanel}">
+                                            <Setter Property="Width" Value="auto"/>
+                                            <Setter Property="Margin" Value="0, 3, 0, 0"/>
+                                        </Style>
+                                    </StackPanel.Resources>
+                                    <DockPanel Width="auto" HorizontalAlignment="Left">
+                                        <Label Content="Username"/>
+                                        <TextBox Name="txtUsername" />
+                                    </DockPanel>
+                                    <DockPanel Width="Auto" HorizontalAlignment="Left">
+                                        <Label Content="Password"/>
+                                        <PasswordBox Name="txtPassword" />
+                                    </DockPanel>
+                                </StackPanel>
+                            </GroupBox>
+                            <GroupBox Header="RAS Infrastructure">
+                                <StackPanel>
+                                    <StackPanel.Resources>
+                                        <Style TargetType="{x:Type DockPanel}">
+                                            <Setter Property="Margin" Value="0, 3, 0, 0"/>
+                                        </Style>
+                                    </StackPanel.Resources>
+                                    <DockPanel  HorizontalAlignment="Left">
+                                        <Label Content="Master PA &amp; GW"/>
+                                        <TextBox Name="txtMasterPAGW"/>
+                                    </DockPanel>
+                                    <DockPanel HorizontalAlignment="Left">
+                                        <Label Content="Secondary PA &amp; GW"/>
+                                        <TextBox Name="txtSecondaryPAGW"/>
+                                    </DockPanel>
+                                </StackPanel>
+                            </GroupBox>
+                            <GroupBox Header="RD Session hosts" Width="auto" >
+                                <StackPanel>
+                                    <StackPanel.Resources>
+                                        <Style TargetType="{x:Type DockPanel}">
+                                            <Setter Property="Margin" Value="0, 3, 0, 0"/>
+                                        </Style>
+                                    </StackPanel.Resources>
+                                    <DockPanel  HorizontalAlignment="Left" Margin="0">
+                                        <!--<Label Content="RD Session Host"/>-->
+                                        <DockPanel Width="400" >
+                                            <TextBox Name="txtRdSessionHost" Width="325"/>
+                                            <Button Name="btnAddRDSH" Content="Add" Width="auto" />
+                                        </DockPanel>
+                                    </DockPanel>
+                                    <DockPanel HorizontalAlignment="Left" Width="400">
+                                        <ListBox Name="lstRDSH" Width="325"  ScrollViewer.VerticalScrollBarVisibility="Auto" Height="100"/>
+                                        <Button Name="btnRemoveRDSH" Width="auto" Content="Remove" Height="20" VerticalAlignment="Top" />
+                                    </DockPanel>
+                                </StackPanel>
+                            </GroupBox>
+                            <DockPanel HorizontalAlignment="Stretch">
+                                <GroupBox Header="Publish" Width="auto">
+                                    <UniformGrid Rows="1" Columns="3">
+                                        <UniformGrid.Resources>
+                                            <Style TargetType="{x:Type DockPanel}">
+                                                <Setter Property="Width" Value="95"/>
+                                            </Style>
+                                        </UniformGrid.Resources>
+                                        <DockPanel HorizontalAlignment="Stretch" >
+                                            <CheckBox Name="chkPubDesktop" VerticalAlignment="Center"/>
+                                            <Label Content="Desktop" Width="auto"/>
+                                        </DockPanel>
+                                        <DockPanel HorizontalAlignment="Stretch" >
+                                            <CheckBox Name="chkPubCalc" VerticalAlignment="Center" />
+                                            <Label Content="calc.exe" Width="auto"/>
+                                        </DockPanel>
+                                        <DockPanel HorizontalAlignment="Stretch" >
+                                            <CheckBox Name="chkPubNotepad" VerticalAlignment="Center" />
+                                            <Label Content="notepad.exe" Width="auto"/>
+                                        </DockPanel>
+                                    </UniformGrid>
+                                </GroupBox>
+                            </DockPanel>
+                            <DockPanel>
+                                <CheckBox Width="200" VerticalAlignment="Center" HorizontalAlignment="Left" Name="chkEnableVerbosity" Content="Verbose" IsChecked="False" Margin="4,0,0,0"/>
+                                <Button Name="btnDeploy" Content="Deploy" HorizontalAlignment="Right" Width="75" Margin="0, 3, 4, 4"/>
+                            </DockPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </DockPanel>
+        </DockPanel>
+    </Grid>
+</Window>
