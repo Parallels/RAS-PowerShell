@@ -57,10 +57,10 @@ Install-WindowsFeature Net-Framework-Core -source C:\Windows\WinSxS
 
 #Download, Install & Import RAS PowerShell
 log "Download & Install RAS PowerShell"
-Invoke-WebRequest -Uri "http://download.parallels.com/ras/v16/16.2.0.19039/RASInstaller-16.2.19039.msi" -OutFile "C:\Packages\Plugins\RASInstaller-16.2.19039.msi"
+Invoke-WebRequest -Uri "http://download.parallels.com/ras/v16/16.5.0.20263/RASInstaller-16.5.20263.msi" -OutFile "C:\Packages\Plugins\RASInstaller-16.5.20263.msi"
 sleep -Seconds 3
 CD C:\Packages\Plugins\
-msiexec /i RASInstaller-16.0.18458.msi /qn ADDLOCAL="F_Console,F_PowerShell"
+msiexec /i RASInstaller-16.5.20263.msi /qn ADDLOCAL="F_Console,F_PowerShell"
 
 sleep -Seconds 60
 Import-Module "C:\Program Files (x86)\Parallels\ApplicationServer\Modules\PSAdmin\PSAdmin.psd1"
