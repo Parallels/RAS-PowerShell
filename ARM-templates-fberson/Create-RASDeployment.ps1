@@ -1,6 +1,6 @@
 ## ==================================================================
 ##
-## Copyright (c) 2005-2018 Parallels Software International, Inc.
+## Copyright (c) 2005-2019 Parallels Software International, Inc.
 ## Released under the terms of MIT license (see LICENSE for details)
 ##
 ## ==================================================================
