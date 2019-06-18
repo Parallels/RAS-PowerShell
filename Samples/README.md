@@ -7,6 +7,7 @@ This folder contains the following samples:
 * [RDSTemplate Example](RDSTemplateSample.ps1) - Demonstrates how to use RDS Templates in RDS Groups.
 * [Status Info Example](StatusInfoSample.ps1) - Demonstrates how to retrieve status information for an RD Session Host, Secure Client Gateway, Publishing Agent, Site, VDI Host.
 * [RAS Agent Example](RASAgentSample.ps1) - Demonstrates how to manage RAS Agent operations.
+* [PA Promote Example](PAPromoteSample.ps1) - Demonstrates how to promote a backup publishing agent (PA) when the master PA is down.
 
 
 ### License ###
