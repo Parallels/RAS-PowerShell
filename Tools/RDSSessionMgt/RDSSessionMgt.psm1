@@ -24,6 +24,7 @@ using assembly presentationFramework
 using assembly windowsbase
 using module '../PSUI/PSWindow/PSWindow.psm1'
 using namespace 'PSAdmin'
+using namespace 'RASAdminEngine.Core.OutputModels'
 using namespace System.Security
 using namespace System.Collections.ObjectModel
 using namespace System.Windows
