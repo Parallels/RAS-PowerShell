@@ -57,33 +57,6 @@ Set-ItemProperty -Path REGISTRY::HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\C
 Set-ItemProperty -Path REGISTRY::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\Folder\SharingWizardOn -Name CheckedValue -Value 0
 
 sleep -Seconds 3
-CD C:\Packages\Plugins\
-
-#Downloading RAS Web Portal
-log "Downloading RAS installer"
-Invoke-WebRequest -Uri "http://download.parallels.com/ras/v16/16.0.0.18324/RASWebPortal-x64-16.0.18324.msi" -OutFile "C:\Packages\Plugins\RASWebPortal-x64-16.0.18324.msi"
-sleep -Seconds 3
-
-#Install RAS Web Portal prerequisites
-Install-WindowsFeature NET-HTTP-Activation -source C:\Windows\WinSxS
-Install-WindowsFeature NET-Non-HTTP-Activ -source C:\Windows\WinSxS 
-Install-WindowsFeature Web-Net-Ext -source C:\Windows\WinSxS
-Install-WindowsFeature Web-Scripting-Tools -source C:\Windows\WinSxS
-Install-WindowsFeature Web-Asp-Net -source C:\Windows\WinSxS
-Install-WindowsFeature Web-Static-Content -source C:\Windows\WinSxS
-Install-WindowsFeature Web-Mgmt-Console -source C:\Windows\WinSxS
-
-#Disable autostart of default website IIS Default Website
-Import-Module WebAdministration
-Set-ItemProperty "IIS:\Sites\Default Web Site" serverAutoStart False
-
-#Install RAS Web Portal and wait for the installer to finish
-msiexec /i RASWebPortal-x64-16.0.18324.msi /qn ADDLOCAL="F_WebPortal,F_Root,F_WebService,F_Setup1" ADMIN_URL="http://localhost:81/2XWebPortal/Admin.aspx" LOCAL_URL="http://localhost:81/2XWebPortal/Logon.aspx"
-
-sleep -Seconds 45
-
-log "End Impersonate user '$RasAdminUser'"
-remove-ImpersonateUser
 
 #Force reboot to complete SCG Install
 shutdown -r -f -t 1
