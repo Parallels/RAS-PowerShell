@@ -96,12 +96,13 @@
       "type": "string",
       "allowedValues": [
         "2012-R2-Datacenter",
-        "2016-Datacenter"
+        "2016-Datacenter",
+        "2019-Datacenter"
       ],
       "metadata": {
         "description": "The Windows server SKU, for example 2016-Datacenter"
       },
-      "defaultValue": "2016-Datacenter"
+      "defaultValue": "2019-Datacenter"
     },
     "internalIPAddressPrefix/24": {
       "type": "string",
