@@ -50,7 +50,7 @@ New-NetFirewallRule -DisplayName "Allow TCP 135, 445, 20001, 200002, 200003 2003
 
 #Downloading RAS installer
 log "Downloading RAS installer"
-Invoke-WebRequest -Uri "http://download.parallels.com/ras/v16/16.5.0.20263/RASInstaller-16.5.20263.msi" -OutFile "C:\Packages\Plugins\RASInstaller-16.5.20263.msi"
+Invoke-WebRequest -Uri "https://download.parallels.com/ras/v17/17.0.0.21289/RASInstaller-17.0.21289.msi" -OutFile "C:\Packages\Plugins\RASInstaller-17.0.21289.msi"
 
 #Disable UAC & Sharing Wizard to allow Remote Install of RAS Agent
 Set-ItemProperty -Path REGISTRY::HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System -Name ConsentPromptBehaviorAdmin -Value 0
@@ -61,7 +61,7 @@ sleep -Seconds 3
 CD C:\Packages\Plugins\
 
 #Install RAS PowerShell and RAS RD Session Host
-msiexec /i RASInstaller-16.5.20263.msi /qn ADDLOCAL=F_Controller
+msiexec /i RASInstaller-17.0.21289.msi /qn ADDLOCAL="F_Controller,F_WebAdminService"
 
 log "End Impersonate user '$RasAdminUser'"
 remove-ImpersonateUser
