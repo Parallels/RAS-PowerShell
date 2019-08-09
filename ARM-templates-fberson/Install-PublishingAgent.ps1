@@ -60,7 +60,7 @@ Set-ItemProperty -Path REGISTRY::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\C
 sleep -Seconds 3
 CD C:\Packages\Plugins\
 
-#Install RAS PowerShell and RAS RD Session Host
+#Install RAS Publishing Agent and RAS Web Admin Console
 msiexec /i RASInstaller-17.0.21289.msi /qn ADDLOCAL="F_Controller,F_WebAdminService"
 
 log "End Impersonate user '$RasAdminUser'"
