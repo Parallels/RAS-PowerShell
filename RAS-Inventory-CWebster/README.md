@@ -29,7 +29,7 @@ Includes support for the following language versions of Microsoft Word:
 
 ## Documentaion  
 
-Check out the [RAS_Inventory_V1_ReadMe.rtf](https://github.com/Parallels/RAS-PowerShell/raw/RAS-Inventory-CWebster/RAS_Inventory_V1_ReadMe.rtf) for detailed documentation about this script.
+Check out the [RAS_Inventory_V1_ReadMe.rtf](RAS_Inventory_V1_ReadMe.rtf) for detailed documentation about this script.
 		
 ## Examples 
 ```
