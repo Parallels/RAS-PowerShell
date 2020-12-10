@@ -9,7 +9,7 @@
 .SYNOPSIS  
     RAS PowerShell Status Information Examples
 .DESCRIPTION  
-    Examples to demonstrates how to retrieve status information of an RDS, GW, PA, Site and VDI Host.
+    Examples to demonstrates how to retrieve status information of an RDS, GW, PA, Site and Provider.
 .NOTES  
     File Name  : StatusInfoSample.ps1
     Author     : www.parallels.com
@@ -17,8 +17,11 @@
     .\StatusInfoSample.ps1
 #>
 
-CLS
-
+[CmdletBinding()]
+    Param(
+        [parameter(Mandatory=$true)][ValidateNotNullOrEmpty()] [string]$AdminUsername,
+		[parameter(Mandatory=$true)][ValidateNotNullOrEmpty()] [SecureString]$AdminPassword
+    )
 
 #Pre-set Params
 $GWServer 	= "gw.company.dom" 		  #(replace 'gw.company.dom' with a valid FQDN, computer name, or IP address).
@@ -38,7 +41,7 @@ function log
 }
 
 
-Import-Module PSAdmin
+Import-Module RASAdmin
 
 #Establish a connection with Parallels RAS (NB. User will be prompted for Username and Password)
 log "Creating RAS session"
@@ -49,74 +52,77 @@ New-RASSession
 
 #Adding a RAS RDS
 log "Adding new RD Session Host server"
-New-RDS -Server $RDSServer
+New-RASRDS -Server $RDSServer
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
-Invoke-Apply
+Invoke-RASApply
+
+log "Sleeping for 5 seconds"
+Start-Sleep -Seconds 5
 
 # Get RDS status info
 log "Getting RAS RD Session host status information"
-Get-RDSStatus -Server $RDSServer
+Get-RASRDSStatus -Server $RDSServer
 
 
 ###### GW status info ######
 
 #Adding a RAS GW
 log "Adding new RAS Gateway server" 
-New-GW -Server $GWServer
+New-RASGW -Server $GWServer
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
-Invoke-Apply
+Invoke-RASApply
 
 # Get GW status info
 log "Getting RAS Gateway status information"
-Get-GWStatus -Server $GWServer
+Get-RASGWStatus -Server $GWServer
 
 
 ###### PA status info ######
 
 #Adding a RAS PA
 log "Adding new RAS PA server"
-New-PA -Server $PAServer
+New-RASPA -Server $PAServer
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
-Invoke-Apply
+Invoke-RASApply
 
 # Get PA status info
 log "Getting RAS PA status information"
-Get-PAStatus -Server $PAServer
+Get-RASPAStatus -Server $PAServer
 
 
 ###### Site status info ######
 
 #Adding a RAS Site
 log "Adding new RAS Site"
-New-Site -Server $SiteServer -Name $SiteName
+$site = New-RASSite -Server $SiteServer -Name $SiteName
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
-Invoke-Apply
+Invoke-RASApply
 
 # Get Site status info
 log "Getting RAS Site status information"
-Get-SiteStatus -Server $SiteServer
+Get-RASSiteStatus -SiteId $site.Id
 
 
-###### VDI Host status info ######
+###### Provider status info ######
 
-#Add a VDI Host servers.
-$VDIHost = New-VDIHost -Server $VDIServer -VDIType VmwareESXi6_0 -VDIUsername root -VDIAgentOStype Appliance -VDIAgent $VDIAgent -Username root
+#Add a Provider.
+$Provider = New-RASProvider -Server $VDIServer -Type VmwareESXi6_0 -VDIUsername root -VDIAgent $VDIAgent -Username $AdminUsername -Password $AdminPassword
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
-Invoke-Apply
+Invoke-RASApply
 
-# Get VDI Host status info
-log "Getting VDI Host status information"
-Get-VDIHostStatus -Id $VDIHost.Id
+# Get Provider status info
+log "Getting Provider status information"
+Get-RASProviderStatus -Id $Provider.Id
 
 
 #End the current RAS session.

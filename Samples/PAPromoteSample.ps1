@@ -30,7 +30,7 @@ function log
    "`n`n$(get-date -f o)  $message" 
 }
 
-Import-Module PSAdmin
+Import-Module RASAdmin
 
 ### Setting up the environment ###
 
@@ -40,19 +40,19 @@ New-RASSession
 
 #Activate Parallels RAS with a valid Key (you will have to provide a valid Parallels My Account password for provided email).
 log "Activating Parallels RAS as a trial"
-Invoke-LicenseActivate -Email $LicenceEmail -Key $LicenseKey
+Invoke-RASLicenseActivate -Email $LicenceEmail -Key $LicenseKey
 
 #Add the backup PA server
 log "Adding the backup PA server"
-New-PA -Server $PABackupServer
+New-RASPA -Server $PABackupServer
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
-Invoke-Apply
+Invoke-RASApply
 
 #Get the list of PA servers. The $PAList variable receives an array of objects of type PA.
 log "Retrieving the list of PA servers"
-$PAList = Get-PA
+$PAList = Get-RASPA
 
 log "Print the list of PA servers retrieved"
 Write-Host ($PAList | Format-Table | Out-String)
@@ -73,20 +73,24 @@ New-RASSession -Server $PABackupServer -Force
 
 #Get the backup PA server.
 log "Retrieving the backup PA server"
-$BackupPA = Get-PA -Server $PABackupServer
+$BackupPA = Get-RASPA -Server $PABackupServer
 
 #Promote backup PA to master
 #You will have to provide a valid Parallels My Account password for provided email
 log "Promote backup PA to master"
-Invoke-PAPromoteToMaster -Id $BackupPA.Id -Email $LicenceEmail
+Invoke-RASPAPromoteToMaster -Id $BackupPA.Id -Email $LicenceEmail
+
+#After the PA promotion to Master the session is logged out, then a new session needs to be created.
+log "Creating RAS session (with backup PA)"
+New-RASSession -Server $PABackupServer
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
-Invoke-Apply
+Invoke-RASApply
 
 #Get the list of PA servers. Verify that the priority values changed (Priority '0' is master).
 log "Retrieving the list of PA servers"
-Get-PA
+Get-RASPA
 
 #End the current RAS session.
 log "Ending RAS session"

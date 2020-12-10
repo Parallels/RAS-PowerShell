@@ -41,7 +41,7 @@ function log
 }
 
 
-Import-Module PSAdmin
+Import-Module RASAdmin
 
 #Establish a connection with Parallels RAS (NB. User will be prompted for Username and Password)
 log "Creating RAS session"
@@ -49,60 +49,60 @@ New-RASSession
 
 #Add a RAS Secure Client Gateway.
 log "Adding new RAS Secure Client Gateway"
-New-GW -Server $GWServer
+New-RASGW -Server $GWServer
 
 #Add the first RD Session Host server
 #The $RDS1 variable receives an object of type RDS identifying the RD Session Host. 
 log "Adding the first RD Session Host server"
-$RDS1 = New-RDS -Server $RDSServer1
+$RDS1 = New-RASRDS -Server $RDSServer1
 
 #Update the description of RD Session Host specified by the $RDS1 variable. 
 log "Updating the RD Session description"
-Set-RDS -InputObject $RDS1 -Description $RDS1Desc
+Set-RASRDS -InputObject $RDS1 -Description $RDS1Desc
 
 #Add the second RD Session Host.
 log "Adding the second RD Session Host server"
-$RDS2 = New-RDS -Server $RDSServer2
+$RDS2 = New-RASRDS -Server $RDSServer2
 
 #Get the list of RD Session Host servers. The $RDSList variable receives an array of objects of type RDS.
 log "Retrieving the list of RD Session servers"
-$RDSList = Get-RDS
+$RDSList = Get-RASRDS
 
 log "Print the list of RD Session servers retrieved"
 Write-Host ($RDSList | Format-Table | Out-String)
 
 #Create an RD Session Host Group and add both RD Session Host objects to it.
 log "Add an RD Session host group (with list of RD Sessions)"
-New-RDSGroup -Name $RDSGroupName -RDSObject $RDSList
+New-RASRDSGroup -Name $RDSGroupName -RDSObject $RDSList
 
 #Add the third RD Session Host server.
 log "Adding the third RD Session Host server"
-$RDS3 = New-RDS -Server $RDSServer3
+$RDS3 = New-RASRDS -Server $RDSServer3
 
 #Add a previously created RDS3 to the RD Session Host Group.
 log "Add a group member to the RD Session Group created"
-Add-RDSGroupMember -GroupName $RDSGroupName -RDSServer $RDS3.Server
+Add-RASRDSGroupMember -GroupName $RDSGroupName -RDSServer $RDS3.Server
 
 #Update default settings used to configure RD Session Host agents.
 log "Updating RDS default settings"
-Set-RDSDefaultSettings -MaxSessions $RDSDefSettMaxSessions -EnableAppMonitoring $RDSDefSettAppMonitor
+Set-RASRDSDefaultSettings -MaxSessions $RDSDefSettMaxSessions -EnableAppMonitoring $RDSDefSettAppMonitor
 
 #Add a published desktop.
 log "Adding new RDS published desktop"
-New-PubRDSDesktop -Name $PubDeskName
+New-RASPubRDSDesktop -Name $PubDeskName
 
 #Activate Parallels RAS as a trial (you will have to provide a valid Parallels My Account email and password).
 log "Activating Parallels RAS as a trial"
-Invoke-LicenseActivate
+Invoke-RASLicenseActivate
 
 #Activate Parallels RAS License. If you have a valid Parallels RAS License key use the below license activation
 #(you will have to provide a valid Parallels My Account email and password)
 #log "Activating Parallels RAS"
-#Invoke-LicenseActivate -Key $LicenseKey
+#Invoke-RASLicenseActivate -Key $LicenseKey
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
-Invoke-Apply
+Invoke-RASApply
 
 #End the current RAS session.
 log "Ending RAS session"
