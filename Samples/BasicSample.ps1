@@ -35,7 +35,7 @@ function log
 }
 
 
-Import-Module PSAdmin
+Import-Module RASAdmin
 
 #Establish a connection with Parallels RAS (NB. User will be prompted for Username and Password)
 log "Creating RAS session"
@@ -43,28 +43,28 @@ New-RASSession
 
 #Add a RAS Secure Client Gateway.
 log "Adding new RAS Secure Client Gateway"
-New-GW -Server $GWServer
+New-RASGW -Server $GWServer
 
 #Add an RD Session Host server.
 log "Adding new RD Session Host server"
-New-RDS -Server $RDSServer
+New-RASRDS -Server $RDSServer
 
 #Add a published desktop.
 log "Adding new RDS published desktop"
-New-PubRDSDesktop -Name $PubDeskName
+New-RASPubRDSDesktop -Name $PubDeskName
 
 #Activate Parallels RAS as a trial (you will have to provide a valid Parallels My Account email and password).
 log "Activating Parallels RAS as a trial"
-Invoke-LicenseActivate
+Invoke-RASLicenseActivate
 
 #Activate Parallels RAS License. If you have a valid Parallels RAS License key use the below license activation
 #(you will have to provide a valid Parallels My Account email and password)
 #log "Activating Parallels RAS"
-#Invoke-LicenseActivate -Key $LicenseKey
+#Invoke-RASLicenseActivate -Key $LicenseKey
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
-Invoke-Apply
+Invoke-RASApply
 
 #End the current RAS session.
 log "Ending RAS session"

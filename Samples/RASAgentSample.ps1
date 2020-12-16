@@ -33,7 +33,7 @@ function log
 }
 
 
-Import-Module PSAdmin
+Import-Module RASAdmin
 
 #Establish a connection with Parallels RAS (NB. User will be prompted for Username and Password)
 log "Creating RAS session"
@@ -41,12 +41,12 @@ New-RASSession
 
 #Add two RD Session Host servers.
 log "Adding two RD Session host servers"
-$rds = New-RDS -Server $RDSServer1
-New-RDS -Server $RDSServer2
+$rds = New-RASRDS -Server $RDSServer1
+New-RASRDS -Server $RDSServer2
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
-Invoke-Apply
+Invoke-RASApply
 
 # Get all available RAS Agents information
 log "Getting all RAS Agents information"
@@ -67,7 +67,7 @@ Update-RASAgent -Server $RDSServer2
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
-Invoke-Apply
+Invoke-RASApply
 
 # Get all RAS Agents information of type RDS
 log "Getting all RAS Agents information (by server type)"
@@ -79,7 +79,7 @@ Remove-RASAgent -Server $RDSServer2
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
-Invoke-Apply
+Invoke-RASApply
 
 # Get all available RAS Agents information
 log "Getting all RAS Agents information"
