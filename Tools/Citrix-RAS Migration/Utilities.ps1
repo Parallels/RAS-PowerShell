@@ -157,14 +157,21 @@ function XASettingsExport () {
 }
 
 function ImportPSAdmin () {
+
+	$PSAdminModule = "RASAdmin"
+	if($(Get-Module -ListAvailable).Name.Contains("PSAdmin"))
+	{
+		$PSAdminModule = "PSAdmin"
+	}
+
 	try {
-		Import-Module PSAdmin -ErrorVariable "PSAdminError" -ErrorAction SilentlyContinue
+		Import-Module $PSAdminModule -ErrorVariable "PSAdminError" -ErrorAction SilentlyContinue
 		if ($PSAdminError) {
 			throw
 		}
 	}
 	catch [Exception] {
-		Log -type "ERROR" -message "No installed PSAdmin module was found!"
+		Log -type "ERROR" -message "No installed $PSAdminModule module was found!"
 		Log -type "ERROR" -message "Error was: $($PSAdminError)"
 		Log -type "ERROR" -message "Cannot continue :("
 		return $false
