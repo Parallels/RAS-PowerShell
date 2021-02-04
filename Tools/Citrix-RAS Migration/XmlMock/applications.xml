@@ -1176,20 +1176,6 @@
 							<S N="MachineName">XA65-TARGET</S>
 						</Props>
 					</Obj>
-					<Obj RefId="118">
-						<TNRef RefId="2" />
-						<ToString>RASLAB\Domain Users</ToString>
-						<Props>
-							<S N="AccountDisplayName">RASLAB\Domain Users</S>
-							<S N="AccountName">Domain Users</S>
-							<S N="AccountType">Group</S>
-							<S N="AccountId">0X2/NT/RASLAB/S-1-5-21-1457957886-1659725039-1882262577-5186</S>
-							<S N="AccountAuthority">NTDomain/RASLAB</S>
-							<S N="OtherName">Domain Users</S>
-							<S N="SearchPath">CN=Domain Users,CN=Users,DC=RASLAB,DC=AD</S>
-							<S N="MachineName">XA65-TARGET</S>
-						</Props>
-					</Obj>
 				</LST>
 			</Obj>
 			<Obj N="ServerNames" RefId="119">

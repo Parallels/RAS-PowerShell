@@ -13,7 +13,15 @@ This script includes general unit test functions created in UnitTestFramework.ps
 To see how to use these functions, refer to the documentation in UnitTestFramework.ps1
 #>
 [System.IO.Directory]::SetCurrentDirectory($PSScriptRoot)
-Import-Module PSAdmin
+
+$PSAdminModule = "RASAdmin"
+if($(Get-Module -ListAvailable).Name.Contains("PSAdmin"))
+{
+	$PSAdminModule = "PSAdmin"
+}
+
+Import-Module $PSAdminModule
+
 . "./UnitTestFramework.ps1"
 . "./Utilities.ps1"
 . "./RASMigrationEngine.ps1"
@@ -806,4 +814,4 @@ foreach ($TestSuiteResult in $TestSuiteResults) {
 	Log -type "INFO" -message $TestSuiteResult.Footer
 }
 
-Remove-Module PSAdmin
+Remove-Module $PSAdminModule

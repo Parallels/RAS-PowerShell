@@ -30,6 +30,12 @@ General notes
 Utilities.ps1 is required to operate this script!
 #>
 
+$PSAdminModule = "RASAdmin"
+if($(Get-Module -ListAvailable).Name.Contains("PSAdmin"))
+{
+	$PSAdminModule = "PSAdmin"
+}
+
 function CreateTypeName ([System.Xml.XmlElement] $xml) {
 	$Name = ''
 	$refID = 0
@@ -1049,7 +1055,7 @@ Be aware that any removal of commands, will require the user to search for any m
 `$Global:FEATURES_16_5 = `$false
 function Initialize() {
 
-	Import-Module PSAdmin -ErrorVariable "PSAdminError" -ErrorAction SilentlyContinue
+	Import-Module $PSAdminModule -ErrorVariable "PSAdminError" -ErrorAction SilentlyContinue
 	if (`$PSAdminError) {
 		Write-Host "Parallels RAS PowerShell Module is not installed on this system." -ForegroundColor Red
 		Write-Host "Error: `$PSAdminError" -ForegroundColor Red
@@ -1062,7 +1068,8 @@ function Initialize() {
 	`$str = `$str.Substring(0, `$spaceIndex)
 	`$versionArray = `$str.Split('.')
 
-	if (`$versionArray[0] -lt `$PSADMIN_MIN_VERSION[0] -or `$versionArray[1] -lt `$PSADMIN_MIN_VERSION[1]) {
+	if (`$versionArray[0] -lt `$PSADMIN_MIN_VERSION[0] -or 
+		( `$versionArray[0] -eq `$PSADMIN_MIN_VERSION[0] -and `$versionArray[1] -lt `$PSADMIN_MIN_VERSION[1] )) {
 		Write-Host "Parallels RAS Version `$str is not supported. Please install `$([string]::Join('.', `$PSADMIN_MIN_VERSION))."
 		return `$false
 	}

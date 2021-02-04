@@ -8,7 +8,7 @@ This is a basic unit testing framework.
 .EXAMPLE
 . "./UnitTestFramework.ps1"
 $TestSuiteResults = @()
-$TestSuiteResults += TestSuite -name "My Test Suite" {
+$TestSuiteResults += TestSuite -name "My Test Suite" @(
 	{
 		UnitTest "My UnitTest" {
 			throw "Failing unit test"
@@ -33,7 +33,7 @@ $TestSuiteResults += TestSuite -name "My Test Suite" {
 			}
 		}
 	}
-}
+)
 
 foreach ($TestSuiteResult in $TestSuiteResults) {
     Log -type "INFO" -message $TestSuiteResult.Header
@@ -194,7 +194,6 @@ function CleanupRASSessionContext () {
 	$childFolders = @()
 	foreach ($folder in $folders) {
 		try {
-			[PSAdmin.PubFolder]$folder = $folder
 			Remove-PubFolder -InputObject $folder
 			Log -type "INFO" -message "Removed published folder $($folder.Name)."
 		}
