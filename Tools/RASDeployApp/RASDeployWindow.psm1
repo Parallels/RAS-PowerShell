@@ -19,7 +19,7 @@ None
 PSWindow UI
 .NOTES
 Version:        1.0
-Purpose:        Showcase powershell capabilities with PSAdmin
+Purpose:        Showcase powershell capabilities with RASAdmin
 
 .EXAMPLE
 using module .\PSUI\PSUI.psd1
@@ -135,15 +135,15 @@ class RASDeployWindow : PSWindow {
 			}
 		}
 
-		$psAdmin = "C:\Program Files (x86)\Parallels\ApplicationServer\Modules\PSAdmin\PSAdmin.dll"
-		$this.Log("INFO", "Trying to import PSAdmin module from path $($psAdmin)")
+		$rasAdmin = "C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdmin\2.0\RASAdmin.dll"
+		$this.Log("INFO", "Trying to import RASAdmin module from path $($rasAdmin)")
 		$importError = $null
-		Import-Module "$($psAdmin)" -ErrorAction Continue -ErrorVariable "importError"
+		Import-Module "$($rasAdmin)" -ErrorAction Continue -ErrorVariable "importError"
 		if ($importError) {
-			$this.Log("ERROR", "Failed to import PSAdmin.", $importError)
+			$this.Log("ERROR", "Failed to import RASAdmin.", $importError)
 			return $false
 		}
-		$this.Log("INFO", "PSAdmin module imported.")
+		$this.Log("INFO", "RASAdmin module imported.")
 		return $true
 	}
 
@@ -154,7 +154,7 @@ class RASDeployWindow : PSWindow {
 
 		try {
 			$this.Log("INFO", "Creating New gateway for $server ...")
-			New-GW $server
+			New-RASGW $server
 			$this.Log("INFO", "Gateway created.")
 		}
 		catch {
@@ -170,7 +170,7 @@ class RASDeployWindow : PSWindow {
 
         try {
 			$this.Log("INFO", "Creating new publishing agent for $server ...")
-			New-PA $server
+			New-RASPA $server
 			$this.Log("INFO", "Publishing agent created.")
         }
         catch {
@@ -259,9 +259,9 @@ class RASDeployWindow : PSWindow {
 		try {
 			$this.Log("INFO", "Activating license as trial for $prlsEmail")
 			if ($key -eq 'Trial' -or [string]::IsNullOrEmpty($key)) {
-				Invoke-LicenseActivate -Email $prlsEmail -Password $prlsPass
+				Invoke-RASLicenseActivate -Email $prlsEmail -Password $prlsPass
 			} else {
-				Invoke-LicenseActivate -Email $prlsEmail -Password $prlsPass -Key $key
+				Invoke-RASLicenseActivate -Email $prlsEmail -Password $prlsPass -Key $key
 			}
 			$this.Log("INFO", "Activation successful.")
 		}
@@ -276,7 +276,7 @@ class RASDeployWindow : PSWindow {
 			if ($this.IsEmpty($rdsh.Content) -eq $false) {
 				try {
 					$this.Log("INFO", "Adding new RDS $($rdsh.Content)")
-					New-RDS $rdsh.Content
+					New-RASRDS $rdsh.Content
 					$this.Log("INFO", "RDS added.")
 				}
 				catch {
@@ -298,7 +298,7 @@ class RASDeployWindow : PSWindow {
         
         try {
 			$this.Log("INFO", "Creating new published application $name using $target ...")
-			New-PubRDSApp -Name $name -Target $target
+			New-RASPubRDSApp -Name $name -Target $target
 			$this.Log("INFO", "Published application created.")
         }
         catch {
@@ -314,7 +314,7 @@ class RASDeployWindow : PSWindow {
         
 		try {
 			$this.Log("INFO", "Creating new published desktop ...")
-			New-PubRDSDesktop -Name "Desktop"
+			New-RASPubRDSDesktop -Name "Desktop"
 			$this.Log("INFO", "Published desktop created.")
 		}
 		catch {
@@ -422,7 +422,7 @@ class RASDeployWindow : PSWindow {
                 $this.PubApp("notepad", "C:\Windows\System32\notepad.exe")
 			}
 			$this.Log("INFO", "Applying settings ...")
-			Invoke-Apply
+			Invoke-RASApply
 			$this.Log("INFO", "Settings applied")
 			$this.Log("INFO", "Deployment completed!")
         }

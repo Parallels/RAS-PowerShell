@@ -15,7 +15,7 @@
     !IMPORTANT - Classes can only be imported with the "using module" syntax. Import-Module does not import classes.
 .NOTES
   Version:        1.0
-  Purpose:        Showcase powershell capabilities with PSAdmin
+  Purpose:        Showcase powershell capabilities with RASAdmin
   
 .EXAMPLE
   using module ./client.psm1
@@ -23,7 +23,7 @@
 using assembly presentationFramework
 using assembly windowsbase
 using module '../PSUI/PSWindow/PSWindow.psm1'
-using namespace 'PSAdmin'
+using namespace 'RASAdmin'
 using namespace 'RASAdminEngine.Core.OutputModels'
 using namespace System.Security
 using namespace System.Collections.ObjectModel
@@ -116,7 +116,7 @@ class RDSSessionMgt : PSWindow {
                     return
                 }
                 [RDPSession]$item = ([DataGrid]$rootwnd.dtSessions).SelectedItem
-                $res = {Invoke-RDSSessionCmd -InputObject $item -Command SendMsg -MsgTitle "Message from $(whoami)" -Message $msg}
+                $res = {Invoke-RASRDSSessionCmd -InputObject $item -Command SendMsg -MsgTitle "Message from $(whoami)" -Message $msg}
                 $res.Invoke()
                 $rootwnd.UpdateCommandText($res)
                 $msgWindow.Close()
@@ -165,7 +165,7 @@ class RDSSessionMgt : PSWindow {
                 Write-Warning "Please select a session"
                 return
             }
-            $cmd = {Invoke-RDSSessionCmd -InputObject $item -Command Disconnect}
+            $cmd = {Invoke-RASRDSSessionCmd -InputObject $item -Command Disconnect}
             $cmd.Invoke()
             $this.UpdateCommandText($cmd)            
         }
@@ -183,7 +183,7 @@ class RDSSessionMgt : PSWindow {
                 Write-Warning "Please select a session"
                 return
             }
-            $cmd = {Invoke-RDSSessionCmd -InputObject $item -Command Logoff}
+            $cmd = {Invoke-RASRDSSessionCmd -InputObject $item -Command Logoff}
             $cmd.Invoke()
             $this.UpdateCommandText($cmd)
             Write-Host "Removed $($item.User)" -ForegroundColor Green
@@ -204,7 +204,7 @@ class RDSSessionMgt : PSWindow {
                 return
             }
             $appsWindow = [RASSessionAppUI]::new("./resources/SessionApps.xaml")
-            $cmd = {Get-RDSStatus -StatusLevel Level3}
+            $cmd = {Get-RASRDSStatus -StatusLevel Level3}
             $this.UpdateCommandText($cmd)
             $tmpStat = $cmd.Invoke()
             foreach($s in $tmpStat.Sessions) {
@@ -222,7 +222,7 @@ class RDSSessionMgt : PSWindow {
                     Write-Warning "Please select an application"
                     return
                 }
-                $cmd = {Invoke-RDSKillProcessCmd -InputObject $app}
+                $cmd = {Invoke-RASRDSProcessCmd -InputObject $app -Command Kill} 
                 $cmd.Invoke()
                 $rootwnd.UpdateCommandText($cmd)
                 $appsWindow.Applications.RemoveAt(([DataGrid]$appsWindow.dtApplications).SelectedIndex)
@@ -230,7 +230,7 @@ class RDSSessionMgt : PSWindow {
             })
 
             $appsWindow.btnRefresh.Add_Click({
-                $cmd = {Get-RDSStatus -StatusLevel Level3}
+                $cmd = {Get-RASRDSStatus -StatusLevel Level3}
                 Write-Host "refresh apps"
                 $tmpStat = $cmd.Invoke()
                 foreach($s in $tmpStat.Sessions) {
@@ -254,7 +254,7 @@ class RDSSessionMgt : PSWindow {
     # Gets a list of RDSSessions.
     [ObservableCollection[RDPSession]] GetRDSSessions() {
         try {
-            $cmd = {Get-RDSStatus -StatusLevel Level2}
+            $cmd = {Get-RASRDSStatus -StatusLevel Level2}
             $tmpSessions = $cmd.Invoke()
             $this.UpdateCommandText($cmd)
             [ObservableCollection[RDPSession]]$oc = [ObservableCollection[RDPSession]]::new()

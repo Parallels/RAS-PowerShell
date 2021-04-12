@@ -12,7 +12,7 @@
     import classes.
 .NOTES
   Version:        1.0
-  Purpose:        Showcase powershell capabilities with PSAdmin
+  Purpose:        Showcase powershell capabilities with RASAdmin
   
 .EXAMPLE
   using module ./PSWindow.psm1
@@ -89,4 +89,4 @@ class PSWindow {
         return (Test-Path $path)
     }
 }
-Write-Host 'PSAdmin module Imported' -ForegroundColor Green
+Write-Host 'RASAdmin module Imported' -ForegroundColor Green

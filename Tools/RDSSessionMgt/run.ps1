@@ -17,7 +17,7 @@
   ./client.ps1
 #>
 using assembly presentationFramework
-using module 'PSAdmin'
+using module 'RASAdmin'
 using module './RDSSessionMgt.psm1'
 
 
