@@ -1235,10 +1235,10 @@ function MigrateFolders([System.Data.DataSet] $db) {
 		try {
 			if ([bool]$folder.IsAdministrative) {
 
-				$res = WriteToScript "New-PubFolder -AdminOnly -Name '$($folder.Name)'" -useVar
+				$res = WriteToScript "New-RASPubFolder -AdminOnly -Name '$($folder.Name)'" -useVar
 			}
 			else {
-				$res = WriteToScript "New-PubFolder -Name '$($folder.Name)'" -useVar
+				$res = WriteToScript "New-RASPubFolder -Name '$($folder.Name)'" -useVar
 			}
 			$apps = $tbl_application.Select("[FolderPath] like '$($folder.Path)'")
 			Log -type "INFO" -message "Updating 'tbl_applications' RASFolder ID ..."
@@ -1258,13 +1258,13 @@ function MigrateFolders([System.Data.DataSet] $db) {
 		WriteCommentLite "Commands related to child folder $($folder.Name)"
 		try {
 			$parent = $tbl_folder.Select("Path = '$($folder.Parent)'")
-			$rasFolder = WriteToScript "Get-PubFolder -Id $($parent.RASId)" -useVar
+			$rasFolder = WriteToScript "Get-RASPubFolder -Id $($parent.RASId)" -useVar
 
 			if ([bool]$folder.IsAdministrative) {
-				$res = WriteToScript "New-PubFolder -AdminOnly -Name '$($folder.Name)' -ParentFolder $rasFolder" -useVar
+				$res = WriteToScript "New-RASPubFolder -AdminOnly -Name '$($folder.Name)' -ParentFolder $rasFolder" -useVar
 			}
 			else {
-				$res = WriteToScript "New-PubFolder -Name '$($folder.Name)' -ParentFolder $rasFolder" -useVar
+				$res = WriteToScript "New-RASPubFolder -Name '$($folder.Name)' -ParentFolder $rasFolder" -useVar
 			}
 
 			Log -type "INFO" -message "Created '$($folder.Name)'. Path ---> $($folder.Path). RAS Folder ID ---> $($res)"
@@ -1284,7 +1284,7 @@ function MigrateFolders([System.Data.DataSet] $db) {
 }
 
 function PublishRDSApp ($app, $from, $publishSource, $parentFolder) {
-	$cmd = "New-PubRDSApp -PublishFrom '$from' -Target '$($app.Target)' -Name '$($app.Name)'"
+	$cmd = "New-RASPubRDSApp -PublishFrom '$from' -Target '$($app.Target)' -Name '$($app.Name)'"
 	if ($app.Description -ne '') {
 		$cmd += " -Description '$($app.Description)'"
 	}
@@ -1313,8 +1313,8 @@ function PublishRDSApp ($app, $from, $publishSource, $parentFolder) {
 		$windowType = "Maximized"
 	}
 
-	WriteToScript "Set-PubRDSApp -Id $res -CreateShortcutOnDesktop `$$($app.AddToClientDesktop)  -InheritShorcutDefaultSettings `$false -CreateShortcutInStartFolder `$$($app.AddToClientStartMenu) -OneInstancePerUser `$$($app.MultipleInstancesPerUserAllowed) -InheritLicenseDefaultSettings `$false -ConCurrentLicenses $($app.InstanceLimit) -InheritDisplayDefaultSettings `$false -WaitForPrinters `$$($app.WaitOnPrinterCreation) -Enable `$$($app.Enabled) -StartIn '$($app.WorkingDirectory)' -Parameters '$($app.Parameters)' -WinType $windowType"
-	$features16_5 = "Set-PubRDSApp -id $res -Icon '$($app.IconPath)'"
+	WriteToScript "Set-RASPubRDSApp -Id $res -CreateShortcutOnDesktop `$$($app.AddToClientDesktop)  -InheritShorcutDefaultSettings `$false -CreateShortcutInStartFolder `$$($app.AddToClientStartMenu) -OneInstancePerUser `$$($app.MultipleInstancesPerUserAllowed) -InheritLicenseDefaultSettings `$false -ConCurrentLicenses $($app.InstanceLimit) -InheritDisplayDefaultSettings `$false -WaitForPrinters `$$($app.WaitOnPrinterCreation) -Enable `$$($app.Enabled) -StartIn '$($app.WorkingDirectory)' -Parameters '$($app.Parameters)' -WinType $windowType"
+	$features16_5 = "Set-RASPubRDSApp -id $res -Icon '$($app.IconPath)'"
 	if ($app.ColorDepth -ne [System.DBNull]::Value -and $app.ColorDepth -ne '') {
 		$features16_5 += " -ColorDepth '$($app.ColorDepth)'"
 	}
@@ -1334,7 +1334,7 @@ function PublishRDSDesktop ($app, $from, $publishSource, $parentFolder) {
 	if ($publishSource) {
 		$publishSource = [string]::Join(',', $publishSource)
 	}
-	$cmd = "New-PubRDSDesktop -Name '$($app.Name)'"
+	$cmd = "New-RASPubRDSDesktop -Name '$($app.Name)'"
 
 	if ($app.Description -ne '') {
 		$cmd += " -Description '$($app.Description)'"
@@ -1360,7 +1360,7 @@ function PublishRDSDesktop ($app, $from, $publishSource, $parentFolder) {
 		}
 	}
 
-	WriteToScript "Set-PubRDSDesktop -Id $($res) -CreateShortcutOnDesktop `$$($app.AddToClientDesktop) -InheritShorcutDefaultSettings `$false -CreateShortcutInStartUpFolder `$$($app.AddToClientStartMenu) -Width $($app.Width) -Height $($app.Height) -DesktopSize Custom -Enable `$$($app.Enabled)"
+	WriteToScript "Set-RASPubRDSDesktop -Id $($res) -CreateShortcutOnDesktop `$$($app.AddToClientDesktop) -InheritShorcutDefaultSettings `$false -CreateShortcutInStartUpFolder `$$($app.AddToClientStartMenu) -Width $($app.Width) -Height $($app.Height) -DesktopSize Custom -Enable `$$($app.Enabled)"
 	return $res
 }
 
@@ -1371,10 +1371,10 @@ function AddPubItemUserFilter ($userFilter, $rdsApp, $userFilterAccountNames = $
 "@
 		foreach ($sid in $userFilter.Split(',')) {
 			try {
-				WriteToScript "Add-PubItemUserFilter -Id $rdsApp -SID '$sid'"
+				WriteToScript "Add-RASPubItemUserFilter -Id $rdsApp -SID '$sid'"
 			}
 			catch {
-				Log -type "WARNING" -message "Error occured during Add-PubItemUserFilter" -exception $_.Exception
+				Log -type "WARNING" -message "Error occured during Add-RASPubItemUserFilter" -exception $_.Exception
 			}
 		}
 		WriteScript @"
@@ -1387,10 +1387,10 @@ function AddPubItemUserFilter ($userFilter, $rdsApp, $userFilterAccountNames = $
 "@
 		foreach ($acc in $userFilterAccountNames.Split(',')) {
 			try {
-				WriteToScript "Add-PubItemUserFilter -Id $rdsApp -Account '$acc'"
+				WriteToScript "Add-RASPubItemUserFilter -Id $rdsApp -Account '$acc'"
 			}
 			catch {
-				Log -type "WARNING" -message "Error occured during Add-PubItemUserFilter" -exception $_.Exception
+				Log -type "WARNING" -message "Error occured during Add-RASPubItemUserFilter" -exception $_.Exception
 			}
 		}
 		WriteScript @"
