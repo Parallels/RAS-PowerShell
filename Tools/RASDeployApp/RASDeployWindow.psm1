@@ -34,7 +34,7 @@ class RASDeployWindow : PSWindow {
         $this.scriptPath = (Resolve-Path .\).Path
         $bmpLogo = [BitmapImage]::new("$($this.scriptPath)\logo.png");
         $this.Form.Icon = $bmpLogo
-        $this.txtMasterPAGW.Text = [System.Net.Dns]::GetHostName()
+        $this.txtPrimaryPAGW.Text = [System.Net.Dns]::GetHostName()
         $this.txtLicenseKey.Text = "Trial"
         $this.OnLicenseKeyUpdated()
     }
@@ -202,7 +202,7 @@ class RASDeployWindow : PSWindow {
             throw "Password is empty"
         }
 
-        $masterPA = $this.txtMasterPAGW.Text
+        $masterPA = $this.txtPrimaryPAGW.Text
         try {
             if ($this.IsEmpty($masterPA)) {
                 throw "server is empty or null."
@@ -234,7 +234,7 @@ class RASDeployWindow : PSWindow {
         }
 
         try {
-			$masterPA = $this.txtMasterPAGW.Text
+			$masterPA = $this.txtPrimaryPAGW.Text
 			$this.Log("INFO", "Creating new RAS session to $masterPA for $username ...")
 			New-RASSession -server $masterPA -Username $username -Password $pswd -Retries 5
 			$this.Log("INFO", "Session created.")			

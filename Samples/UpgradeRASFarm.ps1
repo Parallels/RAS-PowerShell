@@ -60,7 +60,7 @@ function UpdateRASAgent
    }
 }
 
-#upgrade Master licensing server 
+#upgrade Primary licensing server 
 log "Upgrading RAS Licensing Server"
 $processPath = "msiexec"
 

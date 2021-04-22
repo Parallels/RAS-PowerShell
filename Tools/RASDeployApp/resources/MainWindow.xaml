@@ -170,8 +170,8 @@
                                         </Style>
                                     </StackPanel.Resources>
                                     <DockPanel  HorizontalAlignment="Left">
-                                        <Label Content="Master PA &amp; GW"/>
-                                        <TextBox Name="txtMasterPAGW"/>
+                                        <Label Content="Primary PA &amp; GW"/>
+                                        <TextBox Name="txtPrimaryPAGW"/>
                                     </DockPanel>
                                     <DockPanel HorizontalAlignment="Left">
                                         <Label Content="Secondary PA &amp; GW"/>

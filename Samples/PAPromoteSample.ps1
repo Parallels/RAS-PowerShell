@@ -9,7 +9,7 @@
 .SYNOPSIS  
     RAS PowerShell PA Promotion Example
 .DESCRIPTION  
-    Example to demonstrates how to promote a backup publishing agent (PA) in the eventuallity that the master PA is down.
+    Example to demonstrate how to promote a backup publishing agent (PA) in the eventuality that the primary PA is down.
 .NOTES  
     File Name  : PAPromoteSample.ps1
     Author     : www.parallels.com
@@ -65,7 +65,7 @@ Remove-RASSession
 
 
 ### Testing PA Promotion scenario ###
-### In the eventuallity that the master PA is down ###
+### In the eventuality that the primary PA is down ###
 
 #Establish a connection with Parallels RAS (NB. User will be prompted for Username and Password)
 log "Creating RAS session (with backup PA)"
@@ -75,12 +75,12 @@ New-RASSession -Server $PABackupServer -Force
 log "Retrieving the backup PA server"
 $BackupPA = Get-RASPA -Server $PABackupServer
 
-#Promote backup PA to master
+#Promote backup PA to primary
 #You will have to provide a valid Parallels My Account password for provided email
-log "Promote backup PA to master"
+log "Promote backup PA to primary"
 Invoke-RASPAPromoteToMaster -Id $BackupPA.Id -Email $LicenceEmail
 
-#After the PA promotion to Master the session is logged out, then a new session needs to be created.
+#After the PA promotion to Primary the session is logged out, then a new session needs to be created.
 log "Creating RAS session (with backup PA)"
 New-RASSession -Server $PABackupServer
 
@@ -88,7 +88,7 @@ New-RASSession -Server $PABackupServer
 log "Appling settings"
 Invoke-RASApply
 
-#Get the list of PA servers. Verify that the priority values changed (Priority '0' is master).
+#Get the list of PA servers. Verify that the priority values changed (Priority '0' is primary).
 log "Retrieving the list of PA servers"
 Get-RASPA
 
