@@ -47,9 +47,9 @@ Import-Module RASAdmin
 log "Creating RAS session"
 New-RASSession
 
-#Add a RAS Secure Client Gateway.
-log "Adding new RAS Secure Client Gateway"
-New-RASGW -Server $GWServer
+#Add a RAS Secure Gateway.
+log "Adding new RAS Secure Gateway"
+New-RASGateway -Server $GWServer
 
 #Add the first RD Session Host server
 #The $RDS1 variable receives an object of type RDS identifying the RD Session Host. 
@@ -79,9 +79,9 @@ New-RASRDSGroup -Name $RDSGroupName -RDSObject $RDSList
 log "Adding the third RD Session Host server"
 $RDS3 = New-RASRDS -Server $RDSServer3
 
-#Add a previously created RDS3 to the RD Session Host Group.
-log "Add a group member to the RD Session Group created"
-Add-RASRDSGroupMember -GroupName $RDSGroupName -RDSServer $RDS3.Server
+#Move the RD Session host to an existing RDS Group.
+log "Move the RD Session host to an existing RDS Group"
+Move-RASRDSGroupMember -GroupName $RDSGroupName -RDSServer $RDS3.Server
 
 #Update default settings used to configure RD Session Host agents.
 log "Updating RDS default settings"

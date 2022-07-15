@@ -9,7 +9,7 @@
 .SYNOPSIS  
     RAS PowerShell Status Information Examples
 .DESCRIPTION  
-    Examples to demonstrates how to retrieve status information of an RDS, GW, PA, Site and Provider.
+    Examples to demonstrates how to retrieve status information of an RDS, Gateway, Broker, Site and Provider.
 .NOTES  
     File Name  : StatusInfoSample.ps1
     Author     : www.parallels.com
@@ -24,13 +24,13 @@
     )
 
 #Pre-set Params
-$GWServer 	= "gw.company.dom" 		  #(replace 'gw.company.dom' with a valid FQDN, computer name, or IP address).
-$RDSServer  = "rds.company.dom" 	  #(replace 'rds.company.dom' with a valid FQDN, computer name, or IP address).
-$PAServer   = "pa.company.dom" 		  #(replace 'pa.company.dom' with a valid FQDN, computer name, or IP address).
-$VDIServer  = "vdi.company.dom" 	  #(replace 'vdi.company.dom' with a valid FQDN, computer name, or IP address).
-$VDIAgent   = "vdiagent.company.dom"  #(replace 'vdiagent.company.dom' with a valid FQDN, computer name, or IP address).
-$SiteServer = "site.company.dom" 	  #(replace 'site.company.dom' with a valid FQDN, computer name, or IP address).
-$SiteName   = "MyRASSite"			  #(replace site name 'MyRASSite' with a more specific name)
+$GWServer 	    = "gw.company.dom" 		  #(replace 'gw.company.dom' with a valid FQDN, computer name, or IP address).
+$RDSServer      = "rds.company.dom" 	  #(replace 'rds.company.dom' with a valid FQDN, computer name, or IP address).
+$BrokerServer   = "broker.company.dom" 	  #(replace 'broker.company.dom' with a valid FQDN, computer name, or IP address).
+$VDIServer      = "vdi.company.dom" 	  #(replace 'vdi.company.dom' with a valid FQDN, computer name, or IP address).
+$VDIAgent       = "vdiagent.company.dom"  #(replace 'vdiagent.company.dom' with a valid FQDN, computer name, or IP address).
+$SiteServer     = "site.company.dom" 	  #(replace 'site.company.dom' with a valid FQDN, computer name, or IP address).
+$SiteName       = "MyRASSite"			  #(replace site name 'MyRASSite' with a more specific name)
 
 
 #Configure logging
@@ -66,34 +66,34 @@ log "Getting RAS RD Session host status information"
 Get-RASRDSStatus -Server $RDSServer
 
 
-###### GW status info ######
+###### Secure Gateway status info ######
 
-#Adding a RAS GW
+#Adding a RAS Secure Gateway
 log "Adding new RAS Gateway server" 
-New-RASGW -Server $GWServer
+New-RASGateway -Server $GWServer
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
 Invoke-RASApply
 
-# Get GW status info
-log "Getting RAS Gateway status information"
-Get-RASGWStatus -Server $GWServer
+# Get Secure Gateway status info
+log "Getting RAS Secure Gateway status information"
+Get-RASGatewayStatus -Server $GWServer
 
 
-###### PA status info ######
+###### Connection Broker status info ######
 
-#Adding a RAS PA
-log "Adding new RAS PA server"
-New-RASPA -Server $PAServer
+#Adding a RAS Connection Broker
+log "Adding new RAS Connection Broker server"
+New-RASBroker -Server $BrokerServer
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
 Invoke-RASApply
 
-# Get PA status info
-log "Getting RAS PA status information"
-Get-RASPAStatus -Server $PAServer
+# Get Connection Broker status info
+log "Getting RAS Connection Broker status information"
+Get-RASBrokerStatus -Server $BrokerServer
 
 
 ###### Site status info ######
@@ -114,7 +114,7 @@ Get-RASSiteStatus -SiteId $site.Id
 ###### Provider status info ######
 
 #Add a Provider.
-$Provider = New-RASProvider -Server $VDIServer -Type VmwareESXi6_0 -VDIUsername root -VDIAgent $VDIAgent -Username $AdminUsername -Password $AdminPassword
+$Provider = New-RASProvider -Server $VDIServer -VmwareESXi -VmwareESXiVersion v6_5 -VDIUsername root -VDIAgent $VDIAgent -Username $AdminUsername -Password $AdminPassword
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
