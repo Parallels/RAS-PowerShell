@@ -27,8 +27,8 @@
 $VDIServer      = "vdi.company.dom" 	   			#(replace 'vdi.company.dom' with a valid FQDN, computer name, or IP address).
 $VDIAgent       = "vdiagent.company.dom"   			#(replace 'vdiagent.company.dom' with a valid FQDN, computer name, or IP address).
 $VMID           = "564d5e6f-3fad-bcf9-7c6b-bac9f212713d" 	#(replace with a valid virtual machine ID)
-$TemplateName   = "Win8template"
-$GstNameFormat  = "Win8-%ID:3%"
+$TemplateName   = "Win10template"
+$VMNameFormat  = "Win10-%ID:3%"
 $Owner 		= "Owner"
 $Organization	= "Parallels"
 $Domain		= "company.dom"
@@ -67,7 +67,7 @@ Get-RASVM -ProviderId $Provider.Id
 
 #Convert a VM to an RDSTemplate
 log "Converting the VM to an RDSTemplate"
-$rdsTemplate = New-RASVDITemplate -ProviderId $Provider.Id -VDIGuestId $VMID -Name $TemplateName -GuestNameFormat $GstNameFormat -MaxGuests 5 -PreCreatedGuests 2 -GuestsToCreate 1 `
+$rdsTemplate = New-RASVDITemplate -ProviderId $Provider.Id -VMId $VMID -Name $TemplateName -VMNameFormat $VMNameFormat -MaxVMs 5 -PreCreatedVMs 2 -VMsToCreate 1 `
 -ImagePrepTool RASPrep -OwnerName $Owner -Organization $Organization -Domain $Domain -CloneMethod LinkedClone -TargetOU $TargetOU -TemplateType RDSH -ComputerName $ComputerName
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.

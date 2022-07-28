@@ -27,8 +27,8 @@
 $VDIServer      = "vdi.company.dom" 	   					#(replace 'vdi.company.dom' with a valid FQDN, computer name, or IP address).
 $VDIAgent       = "vdiagent.company.dom"   					#(replace 'vdiagent.company.dom' with a valid FQDN, computer name, or IP address).
 $VMID           = "564d5e6f-3fad-bcf9-7c6b-bac9f212713d" 	#(replace with a valid virtual machine ID)
-$TemplateName   = "Win8template"
-$GstNameFormat  = "Win8-%ID:3%"
+$TemplateName   = "Win10template"
+$VMNameFormat  = "Win10-%ID:3%"
 $Owner 			= "Owner"
 $Organization	= "Parallels"
 $Domain			= "company.dom"
@@ -54,7 +54,7 @@ New-RASSession
 
 #Add a Provider.
 log "Adding a new Provider"
-$Provider = New-RASProvider -Server $VDIServer -Type VmwareESXi6_0 -VDIUsername root -VDIAgent $VDIAgent -Username $AdminUsername -Password $AdminPassword
+$Provider = New-RASProvider -Server $VDIServer -VMwareESXi -VMwareESXiVersion v6_5 -VDIAgent $VDIAgent -VDIUsername root -VDIPassword $AdminPassword -Name "vdi"
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
@@ -65,15 +65,22 @@ Invoke-RASApply
 log "Getting the list of virtual machines through the RAS Provider Agent"
 Get-RASVM -ProviderId $Provider.Id
 
-#Convert a VM to VDI Guest
-log "Converting a VM to a VDI Guest"
-New-RASVDIGuest -ProviderId $Provider.Id -Id $VMID
 
+#Create a new RAS VDI Template
+log "Create a new RAS VDI Template"
+$vmTemplate = New-RASVDITemplate -ProviderId $Proivder.Id -VMId $VMID -Name $TemplateName -VMNameFormat $VMNameFormat `
+                                 -MaxVMs 5 -PreCreatedVMs 2 -ImagePrepTool RASPrep -OwnerName $Owner -Organization $Organization -Domain $Domain -CloneMethod LinkedClone -TargetOU $TargetOU -Administrator $AdminUsername -DomainPassword $AdminPassword -AdminPassword $AdminPassword
+#Add a new VDI Pool
+log "Add a new VDI Pool"
+$VDIPool = New-RASVDIPool -Name "VDIPool"
 
-#Convert a VDIGuest to VDITemplate
-log "Converting the VDI Guest to a VDI Template"
-$vmTemplate = New-RASVDITemplate -ProviderId $Provider.Id -VDIGuestId $VMID -Name $TemplateName -GuestNameFormat $GstNameFormat -MaxGuests 5 -PreCreatedGuests 2 `
-				-ImagePrepTool RASPrep -OwnerName $Owner -Organization $Organization -Domain $Domain -CloneMethod LinkedClone -TargetOU $TargetOU
+#Add a new VDI Pool Member (TemplateDesktop)
+log "Add a new VDI Pool Member (TemplateDesktop)"
+Add-RASVDIPoolMember -VDIPoolId $VDIPool.Id -Type TemplateDesktop -Name $vmTemplate.Name -VDITemplateId  $vmTemplate.Id 
+
+#Add a new VDI Pool Member (Desktop)
+log "Add a new VDI Pool Member (Desktop)"
+Add-RASVDIPoolMember -VDIPoolName "My VDI Pool" -Type Desktop -Name "MY VDI Pool Member" -ProviderId $Provider.Id -VMId $VMID
 
 ###### PUBLISHING CONFIGURATION ######
 

@@ -114,16 +114,16 @@ New-RASSession -Username $RASAdminUser -Password $RASAdminPassword
 $Sites = Get-RASSite
 foreach ($Site in $Sites) {
 	
-	#Upgrade RAS Publishing agents in order of Priority
-	log "Upgrading RAS Publishing agents in order of Priority"
-	$PAs = Get-RASPA -Site $Site.Id | Sort-Object -Property Priority
-	foreach($PA in $PAs) {
-		UpdateRASAgent  $PA.Server $Site.Id 
+	#Upgrade RAS Connection Brokers in order of Priority
+	log "Upgrading RAS Connection Brokers in order of Priority"
+	$Brokers = Get-RASBroker -Site $Site.Id | Sort-Object -Property Priority
+	foreach($Broker in $Brokers) {
+		UpdateRASAgent  $Broker.Server $Site.Id 
 	}
 	
-	#Upgrade RAS SecureClientGateways
-	log "Upgrading RAS SecureClientGateways"
-	$GWs = Get-RASGW -Site $Site.Id
+	#Upgrade RAS Secure Gateways
+	log "Upgrading RAS Secure Gateways"
+	$GWs = Get-RASGateway -Site $Site.Id
 	foreach($GW in $GWs) {
 		UpdateRASAgent $GW.Server $Site.Id 
 	}
@@ -137,7 +137,4 @@ foreach ($Site in $Sites) {
 }
 
 log "`nRAS Farm Upgrade finished.`n"
-
-
-
 

@@ -41,9 +41,9 @@ Import-Module RASAdmin
 log "Creating RAS session"
 New-RASSession
 
-#Add a RAS Secure Client Gateway.
-log "Adding new RAS Secure Client Gateway"
-New-RASGW -Server $GWServer
+#Add a RAS Secure Gateway.
+log "Adding new RAS Secure Gateway"
+New-RASGateway -Server $GWServer
 
 #Add an RD Session Host server.
 log "Adding new RD Session Host server"
