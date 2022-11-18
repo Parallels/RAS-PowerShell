@@ -1313,7 +1313,7 @@ function PublishRDSApp ($app, $from, $publishSource, $parentFolder) {
 		$windowType = "Maximized"
 	}
 
-	WriteToScript "Set-RASPubRDSApp -Id $res -CreateShortcutOnDesktop `$$($app.AddToClientDesktop)  -InheritShorcutDefaultSettings `$false -CreateShortcutInStartFolder `$$($app.AddToClientStartMenu) -OneInstancePerUser `$$($app.MultipleInstancesPerUserAllowed) -InheritLicenseDefaultSettings `$false -ConCurrentLicenses $($app.InstanceLimit) -InheritDisplayDefaultSettings `$false -WaitForPrinters `$$($app.WaitOnPrinterCreation) -Enable `$$($app.Enabled) -StartIn '$($app.WorkingDirectory)' -Parameters '$($app.Parameters)' -WinType $windowType"
+	WriteToScript "Set-RASPubRDSApp -Id $res -CreateShortcutOnDesktop `$$($app.AddToClientDesktop)  -InheritShorcutDefaultSettings `$false -CreateShortcutInStartFolder `$$($app.AddToClientStartMenu) -OneInstancePerUser `$$($app.MultipleInstancesPerUserAllowed) -InheritLicenseDefaultSettings `$false -ConCurrentLicenses $($app.InstanceLimit) -InheritDisplayDefaultSettings `$false -WaitForPrinters `$$($app.WaitOnPrinterCreation) -EnabledMode `Enabled -StartIn '$($app.WorkingDirectory)' -Parameters '$($app.Parameters)' -WinType $windowType"
 	$features16_5 = "Set-RASPubRDSApp -id $res -Icon '$($app.IconPath)'"
 	if ($app.ColorDepth -ne [System.DBNull]::Value -and $app.ColorDepth -ne '') {
 		$features16_5 += " -ColorDepth '$($app.ColorDepth)'"
@@ -1360,18 +1360,21 @@ function PublishRDSDesktop ($app, $from, $publishSource, $parentFolder) {
 		}
 	}
 
-	WriteToScript "Set-RASPubRDSDesktop -Id $($res) -CreateShortcutOnDesktop `$$($app.AddToClientDesktop) -InheritShorcutDefaultSettings `$false -CreateShortcutInStartUpFolder `$$($app.AddToClientStartMenu) -Width $($app.Width) -Height $($app.Height) -DesktopSize Custom -Enable `$$($app.Enabled)"
+	WriteToScript "Set-RASPubRDSDesktop -Id $($res) -CreateShortcutOnDesktop `$$($app.AddToClientDesktop) -InheritShorcutDefaultSettings `$false -CreateShortcutInStartUpFolder `$$($app.AddToClientStartMenu) -Width $($app.Width) -Height $($app.Height) -DesktopSize Custom -EnabledMode `Enabled"
 	return $res
 }
 
 function AddPubItemUserFilter ($userFilter, $rdsApp, $userFilterAccountNames = $null ) {
 	if ($userFilter -ne [System.DBNull]::Value) {
+		WriteToScript "Add-RASRule -RuleName rule -ObjType PubItem -Id $rdsApp"
+		$rule = WriteToScript "Get-RASRule -ObjType PubItem -Id $rdsApp" -useVar
+
 		WriteScript @"
 		if (`$FEATURES_16_5) {
 "@
 		foreach ($sid in $userFilter.Split(',')) {
 			try {
-				WriteToScript "Add-RASPubItemUserFilter -Id $rdsApp -SID '$sid'"
+				WriteToScript "Add-RASCriteriaSecurityPrincipal -ObjType PubItem -Id $rdsApp -SID '$sid' -RuleId $rule.Id"
 			}
 			catch {
 				Log -type "WARNING" -message "Error occured during Add-RASPubItemUserFilter" -exception $_.Exception
@@ -1387,7 +1390,7 @@ function AddPubItemUserFilter ($userFilter, $rdsApp, $userFilterAccountNames = $
 "@
 		foreach ($acc in $userFilterAccountNames.Split(',')) {
 			try {
-				WriteToScript "Add-RASPubItemUserFilter -Id $rdsApp -Account '$acc'"
+				WriteToScript "Add-RASCriteriaSecurityPrincipal -ObjType PubItem -Id $rdsApp -Account '$acc' -RuleId $rule.Id"
 			}
 			catch {
 				Log -type "WARNING" -message "Error occured during Add-RASPubItemUserFilter" -exception $_.Exception
@@ -1629,7 +1632,7 @@ function MigrateGroups ([System.Data.DataSet] $db) {
 				$workgroup["RASId"] = $RDSGroup
 
 				foreach ($server in $servers) {
-					WriteToScript "Add-RDSGroupMember -GroupName '$($workgroup.Name)' -RDSServer '$($server.Name)'"
+					WriteToScript "Move-RASRDSGroupMember -GroupName '$($workgroup.Name)' -RDSServer '$($server.Name)'"
 				}
 			}
 		}
@@ -1650,7 +1653,7 @@ function MigrateGroups ([System.Data.DataSet] $db) {
 			$machines = $tbl_ADMachine.Select("[ServerGroupName] like '$($serverGroup.Name)'")
 			foreach ($machine in $machines) {
 				if ([string]$machine.Name -ne [string]::Empty) {
-					WriteToScript "Add-RDSGroupMember -GroupName '$($serverGroup.Name)' -RDSServer '$($machine.Name)'"
+					WriteToScript "Move-RASRDSGroupMember -GroupName '$($serverGroup.Name)' -RDSServer '$($machine.Name)'"
 				}
 			}
 		}
@@ -1676,7 +1679,7 @@ function MigrateGroups ([System.Data.DataSet] $db) {
 
 			foreach ($machine in $machines) {
 				if ([string]$machine.Name -ne [string]::Empty) {
-					WriteToScript "Add-RDSGroupMember -GroupName '$($ou.Name)' -RDSServer '$($machine.Name)'"
+					WriteToScript "Move-RASRDSGroupMember -GroupName '$($ou.Name)' -RDSServer '$($machine.Name)'"
 				}
 			}
 		}
