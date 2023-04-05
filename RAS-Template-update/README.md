@@ -14,7 +14,7 @@ The main steps for using a script to update your template are:
 The template script follows these steps:
 
 1. Finds any user sessions in the RDSH or VDI pool and logs them off.
-2. Disables the RDSH Group. (RDSH servers are unregistered and removed from the RDSH Group. In case of VDI template, the VMs are shut down.)
+2. Disables the RDSH Group. (RDSH servers are unregistered and removed from the RDSH Group. In case of VDI template, VMs are shut down.)
 3. Enters maintenance mode.
 4. Exits maintenance mode with updated guest VMs switch.
 5. Recreates Guest VMs.
