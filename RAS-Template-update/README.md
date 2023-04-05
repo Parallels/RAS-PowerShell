@@ -1,5 +1,7 @@
 # Schedule Parallels RAS template updates with PowerShell
 
+![alt text](https://github.com/Parallels/RAS-PowerShell/blob/master/RAS-Template-update/pslogo.png)
+
 ## Description 
 Administrators of Parallels RAS occasionally need to update templates to address system change requirements. In [this article](https://www.parallels.com/blogs/ras/parallels-ras-template-updates/), we’re going to show just how easy it is to use PowerShell to update RAS templates and use sample template scripts. 
 
