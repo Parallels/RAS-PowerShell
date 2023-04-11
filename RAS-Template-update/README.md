@@ -31,7 +31,7 @@ The template script follows these steps:
 
 ## Direct links
 * Get the [RDSH Template script](https://github.com/Parallels/RAS-PowerShell/blob/master/RAS-Template-update/schedule-template-redeploy.ps1)
-* Get the [VDI Template script](http://github.com/parallels)
+* Get the [VDI Template script](https://github.com/Parallels/RAS-PowerShell/blob/master/RAS-Template-update/schedule-vdi-template-redeploy.ps1)
 
 ## Step by step instructions
 Follow [this blog post](https://www.parallels.com/blogs/ras/parallels-ras-template-updates/) for detailed instructions and guidance. This code is provided as a community effort without support, use at your own risk.
