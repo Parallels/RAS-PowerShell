@@ -30,7 +30,7 @@ The template script follows these steps:
 * Parallels RAS PowerShell module installed.
 
 ## Direct links
-* Get the [RDSH Template script](http://github.com/parallels)
+* Get the [RDSH Template script](https://github.com/Parallels/RAS-PowerShell/blob/master/RAS-Template-update/schedule-template-redeploy.ps1)
 * Get the [VDI Template script](http://github.com/parallels)
 
 ## Step by step instructions
