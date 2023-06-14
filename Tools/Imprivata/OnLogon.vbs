@@ -8,7 +8,7 @@
 On Error Resume Next
 
   'Set connection properties.
-  Server = "connect.rdesktop.uk"
+  Server = "servername.here.com"
   Port = "443"
  
   'Get SSO credentials - from OneSign agent variables.
