@@ -2,7 +2,7 @@
 
 ## Description
 
-Parallels RAS provides integration with Azure Virtual Desktop (AVD).  This repostitory contains a script that configures all prerequisites in Azure in an automated way. You can [download the script here](./pras-create-avd-prereq_v1.0.ps1)
+Parallels RAS provides integration with Azure Virtual Desktop (AVD).  This repository contains a script that configures all prerequisites in Azure in an automated way. You can [download the script here](./pras-create-avd-prereq_v1.0.ps1)
 
 > Step 1: [Running the script](./1.runscript.md)
 
