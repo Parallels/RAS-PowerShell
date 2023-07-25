@@ -5,7 +5,7 @@ This Repository is meant to share RAS PowerShell Scripts with the RAS automation
 * [RAS ARM Deployment](ARM-templates-fberson) - Contains ARM template and scripts to deploy Parallels RAS on Microsoft Azure.
 * [RAS Inventory](RAS-Inventory-CWebster) - Contains a script to create a Parallels RAS Inventory.
 * [RAS Template Update](RAS-Template-update) - Contains scripts to perform automated Parallels RAS Template updates
-* [RAS AVD Provider prerequisites automation](RAS-AVD-Provider-prerequisites) - Contains a scripts to automate the AVD Provider prerequisites
+* [RAS AVD Provider prerequisites automation](RAS-AVD-Provider-prerequisites) - Contains a script to automate the AVD Provider prerequisites
 ### License ###
 
 The scripts are MIT-licensed, so you are free to use it in your commercial setting.
