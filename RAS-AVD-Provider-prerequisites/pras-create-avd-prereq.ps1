@@ -17,6 +17,8 @@
     Author: Freek Berson  
     Last update: 24/07/23
     Changelog:  1.0 -   Initial published version
+.LICENSE
+    Released under the terms of MIT license (see LICENSE for details)
 #> 
 
 function IsSupportedOS {
