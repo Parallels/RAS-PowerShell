@@ -16,7 +16,7 @@ Below is a summary of the actions that the script performs.
 
 -	Create the App Registration
 -	Create a new Client Secret
-- Create an Azure Keyvault and securely store the Client Secret in it
+- Create an Azure Key Vault and securely store the Client Secret in it
 -	Set the Graph API permissions (user.read.all & group.read.all) for the App Registration
 -	Set User Access Administrator permissions on subscription level for the App Registration
 -	Add VM Reader permission on subscription to support standalone host pools & custom images
