@@ -1,11 +1,11 @@
-﻿<#  
+<#  
 .SYNOPSIS  
     Parallels RAS Connection Broker prereq script Azure MarketPlace Deployments
 .NOTES  
     File Name  : RAS_Azure_MP_Primary_CB.ps1
     Author     : Freek Berson
-    Version    : v0.0.17
-    Date       : April 19 2024
+    Version    : v0.0.18
+    Date       : May 23 2024
 .EXAMPLE
     .\RAS_Azure_MP_Install.ps1
 #>
