@@ -260,6 +260,17 @@ Start-Process msiexec.exe -ArgumentList "/i C:\install\RASInstaller.msi ADDFWRUL
 Remove-ImpersonateUser
 
 #Deploy Run Once script to launch post deployment actions at next admin logon
-Set-RunOnceScriptForAllUsers -ScriptPath 'C:\Packages\Plugins\Microsoft.Compute.CustomScriptExtension\1.10.15\Downloads\0\RAS_Azure_MP_Register.ps1'
+$basePath = 'C:\Packages\Plugins\Microsoft.Compute.CustomScriptExtension'
+$latestVersionFolder = Get-ChildItem -Path $basePath -Directory | Sort-Object Name -Descending | Select-Object -First 1
+
+if ($null -ne $latestVersionFolder) {
+    # Construct the full script path
+    $scriptPath = Join-Path -Path $latestVersionFolder.FullName -ChildPath 'Downloads\0\RAS_Azure_MP_Register.ps1'
+
+    # Run the command with the constructed script path
+    Set-RunOnceScriptForAllUsers -ScriptPath $scriptPath
+} else {
+    Write-Host "No version subfolders found in '$basePath'."
+}
 
 WriteLog "Finished installing RAS..."
