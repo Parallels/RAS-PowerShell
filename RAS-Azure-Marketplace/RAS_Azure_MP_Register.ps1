@@ -4,8 +4,8 @@
 .NOTES  
     File Name  : RAS_Azure_MP_Register.ps1
     Author     : Freek Berson
-    Version    : v0.0.16
-    Date       : April 14 2024
+    Version    : v0.0.18
+    Date       : May 23 2024
 .EXAMPLE
     .\RAS_Azure_MP_Register.ps1
 #>
@@ -68,7 +68,10 @@ function ConfigureNuGet {
 function import-AzureModule {
     param (
         [Parameter(Mandatory = $true)]
-        [string]$ModuleName
+        [string]$ModuleName,
+
+        [Parameter(Mandatory = $false)]
+        [string]$moduleVersion
     )
 
     # Check if the module is already imported
@@ -77,7 +80,11 @@ function import-AzureModule {
         Write-Host "Required module '$ModuleName' is not imported. Installing and importing..."
         # Install the module if not already installed
         if (-not (Get-Module -Name $ModuleName -ListAvailable)) {
-            Install-Module -Name $ModuleName -Scope CurrentUser -Force
+            if ($PSBoundParameters.ContainsKey('moduleVersion')) {
+                Install-Module -Name $ModuleName -RequiredVersion $moduleVersion -Scope CurrentUser -Force
+            } else {
+                Install-Module -Name $ModuleName -Scope CurrentUser -Force
+            }
         }
         # Import the module
         Import-Module -Name $ModuleName -Force
@@ -374,8 +381,9 @@ Catch {
 
 # Check and import the required Azure PowerShell module
 try {
-    import-AzureModule "Az.Resources"
-    import-AzureModule "Az.KeyVault"
+    import-AzureModule -ModuleName "Az.accounts" -moduleVersion "2.13.2"
+    import-AzureModule -ModuleName "Az.Resources" -moduleVersion "6.12.0"
+    import-AzureModule -ModuleName "Az.KeyVault" -moduleVersion "5.0.0"
 }
 Catch {
     Write-Host "ERROR: trying to import required modules import Az.Accounts, AzureAD, Az.Resources, Az.network, and Az.keyVault"
