@@ -69,7 +69,7 @@ var vnetId = {
 var subnetId = '${vnetId[vnetNewOrExisting]}/subnets/${subnetName}'
 var domainJoinOptions = 3
 var lbSkuName = 'Standard'
-var licenseType = 0
+var licenseType = 1
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-06-01' =
   if (vnetNewOrExisting == 'new') {
