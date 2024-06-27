@@ -12,7 +12,10 @@ The Azure Marketplace deployment also automatically licenses Parallels RAS, trac
 
 > Step 2: Download the [Bicep template](https://github.com/Parallels/RAS-PowerShell/blob/master/RAS-Azure-Marketplace/mainTemplate.bicep) and adjust it if needed]
 
-> Step 3: Deploy the Bicep template to your Azure Subscription. For more information on parameters the 
+> Step 3: Deploy the Bicep template to your Azure Subscription. For more information on parameters and values to provide to the Bicep Template, [follow this guidance](https://docs.parallels.com/parallels-ras-azure-marketplace-deployment-19/deployment).
+
+The screenshot below shows the outcome of the deployment.
+<image src=./images/deployment_results.png width=30%>
 
 ## License 
 
