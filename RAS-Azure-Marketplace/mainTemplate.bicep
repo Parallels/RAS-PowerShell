@@ -69,6 +69,7 @@ var vnetId = {
 var subnetId = '${vnetId[vnetNewOrExisting]}/subnets/${subnetName}'
 var domainJoinOptions = 3
 var lbSkuName = 'Standard'
+var licenseType = 0
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-06-01' =
   if (vnetNewOrExisting == 'new') {
@@ -571,7 +572,7 @@ resource managementServerRAS 'Microsoft.Compute/virtualMachines/extensions@2023-
       fileUris: ['${assetLocation}${configurationScriptRAS}', '${assetLocation}${registerScriptRAS}']
     }
     protectedSettings: {
-      commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File ${configurationScriptRAS} -domainJoinUserName ${domainJoinUserName} -domainJoinPassword ${domainJoinPassword} -domainName ${domainName} -resourceID ${managementServerVM.id} -tenantID ${tenant().tenantId} -keyVaultName ${keyVaultName} -secretName ${take(domainJoinUserName, indexOf(domainJoinUserName, '@')) } -primaryConnectionBroker ${prefixCBName}-${1} -numberofCBs ${numberofCBs} -numberofSGs ${numberofSGs} -prefixCBName ${prefixCBName} -prefixSGName ${prefixSGName} -appPublisherName ${appPublisherName} -appProductName ${appProductName} -customerUsageAttributionID ${customerUsageAttributionID} -providerSelection ${providerSelection} -providerName ${providerName} -providerAppRegistrationName ${providerAppRegistrationName} -vnetId ${vnetId[vnetNewOrExisting]} -mgrID ${resourceGroup().id} -downloadURLRAS ${downloadURLRAS}'
+      commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File ${configurationScriptRAS} -domainJoinUserName ${domainJoinUserName} -domainJoinPassword ${domainJoinPassword} -domainName ${domainName} -resourceID ${managementServerVM.id} -tenantID ${tenant().tenantId} -keyVaultName ${keyVaultName} -secretName ${take(domainJoinUserName, indexOf(domainJoinUserName, '@')) } -primaryConnectionBroker ${prefixCBName}-${1} -numberofCBs ${numberofCBs} -numberofSGs ${numberofSGs} -prefixCBName ${prefixCBName} -prefixSGName ${prefixSGName} -appPublisherName ${appPublisherName} -appProductName ${appProductName} -customerUsageAttributionID ${customerUsageAttributionID} -providerSelection ${providerSelection} -providerName ${providerName} -providerAppRegistrationName ${providerAppRegistrationName} -vnetId ${vnetId[vnetNewOrExisting]} -mgrID ${resourceGroup().id} -downloadURLRAS ${downloadURLRAS} -licenseType ${licenseType}'
     }
   }
   dependsOn: [managementServerDJ, connectionBrokerRAS, connectionBrokerPrimaryRAS, secureGatewayRAS]
