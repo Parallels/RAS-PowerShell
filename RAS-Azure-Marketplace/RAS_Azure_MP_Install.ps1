@@ -76,7 +76,7 @@ param(
     [string]$downloadURLRAS,
 
     [Parameter(Mandatory = $false)]
-    [bool]$licenseType = 0
+    [int]$licenseType = 0
 
 )
 
