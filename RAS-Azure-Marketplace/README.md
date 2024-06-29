@@ -2,9 +2,9 @@
 
 ## Description
 
-This repository shares the resources to allow anyone to deploy Parallels RAS in any Azure subscription. The outcome of this deployment is a full-scale deployment of Parallels RAS in any Azure subscription. 
+This repository shares the resources to allow anyone to deploy Parallels RAS in any Azure subscription. The outcome of this deployment is a full-scale deployment of Parallels RAS in any Azure subscription. The template allows you to configure the number of Secure Gateway and Connection Broker components. Furthermore, you can easily connect to an existing vnet, subnet, and Active Directory.
 
-The Bicep template shared here is based on a Bring Your Own License or 30-day Trials. 
+The Bicep template is based on a Bring Your Own License or 30-day Trials and can optionally also configure a provider to connect to Azure Virtual Desktop. 
 
 > Step 1: Visit this documentation page to learn about the [prerequisites](https://docs.parallels.com/parallels-ras-azure-marketplace-deployment-19/introduction/before-you-start)
 
