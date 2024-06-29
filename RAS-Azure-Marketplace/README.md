@@ -1,12 +1,10 @@
-# Parallels RAS Azure Marketplace resources
+# Automated deployment of Parallels RAS on Azure
 
 ## Description
 
-Customers and partners who have the option of purchasing and deploying Parallels RAS through the Azure Marketplace. The outcome of this deployment is a full-scale deployment of Parallels RAS in any Azure subscription. Partners can benefit from simplified selling through personalized offerings and have Parallels RAS and the associated environment contribute towards customers or partners of Microsoft Azure Consumption Commitment (MACC). At the same time, Parallels RAS will be fully deployed in a configurable manner and automatically integrated with Azure Virtual Desktop for an accelerated time-to-value.
+This repository shares the resources to allow anyone to deploy Parallels RAS in any Azure subscription. The outcome of this deployment is a full-scale deployment of Parallels RAS in any Azure subscription. 
 
-This repository shares the resources used in the automated Azure Marketplace deployment, allowing Customers and partners to leverage the same automation capabilities.
-
-The Azure Marketplace deployment also automatically licenses Parallels RAS, tracks usage, and reports this to Microsoft, so you are charged for the usage. The Bicep template shared here does not perform that step and is based on Bring Your Own License or 30-day Trials.
+The Bicep template shared here is based on a Bring Your Own License or 30-day Trials. 
 
 > Step 1: Visit this documentation page to learn about the [prerequisites](https://docs.parallels.com/parallels-ras-azure-marketplace-deployment-19/introduction/before-you-start)
 
@@ -16,6 +14,8 @@ The Azure Marketplace deployment also automatically licenses Parallels RAS, trac
 
 The screenshot below shows the outcome of the deployment.<br>
 <image src=./images/deployment_result.png width=60%>
+
+You can also use our [Azure Marketplace Transactional offer](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/parallels.parallelsrasprod?tab=Overview) which uses the same template.
 
 ## License 
 
