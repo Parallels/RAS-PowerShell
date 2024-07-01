@@ -54,7 +54,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$appProductName,
 
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [string]$customerUsageAttributionID,
 
     [Parameter(Mandatory = $true)]
