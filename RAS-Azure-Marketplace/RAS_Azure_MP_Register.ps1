@@ -412,15 +412,17 @@ Catch {
     Write-Host $_.Exception.Message
 }
 
-#Get the resourceUsageId
-try {
-    Write-Host 'Performing post-installation steps...' `n
-    $appPublisherName = $retreivedData.appPublisherName
-    $appProductName = $retreivedData.appProductName
-    $resourceUsageId = get-resourceUsageId -SubscriptionId $retreivedData.SubscriptionId -appPublisherName $appPublisherName -appProductName $appProductName
-}
-Catch {
-    Write-Host "ERROR: trying to read resource usage id from managed app"
+if ($retreivedData.licenseType -eq 0) {
+    #Get the resourceUsageId
+    try {
+        Write-Host 'Performing post-installation steps...' `n
+        $appPublisherName = $retreivedData.appPublisherName
+        $appProductName = $retreivedData.appProductName
+        $resourceUsageId = get-resourceUsageId -SubscriptionId $retreivedData.SubscriptionId -appPublisherName $appPublisherName -appProductName $appProductName
+    }
+    Catch {
+        Wr
+    }ite-Host "ERROR: trying to read resource usage id from managed app"
     Write-Host $_.Exception.Message
     exit
 }
