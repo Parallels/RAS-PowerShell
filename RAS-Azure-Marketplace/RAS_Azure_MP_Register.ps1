@@ -548,18 +548,18 @@ if ($retreivedData.providerSelection -ne "noProvider") {
 
 }
 
+# Register Parallels RAS with the license key
+New-RASSession -Username $retreivedData.domainJoinUserName -Password $localAdminPasswordSecure -Server $retreivedData.primaryConnectionBroker
+
 # Check if the license type is 0 (AZMP) then register Parallels RAS with the license AZMP key
 # Check if the license type is 1 (BYOL) then allow to register license key manually or use trial
 if ($retreivedData.licenseType -eq 0) {
-    # Register Parallels RAS with the license key
-    New-RASSession -Username $retreivedData.domainJoinUserName -Password $localAdminPasswordSecure -Server $retreivedData.primaryConnectionBroker
-
     #Set Azure Marketplace related settings in RAS db
     Set-RASAzureMarketplaceDeploymentSettings -SubscriptionID $retreivedData.SubscriptionId -TenantID $retreivedData.tenantID -CustomerUsageAttributionID $retreivedData.customerUsageAttributionID -ManagedAppResourceUsageID $resourceUsageId[1]
-
-    # Invoke-apply
-    invoke-RASApply
 }
+# Invoke-apply
+invoke-RASApply
+
 
 #Create Azure or AVD in RAS if specified
 if ($retreivedData.providerSelection -eq "AVDProvider") {
