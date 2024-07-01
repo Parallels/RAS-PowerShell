@@ -29,7 +29,6 @@ param domainJoinUserName string
 param domainJoinPassword string
 param domainName string
 param ouPath string
-param customerUsageAttributionID string
 param providerSelection string
 param providerName string = 'Provider'
 param providerAppRegistrationName string = 'ras-app'
@@ -572,7 +571,7 @@ resource managementServerRAS 'Microsoft.Compute/virtualMachines/extensions@2023-
       fileUris: ['${assetLocation}${configurationScriptRAS}', '${assetLocation}${registerScriptRAS}']
     }
     protectedSettings: {
-      commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File ${configurationScriptRAS} -domainJoinUserName ${domainJoinUserName} -domainJoinPassword ${domainJoinPassword} -domainName ${domainName} -resourceID ${managementServerVM.id} -tenantID ${tenant().tenantId} -keyVaultName ${keyVaultName} -secretName ${take(domainJoinUserName, indexOf(domainJoinUserName, '@')) } -primaryConnectionBroker ${prefixCBName}-${1} -numberofCBs ${numberofCBs} -numberofSGs ${numberofSGs} -prefixCBName ${prefixCBName} -prefixSGName ${prefixSGName} -appPublisherName ${appPublisherName} -appProductName ${appProductName} -customerUsageAttributionID ${customerUsageAttributionID} -providerSelection ${providerSelection} -providerName ${providerName} -providerAppRegistrationName ${providerAppRegistrationName} -vnetId ${vnetId[vnetNewOrExisting]} -mgrID ${resourceGroup().id} -downloadURLRAS ${downloadURLRAS} -licenseType ${licenseType}'
+      commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File ${configurationScriptRAS} -domainJoinUserName ${domainJoinUserName} -domainJoinPassword ${domainJoinPassword} -domainName ${domainName} -resourceID ${managementServerVM.id} -tenantID ${tenant().tenantId} -keyVaultName ${keyVaultName} -secretName ${take(domainJoinUserName, indexOf(domainJoinUserName, '@')) } -primaryConnectionBroker ${prefixCBName}-${1} -numberofCBs ${numberofCBs} -numberofSGs ${numberofSGs} -prefixCBName ${prefixCBName} -prefixSGName ${prefixSGName} -appPublisherName ${appPublisherName} -appProductName ${appProductName} -providerSelection ${providerSelection} -providerName ${providerName} -providerAppRegistrationName ${providerAppRegistrationName} -vnetId ${vnetId[vnetNewOrExisting]} -mgrID ${resourceGroup().id} -downloadURLRAS ${downloadURLRAS} -licenseType ${licenseType}'
     }
   }
   dependsOn: [managementServerDJ, connectionBrokerRAS, connectionBrokerPrimaryRAS, secureGatewayRAS]
