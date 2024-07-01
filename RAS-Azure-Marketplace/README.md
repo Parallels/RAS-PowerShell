@@ -6,7 +6,7 @@ This repository shares the resources to allow anyone to deploy Parallels RAS in 
 
 The Bicep template is based on a Bring Your Own License or 30-day Trials and can optionally also configure a provider to connect to Azure Virtual Desktop. 
 
-> Step 1: Visit this documentation page to learn about the [prerequisites](https://docs.parallels.com/parallels-ras-azure-marketplace-deployment-19/introduction/before-you-start)
+> Step 1: Visit this documentation page to learn about the [prerequisites](./1.prerequisites.md)
 
 > Step 2: Download the [Bicep template](https://github.com/Parallels/RAS-PowerShell/blob/master/RAS-Azure-Marketplace/mainTemplate.bicep) and adjust it if needed]
 
