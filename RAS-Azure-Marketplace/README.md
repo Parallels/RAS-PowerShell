@@ -10,7 +10,7 @@ The Bicep template is based on a Bring Your Own License or 30-day Trials and can
 
 > Step 2: Download the [Bicep template](https://github.com/Parallels/RAS-PowerShell/blob/master/RAS-Azure-Marketplace/mainTemplate.bicep) and adjust it if needed]
 
-> Step 3: Deploy the Bicep template to your Azure Subscription. For more information on parameters and values to provide to the Bicep Template, [follow this guidance](https://docs.parallels.com/parallels-ras-azure-marketplace-deployment-19/deployment).
+> Step 3: Deploy the Bicep template to your Azure Subscription. For more information on parameters and values to provide to the Bicep Template, [follow this guidance](./2.deploy.md).
 
 The screenshot below shows the outcome of the deployment.<br>
 <image src=./images/deployment_result.png width=60%>
