@@ -4,11 +4,17 @@
 .NOTES  
     File Name  : RAS_Azure_MP_Register.ps1
     Author     : Freek Berson
-    Version    : v0.0.19
-    Date       : Jun 27 2024
+    Version    : v0.0.20
+    Date       : Jul 02 2024
 .EXAMPLE
     .\RAS_Azure_MP_Register.ps1
 #>
+function WriteLog {
+    Param ([string]$LogString)
+    $Stamp = (Get-Date).toString("yyyy/MM/dd HH:mm:ss")
+    $LogMessage = "$Stamp $LogString"
+    Add-content $LogFile -value $LogMessage
+}
 
 function IsSupportedOS {
     if ([System.Environment]::Is64BitOperatingSystem) {
@@ -16,11 +22,13 @@ function IsSupportedOS {
             $processorArchitecture = (Get-CimInstance -ClassName Win32_Processor).Architecture
             if ($processorArchitecture -eq 5) {
                 Write-Host "ARM Based operating systems are supported by this script." -ForegroundColor red
+                WriteLog "ARM Based operating systems are supported by this script."
                 return $false
             }
         }
         catch {
             Write-Host "Failed to retrieve processor architecture: $_" -ForegroundColor red
+            WriteLog "Failed to retrieve processor architecture: $_"
             return $true
         }
     }
@@ -42,6 +50,7 @@ function Test-InternetConnection {
     }
     catch {
         Write-Host "Internet connectivity is not available, check connectivity and try again." -ForegroundColor Red
+        WriteLog "Internet connectivity is not available, check connectivity and try again."
         return $false
     }
 }
@@ -60,6 +69,7 @@ function ConfigureNuGet {
 
         if ($installedVersion -lt $requiredVersion) {
             Write-Host "The installed NuGet provider version is $($installedVersion). Required version is $($requiredVersion) or higher."
+            WriteLog "The installed NuGet provider version is $($installedVersion). Required version is $($requiredVersion) or higher."
             Install-PackageProvider -Name NuGet -Force
         }
     }
@@ -78,6 +88,7 @@ function import-AzureModule {
     $module = Get-Module -Name $ModuleName -ListAvailable
     if (-not $module) {
         Write-Host "Required module '$ModuleName' is not imported. Installing and importing..."
+        WriteLog "Required module '$ModuleName' is not imported. Installing and importing..."
         # Install the module if not already installed
         if (-not (Get-Module -Name $ModuleName -ListAvailable)) {
             if ($PSBoundParameters.ContainsKey('moduleVersion')) {
@@ -107,6 +118,7 @@ function get-AzureDetailsFromJSON {
     }
     catch {
         Write-Host "Error reading JSON file with Azure details." -ForegroundColor Red
+        WriteLog "Error reading JSON file with Azure details."
         return $false
     }
 }
@@ -131,10 +143,12 @@ function get-resourceUsageId {
 
     if ($filteredResources.Count -eq 0) {
         Write-Host "No matching resources found."
+        WriteLog "No matching resources found."
     }
     elseif ($filteredResources.Count -eq 1) {
         $managedAppName = $filteredResources[0].Name
         Write-Host "Only one matching resource found: $managedAppName"
+        WriteLog "Only one matching resource found: $managedAppName"
     }
     else {
         Write-Host "Choose a resource by entering its corresponding number:"
@@ -152,6 +166,7 @@ function get-resourceUsageId {
             if ($choice -gt 0 -and $choice -le $filteredResources.Count) {
                 $managedAppName = $filteredResources[$choice - 1].Name
                 Write-Host "You have selected: $managedAppName"
+                WriteLog "You have selected: $managedAppName"
                 $validChoice = $true
             }
             else {
@@ -208,6 +223,7 @@ function New-AzureAppRegistration {
     $ADServicePrincipal = Get-AzADServicePrincipal -DisplayName $appName
     if ($null -ne $ADServicePrincipal) {
         Write-Host "AD Service Principal with name '$appName' already exists. Please choose a different name."
+        WriteLog "AD Service Principal with name '$appName' already exists. Please choose a different name."
         return
     }
 
@@ -348,39 +364,50 @@ function set-AdminConsent {
     Invoke-RestMethod -Uri $url -Headers $headers -Method POST -ErrorAction Stop
 }
 
-# BEGIN SCRIPT
+#Set variables
+$installPath = "C:\install"
+
+#Configute logging
+$Logfile = "C:\install\RAS_Azure_MP_Register.log"
 
 # Disable IE ESC for Administrators and users
+WriteLog "Disable IE ESC for Administrators and users"
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}' -Name 'IsInstalled' -Value 0
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}' -Name 'IsInstalled' -Value 0
 
 # Disable Edge first run experience
+WriteLog "Disable Edge first run experience"
 New-item -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Edge' -Force | Out-Null
 New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Edge' -Name 'HideFirstRunExperience' -Value 1 -Force | Out-Null
 
-
+WriteLog "IsSupportedOS check"
 if (-not (IsSupportedOS)) {
     Read-Host "Press any key to continue..."
     exit
 }
 
+WriteLog "Test-InternetConnection"
 if (-not (Test-InternetConnection)) {
     Read-Host "Press any key to continue..."
     exit
 }
 
 #Check if NuGet 2.8.5.201 or higher is installed, if not install it
+WriteLog "Check if NuGet 2.8.5.201 or higher is installed, if not install it"
 try {
     Write-Host 'Installing required Azure Powershell modules.' `n
     ConfigureNuGet
 }
 Catch {
     Write-Host "ERROR: trying to install latest NuGet version"
+    WriteLog "ERROR: trying to install latest NuGet version"
     Write-Host $_Write-Host $_.Exception.Message
+    WriteLog $_Write-Host $_.Exception.Message
     exit
 }
 
 # Check and import the required Azure PowerShell module
+WriteLog "Check and import the required Azure PowerShell module"
 try {
     import-AzureModule -ModuleName "Az.accounts" -moduleVersion "2.13.2"
     import-AzureModule -ModuleName "Az.Resources" -moduleVersion "6.12.0"
@@ -388,43 +415,56 @@ try {
 }
 Catch {
     Write-Host "ERROR: trying to import required modules import Az.Accounts, AzureAD, Az.Resources, Az.network, and Az.keyVault"
+    WriteLog "ERROR: trying to import required modules import Az.Accounts, AzureAD, Az.Resources, Az.network, and Az.keyVault"
     Write-Host $_.Exception.Message
+    WriteLog $_.Exception.Message
     exit
 }
 
 # Get Azure details from JSON file
+WriteLog "Get Azure details from JSON file"
 try {
     $retreivedData = get-AzureDetailsFromJSON 
 }
 Catch {
     Write-Host "ERROR: retreiving Azure details from JSON file"
+    WriteLog "ERROR: retreiving Azure details from JSON file"
     Write-Host $_.Exception.Message
+    WriteLog $_.Exception.Message
     exit
 }
 
 # Connect to Azure and Azure AD
+WriteLog "Connect to Azure and Azure AD"
 try {
     Write-Host 'Please authenticate towards Azure to complete the setup.' `n
     $currentUser = Connect-AzAccount -Tenant $retreivedData.tenantID -AuthScope MicrosoftGraphEndpointResourceId
 }
 Catch {
     Write-Host "ERROR: trying to run Connect-AzAccount and Connect-AzureAD"
+    WriteLog "ERROR: trying to run Connect-AzAccount and Connect-AzureAD"
     Write-Host $_.Exception.Message
+    WriteLog $_.Exception.Message
 }
 
 if ($retreivedData.licenseType -eq 0) {
+    WriteLog "licenseType is"
+    WriteLog "Get resourceUsageId from managed app"
     #Get the resourceUsageId
     try {
         Write-Host 'Performing post-installation steps...' `n
+        WriteLog 'Performing post-installation steps...'
         $appPublisherName = $retreivedData.appPublisherName
         $appProductName = $retreivedData.appProductName
         $resourceUsageId = get-resourceUsageId -SubscriptionId $retreivedData.SubscriptionId -appPublisherName $appPublisherName -appProductName $appProductName
     }
     Catch {
-        Wr
-    }ite-Host "ERROR: trying to read resource usage id from managed app"
-    Write-Host $_.Exception.Message
-    exit
+        Write-Host "ERROR: trying to read resource usage id from managed app"
+        WriteLog "ERROR: trying to read resource usage id from managed app"
+        Write-Host $_.Exception.Message
+        WriteLog  $_.Exception.Message
+        exit
+    }
 }
 
 #Get the keyvault secret
@@ -433,23 +473,26 @@ try {
 }
 Catch {
     Write-Host "ERROR: trying to read resource usage id from managed app"
+    WriteLog "ERROR: trying to read resource usage id from managed app"
     Write-Host $_.Exception.Message
+    WriteLog $_.Exception.Message
     exit
 }
 
 
 #Create Azure app registration if specified
 if ($retreivedData.providerSelection -ne "noProvider") {
-
     Write-Host 'Performing post deployment configuration in Parallels RAS, please wait...' `n
-
+    WriteLog 'Performing post deployment configuration in Parallels RAS, please wait...'
     # Create a custom role to allow reading all compute resource
     try {
         CreateVMReaderRole -SubscriptionId $retreivedData.SubscriptionId
     }
     Catch {
         Write-Host "ERROR: creating custom role to allow reading VM resources"
+        WriteLog "ERROR: creating custom role to allow reading VM resources"
         Write-Host $_.Exception.Message
+        WriteLog $_.Exception.Message
         exit
     }
 
@@ -459,7 +502,9 @@ if ($retreivedData.providerSelection -ne "noProvider") {
     }
     Catch {
         Write-Host "ERROR: trying to create the App Registration"
+        WriteLog "ERROR: trying to create the App Registration"
         Write-Host $_.Exception.Message
+        WriteLog $_.Exception.Message
         exit
     }
 
@@ -469,7 +514,9 @@ if ($retreivedData.providerSelection -ne "noProvider") {
     }
     Catch {
         Write-Host "ERROR: trying to configure contributor permissons on vnet"
+        WriteLog "ERROR: trying to configure contributor permissons on vnet"
         Write-Host $_.Exception.Message
+        WriteLog $_.Exception.Message
         exit
     }
 
@@ -479,7 +526,9 @@ if ($retreivedData.providerSelection -ne "noProvider") {
     }
     Catch {
         Write-Host "ERROR: trying to set app registration Graph API permissions"
+        WriteLog "ERROR: trying to set app registration Graph API permissions"
         Write-Host $_.Exception.Message
+        WriteLog $_.Exception.Message
         exit
     }
 
@@ -489,7 +538,9 @@ if ($retreivedData.providerSelection -ne "noProvider") {
     }
     Catch {
         Write-Host "ERROR: trying to create the App Registration client secret"
+        WriteLog "ERROR: trying to create the App Registration client secret"
         Write-Host $_.Exception.Message
+        WriteLog $_.Exception.Message
         exit
     }
 
@@ -499,7 +550,9 @@ if ($retreivedData.providerSelection -ne "noProvider") {
     }
     Catch {
         Write-Host "ERROR: trying to create the resource group and set contributor permissions"
+        WriteLog "ERROR: trying to create the resource group and set contributor permissions"
         Write-Host $_.Exception.Message
+        WriteLog $_.Exception.Message
         exit
     }
 
@@ -509,7 +562,9 @@ if ($retreivedData.providerSelection -ne "noProvider") {
     }
     Catch {
         Write-Host "ERROR: trying to set User Access Administration role"
+        WriteLog "ERROR: trying to set User Access Administration role"
         Write-Host $_.Exception.Message
+        WriteLog $_.Exception.Message
         exit
     }
 
@@ -519,7 +574,9 @@ if ($retreivedData.providerSelection -ne "noProvider") {
     }
     Catch {
         Write-Host "ERROR: trying to set VM Reader role"
+        WriteLog "ERROR: trying to set VM Reader role"
         Write-Host $_.Exception.Message
+        WriteLog $_.Exception.Message
         exit
     }
 
@@ -529,7 +586,9 @@ if ($retreivedData.providerSelection -ne "noProvider") {
     }
     Catch {
         Write-Host "ERROR: trying to create a new Azure KeyVault and adding the client secret"
+        WriteLog "ERROR: trying to create a new Azure KeyVault and adding the client secret"
         Write-Host $_.Exception.Message
+        WriteLog $_.Exception.Message
         exit
     }
 
@@ -542,27 +601,31 @@ if ($retreivedData.providerSelection -ne "noProvider") {
     }
     Catch {
         Write-Host "ERROR: trying to grant admin consent to an the app registration"
+        WriteLog "ERROR: trying to grant admin consent to an the app registration"
         Write-Host $_.Exception.Message
+        WriteLog $_.Exception.Message
         exit
     }
 
 }
 
 # Register Parallels RAS with the license key
+WriteLog "Register Parallels RAS with the license key"
 New-RASSession -Username $retreivedData.domainJoinUserName -Password $localAdminPasswordSecure -Server $retreivedData.primaryConnectionBroker
 
 # Check if the license type is 0 (AZMP) then register Parallels RAS with the license AZMP key
 # Check if the license type is 1 (BYOL) then allow to register license key manually or use trial
 if ($retreivedData.licenseType -eq 0) {
     #Set Azure Marketplace related settings in RAS db
+    WriteLog "Set Azure Marketplace related settings in RAS db"
     Set-RASAzureMarketplaceDeploymentSettings -SubscriptionID $retreivedData.SubscriptionId -TenantID $retreivedData.tenantID -CustomerUsageAttributionID $retreivedData.customerUsageAttributionID -ManagedAppResourceUsageID $resourceUsageId[1]
 }
 # Invoke-apply
 invoke-RASApply
 
-
 #Create Azure or AVD in RAS if specified
 if ($retreivedData.providerSelection -eq "AVDProvider") {
+    WriteLog "AVDProvider is selected"
     $appPassword = ConvertTo-SecureString -String $secret.SecretText -AsPlainText -Force
     Set-RASAVDSettings -Enabled $true
     invoke-RASApply
@@ -570,17 +633,19 @@ if ($retreivedData.providerSelection -eq "AVDProvider") {
     invoke-RASApply
 }
 if ($retreivedData.providerSelection -eq "AzureProvider") {
+    WriteLog "AzureProvider is selected"
     $appPassword = ConvertTo-SecureString -String $secret.SecretText -AsPlainText -Force
     New-RASProvider $retreivedData.providerName -AzureVersion Azure -Azure -TenantID $retreivedData.tenantID -SubscriptionID $retreivedData.SubscriptionId -ProviderUsername $app.AppId -ProviderPassword $appPassword -NoInstall | Out-Null
     invoke-RASApply
 }
 
-
 # Invoke-apply and remove session
+WriteLog "Invoke-apply and remove session"
 invoke-RASApply
 Remove-RASSession
 
 #restart secundary RAS servers to complete installation
+WriteLog "Restart secundary RAS servers to complete installation"
 for ($i = 2; $i -le $retreivedData.numberofCBs; $i++) {
     $connectionBroker = $retreivedData.prefixCBName + "-" + $i + "." + $retreivedData.domainName
     restart-computer -computername $connectionBroker -WsmanAuthentication Kerberos -force
@@ -591,9 +656,11 @@ for ($i = 1; $i -le $retreivedData.numberofSGs; $i++) {
 }
 
 #Clean up JSON file
+WriteLog "Clean up JSON file"
 remove-item "C:\install\output.json" -Force
 
 Write-Host 'Registration of Parallels RAS is completed.' `n
+WriteLog 'Registration of Parallels RAS is completed.'
 Read-Host -Prompt "Press any key to open the Parallels RAS console..." | Out-Null
 
 Start-Process -FilePath "C:\Program Files (x86)\Parallels\ApplicationServer\2XConsole.exe"
