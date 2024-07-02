@@ -364,9 +364,6 @@ function set-AdminConsent {
     Invoke-RestMethod -Uri $url -Headers $headers -Method POST -ErrorAction Stop
 }
 
-#Set variables
-$installPath = "C:\install"
-
 #Configute logging
 $Logfile = "C:\install\RAS_Azure_MP_Register.log"
 
@@ -593,7 +590,7 @@ if ($retreivedData.providerSelection -ne "noProvider") {
     }
 
     #Wait to make sure the API permisissons are configgured before doing a consent
-    sleep 60
+    Start-Sleep 60
 
     # Grant admin consent to an the app registration
     try {
