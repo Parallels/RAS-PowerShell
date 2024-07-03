@@ -253,4 +253,7 @@ else {
     WriteLog "No version subfolders found in '$basePath'."
 }
 
+#Install RDSH role and reboot
+Add-WindowsFeature -Name "RDS-RD-Server" -Restart
+
 WriteLog "Finished installing RAS..."
