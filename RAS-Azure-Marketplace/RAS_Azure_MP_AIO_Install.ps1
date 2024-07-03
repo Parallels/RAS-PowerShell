@@ -150,6 +150,7 @@ function Set-RunOnceScriptForAllUsers {
 $Temploc = 'C:\install\RASInstaller.msi'
 $installPath = "C:\install"
 $downloadURLRAS = 'https://download.parallels.com/ras/latest/RASInstaller.msi'
+$hostname = hostname
 
 # Check if the install path already exists
 if (-not (Test-Path -Path $installPath)) { New-Item -Path $installPath -ItemType Directory }
@@ -187,16 +188,21 @@ Start-Process msiexec.exe -ArgumentList "/i C:\install\RASInstaller.msi /quiet /
 # Enable RAS PowerShell module
 Import-Module 'C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdmin\RASAdmin.psd1'
 
-#Activate 30 day trial using Azure MP Parallels Business account
+# Add permissions to the RAS Admins group
 if ($addsSelection -eq "adds") {
-    WriteLog "New RAS Session for ADDS user $userName"
-    New-RASSession -Username $domainJoinUserName -Password $domainJoinPasswordSecure
-    New-RASAdminAccount $RasAdminsGroupAD
-}
-if ($addsSelection -eq "workgroup") {
-    WriteLog "New RAS Session for workgroup user $localAdminUser"
+    WriteLog "New RAS Session for ADDS user"
     New-RASSession -Username $localAdminUser -Password $localAdminPassword
+    New-RASAdminAccount $RasAdminsGroupAD
+    invoke-RASApply
 }
+#add permissions to the local admin group
+if ($addsSelection -eq "workgroup") {
+    WriteLog "New RAS Session for workgroup user"
+    New-RASSession -Username $localAdminUser -Password $localAdminPassword
+    Set-RASAuthSettings -AllTrustedDomains $false -Domain Workgroup/$hostname
+    invoke-RASApply
+}
+#Activate 30 day trial using Azure MP Parallels Business account
 WriteLog "Activating RAS License"
 Invoke-RASLicenseActivate -Email $maU -Password $maPSecure
 invoke-RASApply
@@ -219,11 +225,6 @@ if ($addsSelection -eq "adds") {
     New-RASAdminAccount $RasAdminsGroupAD
 }
 
-#Set domain to Workgroup access
-if ($addsSelection -eq "workgroup") {
-    WriteLog "Add workgroup as RAS Admins"
-    Set-RASAuthSettings -AllTrustedDomains $false -Domain Workgroup/$hostname
-}
 invoke-RASApply
 
 #Deploy Run Once script to launch post deployment actions at next admin logon
