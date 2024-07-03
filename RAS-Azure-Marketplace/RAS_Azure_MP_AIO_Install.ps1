@@ -153,6 +153,7 @@ $downloadURLRAS = 'https://download.parallels.com/ras/latest/RASInstaller.msi'
 $hostname = hostname
 $localAdminPasswordSecure = ConvertTo-SecureString $localAdminPassword -AsPlainText -Force
 $maPSecure = ConvertTo-SecureString $maP -AsPlainText -Force
+$domainJoinPasswordSecure = ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force
 
 # Check if the install path already exists
 if (-not (Test-Path -Path $installPath)) { New-Item -Path $installPath -ItemType Directory }
@@ -193,7 +194,7 @@ Import-Module 'C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdm
 # Add permissions to the RAS Admins group
 if ($addsSelection -eq "adds") {
     WriteLog "New RAS Session for ADDS user"
-    New-RASSession -Username $localAdminUser -Password $localAdminPasswordSecure
+    New-RASSession -Username $domainJoinUserName -Password $domainJoinPasswordSecure
     New-RASAdminAccount $RasAdminsGroupAD
     invoke-RASApply
 }
