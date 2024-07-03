@@ -152,6 +152,7 @@ $installPath = "C:\install"
 $downloadURLRAS = 'https://download.parallels.com/ras/latest/RASInstaller.msi'
 $hostname = hostname
 $localAdminPasswordSecure = ConvertTo-SecureString $localAdminPassword -AsPlainText -Force
+$maPSecure = ConvertTo-SecureString $maP -AsPlainText -Force
 
 # Check if the install path already exists
 if (-not (Test-Path -Path $installPath)) { New-Item -Path $installPath -ItemType Directory }
@@ -205,7 +206,7 @@ if ($addsSelection -eq "workgroup") {
 }
 #Activate 30 day trial using Azure MP Parallels Business account
 WriteLog "Activating RAS License"
-Invoke-RASLicenseActivate -Email $maU -Password $maP
+Invoke-RASLicenseActivate -Email $maU -Password $maPSecure
 invoke-RASApply
 
 #Add VM Appliance RDS Server
@@ -221,6 +222,12 @@ New-RASPubRDSApp -Name "Paint" -Target "C:\Windows\System32\mspaint.exe" -Publis
 New-RASPubRDSApp -Name "WordPad" -Target "C:\Program Files\Windows NT\Accessories\wordpad.exe"  -PublishFrom All -WinType Maximized 
 invoke-RASApply
 
+if ($addsSelection -eq "adds") {
+    #Remove impersonation
+    WriteLog "Removing impersonation"
+    Remove-ImpersonateUser
+}
+
 #Deploy Run Once script to launch post deployment actions at next admin logon
 WriteLog "Deploying Run Once script to launch post deployment actions at next admin logon"
 $basePath = 'C:\Packages\Plugins\Microsoft.Compute.CustomScriptExtension'
@@ -235,12 +242,6 @@ if ($null -ne $latestVersionFolder) {
 }
 else {
     WriteLog "No version subfolders found in '$basePath'."
-}
-
-if ($addsSelection -eq "adds") {
-    #Remove impersonation
-    WriteLog "Removing impersonation"
-    Remove-ImpersonateUser
 }
 
 WriteLog "Finished installing RAS..."
