@@ -151,6 +151,8 @@ $Temploc = 'C:\install\RASInstaller.msi'
 $installPath = "C:\install"
 $downloadURLRAS = 'https://download.parallels.com/ras/latest/RASInstaller.msi'
 $hostname = hostname
+$localAdminPasswordSecure = ConvertTo-SecureString $localAdminPassword -AsPlainText -Force
+$maPSecure = ConvertTo-SecureString $maP -AsPlainText -Force
 
 # Check if the install path already exists
 if (-not (Test-Path -Path $installPath)) { New-Item -Path $installPath -ItemType Directory }
@@ -191,14 +193,14 @@ Import-Module 'C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdm
 # Add permissions to the RAS Admins group
 if ($addsSelection -eq "adds") {
     WriteLog "New RAS Session for ADDS user"
-    New-RASSession -Username $localAdminUser -Password $localAdminPassword
+    New-RASSession -Username $localAdminUser -Password $localAdminPasswordSecure
     New-RASAdminAccount $RasAdminsGroupAD
     invoke-RASApply
 }
 #add permissions to the local admin group
 if ($addsSelection -eq "workgroup") {
     WriteLog "New RAS Session for workgroup user"
-    New-RASSession -Username $localAdminUser -Password $localAdminPassword
+    New-RASSession -Username $localAdminUser -Password $localAdminPasswordSecure
     Set-RASAuthSettings -AllTrustedDomains $false -Domain Workgroup/$hostname
     invoke-RASApply
 }
@@ -218,13 +220,6 @@ New-RASPubRDSDesktop -Name "Published Desktop"
 New-RASPubRDSApp -Name "Calculator" -Target "C:\Windows\System32\calc.exe" -PublishFrom All -WinType Maximized
 New-RASPubRDSApp -Name "Paint" -Target "C:\Windows\System32\mspaint.exe" -PublishFrom All -WinType Maximized
 New-RASPubRDSApp -Name "WordPad" -Target "C:\Program Files\Windows NT\Accessories\wordpad.exe"  -PublishFrom All -WinType Maximized 
-invoke-RASApply
-
-if ($addsSelection -eq "adds") {
-    WriteLog "Add AD group as RAS Admins"
-    New-RASAdminAccount $RasAdminsGroupAD
-}
-
 invoke-RASApply
 
 #Deploy Run Once script to launch post deployment actions at next admin logon
