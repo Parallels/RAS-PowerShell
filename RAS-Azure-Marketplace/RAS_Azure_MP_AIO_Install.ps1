@@ -1,4 +1,4 @@
-﻿<#  
+<#  
 .SYNOPSIS  
     PArallels RAS auto-deploy script for Azure MarketPlace Deployments
 .NOTES  
@@ -25,10 +25,19 @@ param(
     [string]$RasAdminsGroupAD,
 
     [Parameter(Mandatory = $false)]
+    [string]$domainName,
+
+    [Parameter(Mandatory = $false)]
     [string]$localAdminUser,
 
     [Parameter(Mandatory = $false)]
-    [string]$localAdminPassword
+    [string]$localAdminPassword,
+
+    [Parameter(Mandatory = $true)]
+    [string]$maU,
+
+    [Parameter(Mandatory = $true)]
+    [string]$maP
 )
 
 function New-ImpersonateUser {
@@ -140,6 +149,7 @@ function Set-RunOnceScriptForAllUsers {
 #Set variables
 $Temploc = 'C:\install\RASInstaller.msi'
 $installPath = "C:\install"
+$downloadURLRAS = 'https://download.parallels.com/ras/latest/RASInstaller.msi'
 
 # Check if the install path already exists
 if (-not (Test-Path -Path $installPath)) { New-Item -Path $installPath -ItemType Directory }
@@ -167,13 +177,12 @@ if ($addsSelection -eq "adds") {
     #Impersonate user with admin permissions to install RAS and administrators to manage RAS
     WriteLog "Impersonating user"
     Add-LocalGroupMember -Group "Administrators" -Member $domainJoinUserName
-    New-RASAdminAccount $RasAdminsGroupAD
     New-ImpersonateUser -Username $domainJoinUserName -Domain $domainName -Password $domainJoinPassword
 }
 
 #Install RAS Console & PowerShell role
 WriteLog "Install Parallels RAS Console and Powershell role"
-Start-Process msiexec.exe -ArgumentList "/i C:\install\RASInstaller.msi /quiet /passive /norestart ADDFWRULES=1 /log $Logfile" -Wait
+Start-Process msiexec.exe -ArgumentList "/i C:\install\RASInstaller.msi /quiet /passive /norestart ADDFWRULES=1 /log C:\install\RAS_Install.log" -Wait
 
 # Enable RAS PowerShell module
 Import-Module 'C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdmin\RASAdmin.psd1'
@@ -181,14 +190,15 @@ Import-Module 'C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdm
 #Activate 30 day trial using Azure MP Parallels Business account
 if ($addsSelection -eq "adds") {
     WriteLog "New RAS Session for ADDS user $userName"
-    New-RASSession -Username $userName -Password $userPassword
+    New-RASSession -Username $domainJoinUserName -Password $domainJoinPasswordSecure
+    New-RASAdminAccount $RasAdminsGroupAD
 }
 if ($addsSelection -eq "workgroup") {
     WriteLog "New RAS Session for workgroup user $localAdminUser"
     New-RASSession -Username $localAdminUser -Password $localAdminPassword
 }
 WriteLog "Activating RAS License"
-Invoke-RASLicenseActivate -Email $activationUser -Password $ActivationPassword
+Invoke-RASLicenseActivate -Email $maU -Password $maPSecure
 invoke-RASApply
 
 #Add VM Appliance RDS Server
@@ -202,7 +212,6 @@ New-RASPubRDSDesktop -Name "Published Desktop"
 New-RASPubRDSApp -Name "Calculator" -Target "C:\Windows\System32\calc.exe" -PublishFrom All -WinType Maximized
 New-RASPubRDSApp -Name "Paint" -Target "C:\Windows\System32\mspaint.exe" -PublishFrom All -WinType Maximized
 New-RASPubRDSApp -Name "WordPad" -Target "C:\Program Files\Windows NT\Accessories\wordpad.exe"  -PublishFrom All -WinType Maximized 
-New-RASPubRDSApp -Name "Google Chrome" -Target "c:\Program Files (x86)\Google\Chrome\Application\chrome.exe"  -PublishFrom All -WinType Maximized -icon "c:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -IconIndex 0
 invoke-RASApply
 
 if ($addsSelection -eq "adds") {
