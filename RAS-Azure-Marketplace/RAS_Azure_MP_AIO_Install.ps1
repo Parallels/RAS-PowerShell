@@ -188,8 +188,22 @@ if ($addsSelection -eq "adds") {
 WriteLog "Install Parallels RAS Console and Powershell role"
 Start-Process msiexec.exe -ArgumentList "/i C:\install\RASInstaller.msi /quiet /passive /norestart ADDFWRULES=1 /log C:\install\RAS_Install.log" -Wait
 
+if ($addsSelection -eq "adds") {
+    #Remove impersonation
+    WriteLog "Removing impersonation"
+    Remove-ImpersonateUser
+}
+
 # Enable RAS PowerShell module
 Import-Module 'C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdmin\RASAdmin.psd1'
+
+#Add all members from local administrators group user as root admin
+WriteLog "Configuring Root admins..."
+$allLocalAdmins = Get-LocalGroupMember -Group "Administrators"
+Foreach ($localAdmin in $allLocalAdmins)
+{
+    cmd /c "`"C:\Program Files (x86)\Parallels\ApplicationServer\x64\2XRedundancy.exe`" -c -AddRootAccount $localAdmin"
+}
 
 # Add permissions to the RAS Admins group
 if ($addsSelection -eq "adds") {
@@ -222,12 +236,6 @@ New-RASPubRDSApp -Name "Calculator" -Target "C:\Windows\System32\calc.exe" -Publ
 New-RASPubRDSApp -Name "Paint" -Target "C:\Windows\System32\mspaint.exe" -PublishFrom All -WinType Maximized
 New-RASPubRDSApp -Name "WordPad" -Target "C:\Program Files\Windows NT\Accessories\wordpad.exe"  -PublishFrom All -WinType Maximized 
 invoke-RASApply
-
-if ($addsSelection -eq "adds") {
-    #Remove impersonation
-    WriteLog "Removing impersonation"
-    Remove-ImpersonateUser
-}
 
 #Deploy Run Once script to launch post deployment actions at next admin logon
 WriteLog "Deploying Run Once script to launch post deployment actions at next admin logon"
