@@ -257,6 +257,7 @@ else {
 # Configure the default wallpaper for all users
 $wallpaperPath = Join-Path -Path $latestVersionFolder.FullName -ChildPath 'Downloads\0\logo-full-color-on-black.jpg'
 $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\PersonalizationCSP"
+New-Item -Path $regPath 
 Set-ItemProperty -Path $regPath -Name "DesktopImagePath" -Value $wallpaperPath
 Set-ItemProperty -Path $regPath -Name "DesktopImageUrl" -Value $wallpaperPath
 Set-ItemProperty -Path $regPath -Name "DesktopImageStatus" -Value 1
