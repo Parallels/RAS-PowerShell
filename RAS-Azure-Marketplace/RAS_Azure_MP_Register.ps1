@@ -466,7 +466,7 @@ if ($retreivedData.licenseType -eq 0) {
 
 #Get the keyvault secret
 try {
-    $localAdminPasswordSecure = (get-keyVaultSecret -keyVaultName $retreivedData.keyVaultName -secretName $retreivedData.secretName).secretValue
+    $domainjoinPasswordSecure = (get-keyVaultSecret -keyVaultName $retreivedData.keyVaultName -secretName $retreivedData.secretName).secretValue
 }
 Catch {
     Write-Host "ERROR: trying to read resource usage id from managed app"
@@ -608,7 +608,7 @@ if ($retreivedData.providerSelection -ne "noProvider") {
 
 # Register Parallels RAS with the license key
 WriteLog "Register Parallels RAS with the license key"
-New-RASSession -Username $retreivedData.domainJoinUserName -Password $localAdminPasswordSecure -Server $retreivedData.primaryConnectionBroker
+New-RASSession -Username $retreivedData.domainJoinUserName -Password $domainjoinPasswordSecure -Server $retreivedData.primaryConnectionBroker
 
 # Check if the license type is 0 (AZMP) then register Parallels RAS with the license AZMP key
 # Check if the license type is 1 (BYOL) then allow to register license key manually or use trial
