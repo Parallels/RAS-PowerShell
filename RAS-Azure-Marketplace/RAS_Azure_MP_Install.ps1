@@ -206,9 +206,11 @@ function WriteLog {
 }
 
 #Disable Server Manager from starting at logon
+WriteLog "Disabling Server Manager from starting at logon"
 schtasks /Change /TN "Microsoft\Windows\Server Manager\ServerManager"  /Disable
 
 # Disable IE ESC for Administrators and users
+WriteLog "Disabling IE ESC for Administrators and users"
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}' -Name 'IsInstalled' -Value 0
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}' -Name 'IsInstalled' -Value 0
 
@@ -217,6 +219,7 @@ $parts = $resourceID -split '/'
 $SubscriptionId = $parts[2]
 
 # Create a PowerShell object with the extracted values
+WriteLog "Creating JSON object"
 $data = @{
     SubscriptionId = $SubscriptionId
     domainJoinUserName = $domainJoinUserName
@@ -265,6 +268,7 @@ Start-Process msiexec.exe -ArgumentList "/i C:\install\RASInstaller.msi ADDFWRUL
 Remove-ImpersonateUser
 
 #Deploy Run Once script to launch post deployment actions at next admin logon
+WriteLog "Deploying Run Once script to launch post deployment actions at next admin logon"
 $basePath = 'C:\Packages\Plugins\Microsoft.Compute.CustomScriptExtension'
 $latestVersionFolder = Get-ChildItem -Path $basePath -Directory | Sort-Object Name -Descending | Select-Object -First 1
 
@@ -276,6 +280,7 @@ if ($null -ne $latestVersionFolder) {
     Set-RunOnceScriptForAllUsers -ScriptPath $scriptPath
 } else {
     Write-Host "No version subfolders found in '$basePath'."
+    WriteLog "No version subfolders found in '$basePath'."
 }
 
 WriteLog "Finished installing RAS..."
