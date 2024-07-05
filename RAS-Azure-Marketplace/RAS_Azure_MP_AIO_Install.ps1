@@ -153,7 +153,9 @@ $downloadURLRAS = 'https://download.parallels.com/ras/latest/RASInstaller.msi'
 $hostname = hostname
 $localAdminPasswordSecure = ConvertTo-SecureString $localAdminPassword -AsPlainText -Force
 $maPSecure = ConvertTo-SecureString $maP -AsPlainText -Force
-$domainJoinPasswordSecure = ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force
+if ($addsSelection -eq "adds") {
+    $domainJoinPasswordSecure = ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force
+}
 
 # Check if the install path already exists
 if (-not (Test-Path -Path $installPath)) { New-Item -Path $installPath -ItemType Directory }
@@ -200,8 +202,7 @@ Import-Module 'C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdm
 #Add all members from local administrators group user as root admin
 WriteLog "Configuring Root admins..."
 $allLocalAdmins = Get-LocalGroupMember -Group "Administrators"
-Foreach ($localAdmin in $allLocalAdmins)
-{
+Foreach ($localAdmin in $allLocalAdmins) {
     cmd /c "`"C:\Program Files (x86)\Parallels\ApplicationServer\x64\2XRedundancy.exe`" -c -AddRootAccount $localAdmin"
 }
 
