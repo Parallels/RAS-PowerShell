@@ -597,7 +597,7 @@ resource keyvault 'Microsoft.KeyVault/vaults@2023-02-01' = {
 
 resource secretla 'Microsoft.KeyVault/vaults/secrets@2023-02-01' = {
   parent: keyvault
-  name: localAdminUser
+  name: 'localAdminPassword'
   properties: {
     value: localAdminPassword
   }
@@ -605,7 +605,7 @@ resource secretla 'Microsoft.KeyVault/vaults/secrets@2023-02-01' = {
 
 resource secretdj 'Microsoft.KeyVault/vaults/secrets@2023-02-01' = {
   parent: keyvault
-  name: take(domainJoinUserName, indexOf(domainJoinUserName, '@'))
+  name: 'domainJoinPassword'
   properties: {
     value: domainJoinPassword
   }
