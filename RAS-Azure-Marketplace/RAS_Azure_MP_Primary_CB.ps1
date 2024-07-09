@@ -37,8 +37,17 @@ param(
     [string]$RasAdminsGroupAD,
 
     [Parameter(Mandatory = $true)]
-    [string]$downloadURLRAS
-    
+    [string]$downloadURLRAS,
+
+    [Parameter(Mandatory = $false)]
+    [string]$license,
+
+    [Parameter(Mandatory = $false)]
+    [string]$maU,
+
+    [Parameter(Mandatory = $false)]
+    [string]$maP
+   
 )
 
 #Set variables
@@ -172,6 +181,14 @@ start-sleep -Seconds 10
 WriteLog "Creat new RAS PowerShell Session"
 New-RASSession -Username $domainJoinUserName -Password $secdomainJoinPassword -Server $primaryConnectionBroker
 
+if ($license -eq 'trial') {
+    #Activate 30 day trial using Azure MP Parallels Business account
+    WriteLog "Activating RAS License"
+    $maPSecure = ConvertTo-SecureString $maP -AsPlainText -Force
+    Invoke-RASLicenseActivate -Email $maU -Password $maPSecure
+    invoke-RASApply
+}
+
 #Add AD group as RAS Admins
 WriteLog "Add AD group as RAS Admins"
 New-RASAdminAccount $RasAdminsGroupAD
@@ -191,7 +208,7 @@ for ($i = 2; $i -le $numberofCBs; $i++) {
     $connectionBroker = $prefixCBName + "-" + $i + "." + $domainName
     New-RASBroker -Server $connectionBroker -Takeover
     Start-Sleep -Seconds 10
-    if ($i -eq 4) { Set-RASBroker -Server $connectionBroker -enabled $false}
+    if ($i -eq 4) { Set-RASBroker -Server $connectionBroker -enabled $false }
 }
 Invoke-RASApply
 
