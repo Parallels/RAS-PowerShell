@@ -5,7 +5,7 @@
     File Name  : RAS_Azure_MP_AIO_Install.ps1
     Author     : Freek Berson
     Version    : v0.0.1
-    Date       : Jul 3 2024
+    Date       : Jul 9 2024
 .EXAMPLE
     .\RAS_Azure_MP_AIO_Install.ps1
 #>
@@ -32,6 +32,9 @@ param(
 
     [Parameter(Mandatory = $false)]
     [string]$localAdminPassword,
+
+    [Parameter(Mandatory = $false)]
+    [string]$license,
 
     [Parameter(Mandatory = $true)]
     [string]$maU,
@@ -220,10 +223,13 @@ if ($addsSelection -eq "workgroup") {
     Set-RASAuthSettings -AllTrustedDomains $false -Domain Workgroup/$hostname
     invoke-RASApply
 }
-#Activate 30 day trial using Azure MP Parallels Business account
-WriteLog "Activating RAS License"
-Invoke-RASLicenseActivate -Email $maU -Password $maPSecure
-invoke-RASApply
+
+if ($license -eq 'trial') {
+    #Activate 30 day trial using Azure MP Parallels Business account
+    WriteLog "Activating RAS License"
+    Invoke-RASLicenseActivate -Email $maU -Password $maPSecure
+    invoke-RASApply
+}
 
 #Add VM Appliance RDS Server
 writelog "Adding VM Appliance RDS Server"
