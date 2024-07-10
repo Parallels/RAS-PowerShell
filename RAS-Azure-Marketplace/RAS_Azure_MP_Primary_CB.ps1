@@ -181,14 +181,6 @@ start-sleep -Seconds 10
 WriteLog "Creat new RAS PowerShell Session"
 New-RASSession -Username $domainJoinUserName -Password $secdomainJoinPassword -Server $primaryConnectionBroker
 
-if ($license -eq 'trial') {
-    #Activate 30 day trial using Azure MP Parallels Business account
-    WriteLog "Activating RAS License"
-    $maPSecure = ConvertTo-SecureString $maP -AsPlainText -Force
-    Invoke-RASLicenseActivate -Email $maU -Password $maPSecure
-    invoke-RASApply
-}
-
 #Add AD group as RAS Admins
 WriteLog "Add AD group as RAS Admins"
 New-RASAdminAccount $RasAdminsGroupAD
@@ -217,6 +209,18 @@ Remove-RASSession
 
 WriteLog "Remove impersonation"
 Remove-ImpersonateUser
+
+if ($license -eq 'trial') {
+    #Create new RAS PowerShell Session
+    start-sleep -Seconds 10
+    WriteLog "Creat new RAS PowerShell Session"
+    New-RASSession -Username $domainJoinUserName -Password $secdomainJoinPassword -Server $primaryConnectionBroker
+    #Activate 30 day trial using Azure MP Parallels Business account
+    WriteLog "Activating RAS License"
+    $maPSecure = ConvertTo-SecureString $maP -AsPlainText -Force
+    Invoke-RASLicenseActivate -Email $maU -Password $maPSecure
+    invoke-RASApply
+}
 
 WriteLog "Restart to finish installation of RAS Connection Broker role"
 shutdown -r -f -t 0
