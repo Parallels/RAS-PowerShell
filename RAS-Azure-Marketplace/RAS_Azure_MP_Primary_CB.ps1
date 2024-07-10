@@ -204,22 +204,48 @@ for ($i = 2; $i -le $numberofCBs; $i++) {
 }
 Invoke-RASApply
 
+try {
+    if ($license -eq 'trial') {
+        #Create new RAS PowerShell Session
+        start-sleep -Seconds 10
+        WriteLog "Creat new RAS PowerShell Session"
+        New-RASSession -Username $domainJoinUserName -Password $secdomainJoinPassword -Server $primaryConnectionBroker
+        #Activate 30 day trial using Azure MP Parallels Business account
+        WriteLog "Activating RAS License"
+        $maPSecure = ConvertTo-SecureString $maP -AsPlainText -Force
+        Invoke-RASLicenseActivate -Email $maU -Password $maPSecure
+        invoke-RASApply
+        start-sleep -Seconds 10
+    }
+}
+Catch {
+    WriteLog $_.Exception.Message
+    exit
+}
+
 WriteLog "Remove RAS PowerShell Session"
 Remove-RASSession
 
 WriteLog "Remove impersonation"
 Remove-ImpersonateUser
 
-if ($license -eq 'trial') {
-    #Create new RAS PowerShell Session
-    start-sleep -Seconds 10
-    WriteLog "Creat new RAS PowerShell Session"
-    New-RASSession -Username $domainJoinUserName -Password $secdomainJoinPassword -Server $primaryConnectionBroker
-    #Activate 30 day trial using Azure MP Parallels Business account
-    WriteLog "Activating RAS License"
-    $maPSecure = ConvertTo-SecureString $maP -AsPlainText -Force
-    Invoke-RASLicenseActivate -Email $maU -Password $maPSecure
-    invoke-RASApply
+try {
+    if ($license -eq 'trial') {
+        #Create new RAS PowerShell Session
+        start-sleep -Seconds 10
+        WriteLog "Creat new RAS PowerShell Session"
+        New-RASSession -Username $domainJoinUserName -Password $secdomainJoinPassword -Server $primaryConnectionBroker
+        #Activate 30 day trial using Azure MP Parallels Business account
+        WriteLog "Activating RAS License"
+        $maPSecure = ConvertTo-SecureString $maP -AsPlainText -Force
+        Invoke-RASLicenseActivate -Email $maU -Password $maPSecure
+        invoke-RASApply
+        start-sleep -Seconds 10
+    }
+}
+Catch {
+    WriteLog $_.Exception.Message
+    exit
 }
 
 WriteLog "Restart to finish installation of RAS Connection Broker role"
