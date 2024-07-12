@@ -188,7 +188,8 @@ New-RASAdminAccount $RasAdminsGroupAD
 #Add Secure Gateways
 WriteLog "Add secure gateways"
 for ($i = 1; $i -le $numberofSGs; $i++) {
-    $secureGateway = $prefixSGName + "-" + $i + "." + $domainName
+    $paddedNumber = $i.ToString("D2")
+    $secureGateway = "$prefixSGName-$paddedNumber.$domainName"
     New-RASGateway -Server $secureGateway
     Start-Sleep -Seconds 10
 }
@@ -197,7 +198,8 @@ Invoke-RASApply
 #Add secondary Connection Brokers
 WriteLog "Add secondary Connection Brokers"
 for ($i = 2; $i -le $numberofCBs; $i++) {
-    $connectionBroker = $prefixCBName + "-" + $i + "." + $domainName
+    $paddedNumber = $i.ToString("D2")
+    $connectionBroker = "$prefixCBName-$paddedNumber.$domainName"
     New-RASBroker -Server $connectionBroker -Takeover
     Start-Sleep -Seconds 10
     if ($i -eq 4) { Set-RASBroker -Server $connectionBroker -enabled $false }
