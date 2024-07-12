@@ -406,13 +406,13 @@ Catch {
 WriteLog "Restart secundary RAS servers to complete installation"
 for ($i = 2; $i -le $retreivedData.numberofCBs; $i++) {
     $paddedNumber = $i.ToString("D2")
-    $connectionBroker = "$retreivedData.prefixCBName-$paddedNumber.$retreivedData.domainName"
+    $connectionBroker = $retreivedData.prefixCBName+'-'+$paddedNumber+'.'+$retreivedData.domainName
     restart-computer -computername $connectionBroker -WsmanAuthentication Kerberos -force
 }
 
 for ($i = 1; $i -le $retreivedData.numberofSGs; $i++) {
     $paddedNumber = $i.ToString("D2")
-    $secureGateway = "$retreivedData.prefixSGName-$paddedNumber.$retreivedData.domainName"
+    $secureGateway = $retreivedData.prefixSGName+'-'+$paddedNumber+'.'+$retreivedData.domainName    
     restart-computer -computername $secureGateway -WsmanAuthentication Kerberos -force
 }
 start-sleep -Seconds 10
