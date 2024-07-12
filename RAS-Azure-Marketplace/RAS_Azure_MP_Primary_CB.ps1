@@ -179,7 +179,7 @@ Import-Module 'C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdm
 #Create new RAS PowerShell Session
 start-sleep -Seconds 10
 WriteLog "Creat new RAS PowerShell Session"
-New-RASSession -Username $domainJoinUserName -Password $secdomainJoinPassword -Server $primaryConnectionBroker
+New-RASSession -Username $domainJoinUserName -Password $secdomainJoinPassword
 
 #Add AD group as RAS Admins
 WriteLog "Add AD group as RAS Admins"
@@ -217,7 +217,7 @@ try {
         #Create new RAS PowerShell Session
         start-sleep -Seconds 10
         WriteLog "Creat new RAS PowerShell Session"
-        New-RASSession -Username $domainJoinUserName -Password $secdomainJoinPassword -Server $primaryConnectionBroker
+        New-RASSession -Username $domainJoinUserName -Password $secdomainJoinPassword
         #Activate 30 day trial using Azure MP Parallels Business account
         WriteLog "Activating RAS License"
         $maPSecure = ConvertTo-SecureString $maP -AsPlainText -Force
