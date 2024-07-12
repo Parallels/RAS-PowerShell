@@ -1,6 +1,6 @@
 <#  
 .SYNOPSIS  
-    PArallels RAS register script for Azure MarketPlace Deployments
+    Parallels RAS register script for Azure MarketPlace Deployments
 .NOTES  
     File Name  : RAS_Azure_MP_Register.ps1
     Author     : Freek Berson
@@ -389,6 +389,31 @@ if (-not (Test-InternetConnection)) {
     exit
 }
 
+# Get Azure details from JSON file
+WriteLog "Get Azure details from JSON file"
+try {
+    $retreivedData = get-AzureDetailsFromJSON 
+}
+Catch {
+    Write-Host "ERROR: retreiving Azure details from JSON file"
+    WriteLog "ERROR: retreiving Azure details from JSON file"
+    Write-Host $_.Exception.Message
+    WriteLog $_.Exception.Message
+    exit
+}
+
+#restart secundary RAS servers to complete installation
+WriteLog "Restart secundary RAS servers to complete installation"
+for ($i = 2; $i -le $retreivedData.numberofCBs; $i++) {
+    $connectionBroker = $retreivedData.prefixCBName + "-" + $i + "." + $retreivedData.domainName
+    restart-computer -computername $connectionBroker -WsmanAuthentication Kerberos -force
+}
+for ($i = 1; $i -le $retreivedData.numberofSGs; $i++) {
+    $secureGateway = $retreivedData.prefixSGName + "-" + $i + "." + $retreivedData.domainName
+    restart-computer -computername $secureGateway -WsmanAuthentication Kerberos -force
+}
+start-sleep -Seconds 10
+
 #Check if NuGet 2.8.5.201 or higher is installed, if not install it
 WriteLog "Check if NuGet 2.8.5.201 or higher is installed, if not install it"
 try {
@@ -413,19 +438,6 @@ try {
 Catch {
     Write-Host "ERROR: trying to import required modules import Az.Accounts, AzureAD, Az.Resources, Az.network, and Az.keyVault"
     WriteLog "ERROR: trying to import required modules import Az.Accounts, AzureAD, Az.Resources, Az.network, and Az.keyVault"
-    Write-Host $_.Exception.Message
-    WriteLog $_.Exception.Message
-    exit
-}
-
-# Get Azure details from JSON file
-WriteLog "Get Azure details from JSON file"
-try {
-    $retreivedData = get-AzureDetailsFromJSON 
-}
-Catch {
-    Write-Host "ERROR: retreiving Azure details from JSON file"
-    WriteLog "ERROR: retreiving Azure details from JSON file"
     Write-Host $_.Exception.Message
     WriteLog $_.Exception.Message
     exit
@@ -640,17 +652,6 @@ if ($retreivedData.providerSelection -eq "AzureProvider") {
 WriteLog "Invoke-apply and remove session"
 invoke-RASApply
 Remove-RASSession
-
-#restart secundary RAS servers to complete installation
-WriteLog "Restart secundary RAS servers to complete installation"
-for ($i = 2; $i -le $retreivedData.numberofCBs; $i++) {
-    $connectionBroker = $retreivedData.prefixCBName + "-" + $i + "." + $retreivedData.domainName
-    restart-computer -computername $connectionBroker -WsmanAuthentication Kerberos -force
-}
-for ($i = 1; $i -le $retreivedData.numberofSGs; $i++) {
-    $secureGateway = $retreivedData.prefixSGName + "-" + $i + "." + $retreivedData.domainName
-    restart-computer -computername $secureGateway -WsmanAuthentication Kerberos -force
-}
 
 #Clean up JSON file
 WriteLog "Clean up JSON file"
