@@ -32,9 +32,13 @@ param ouPath string
 param providerSelection string
 param providerName string = 'Provider'
 param providerAppRegistrationName string = 'ras-app'
-
+param license string
 param rasVersion string = 'evergreen'
 param customURLRAS string = 'evergreen'
+@secure()
+param maU string
+@secure()
+param maP string
 
 var appPublisherName = 'Parallels'
 var appProductName = 'parallelsrasprod'
@@ -68,6 +72,8 @@ var vnetId = {
 var subnetId = '${vnetId[vnetNewOrExisting]}/subnets/${subnetName}'
 var domainJoinOptions = 3
 var lbSkuName = 'Standard'
+var localAdminPasswordSecretName = 'localAdminPassword'
+var domainJoinPasswordSecretName = 'domainJoinPassword'
 var licenseType = 1
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-06-01' =
@@ -91,7 +97,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-06-01' =
 
 resource ConnectionBrokerNic 'Microsoft.Network/networkInterfaces@2023-04-01' = [
   for i in range(1, numberofCBs): {
-    name: '${prefixCBName}-${i}-nic'
+    name: '${prefixCBName}-${padLeft(i, 2, '0')}-nic'
     location: location
     properties: {
       ipConfigurations: [
@@ -112,11 +118,11 @@ resource ConnectionBrokerNic 'Microsoft.Network/networkInterfaces@2023-04-01' = 
 
 resource connectionBrokerVM 'Microsoft.Compute/virtualMachines@2023-07-01' = [
   for i in range(1, numberofCBs): {
-    name: '${prefixCBName}-${i}'
+    name: '${prefixCBName}-${padLeft(i, 2, '0')}-nic'
     location: location
     properties: {
       osProfile: {
-        computerName: '${prefixCBName}-${i}'
+        computerName: '${prefixCBName}-${padLeft(i, 2, '0')}'
         adminUsername: localAdminUser
         adminPassword: localAdminPassword
         windowsConfiguration: {
@@ -195,7 +201,7 @@ resource connectionBrokerPrimaryRAS 'Microsoft.Compute/virtualMachines/extension
         fileUris: ['${assetLocation}${connectionBrokerPrimaryScript}']
       }
       protectedSettings: {
-        commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File ${connectionBrokerPrimaryScript} -domainJoinUserName ${domainJoinUserName} -domainJoinPassword ${domainJoinPassword} -domainName ${domainName} -numberofCBs ${numberofCBs} -numberofSGs ${numberofSGs} -prefixCBName ${prefixCBName} -prefixSGName ${prefixSGName} -RasAdminsGroupAD ${RasAdminsGroupAD} -downloadURLRAS ${downloadURLRAS}'
+        commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File ${connectionBrokerPrimaryScript} -domainJoinUserName ${domainJoinUserName} -domainJoinPassword ${domainJoinPassword} -domainName ${domainName} -numberofCBs ${numberofCBs} -numberofSGs ${numberofSGs} -prefixCBName ${prefixCBName} -prefixSGName ${prefixSGName} -RasAdminsGroupAD ${RasAdminsGroupAD} -downloadURLRAS ${downloadURLRAS} -license ${license} -maU ${maU} -maP ${maP}'
       }
     }
     dependsOn: [connectionBrokerDJ, connectionBrokerRAS, secureGatewayRAS]
@@ -228,7 +234,7 @@ resource connectionBrokerRAS 'Microsoft.Compute/virtualMachines/extensions@2023-
 
 resource secureGatewayNic 'Microsoft.Network/networkInterfaces@2023-04-01' = [
   for i in range(1, numberofSGs): {
-    name: '${prefixSGName}-${i}-nic'
+    name: '${prefixSGName}-${padLeft(i, 2, '0')}-nic'
     location: location
     properties: {
       ipConfigurations: [
@@ -257,11 +263,11 @@ resource secureGatewayNic 'Microsoft.Network/networkInterfaces@2023-04-01' = [
 
 resource secureGatewayVM 'Microsoft.Compute/virtualMachines@2023-07-01' = [
   for i in range(1, numberofSGs): {
-    name: '${prefixSGName}-${i}'
+    name: '${prefixSGName}-${padLeft(i, 2, '0')}-nic'
     location: location
     properties: {
       osProfile: {
-        computerName: '${prefixSGName}-${i}'
+        computerName: '${prefixSGName}-${padLeft(i, 2, '0')}'        
         adminUsername: localAdminUser
         adminPassword: localAdminPassword
         windowsConfiguration: {
@@ -571,7 +577,7 @@ resource managementServerRAS 'Microsoft.Compute/virtualMachines/extensions@2023-
       fileUris: ['${assetLocation}${configurationScriptRAS}', '${assetLocation}${registerScriptRAS}']
     }
     protectedSettings: {
-      commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File ${configurationScriptRAS} -domainJoinUserName ${domainJoinUserName} -domainJoinPassword ${domainJoinPassword} -domainName ${domainName} -resourceID ${managementServerVM.id} -tenantID ${tenant().tenantId} -keyVaultName ${keyVaultName} -secretName ${take(domainJoinUserName, indexOf(domainJoinUserName, '@')) } -primaryConnectionBroker ${prefixCBName}-${1} -numberofCBs ${numberofCBs} -numberofSGs ${numberofSGs} -prefixCBName ${prefixCBName} -prefixSGName ${prefixSGName} -appPublisherName ${appPublisherName} -appProductName ${appProductName} -providerSelection ${providerSelection} -providerName ${providerName} -providerAppRegistrationName ${providerAppRegistrationName} -vnetId ${vnetId[vnetNewOrExisting]} -mgrID ${resourceGroup().id} -downloadURLRAS ${downloadURLRAS} -licenseType ${licenseType}'
+      commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File ${configurationScriptRAS} -domainJoinUserName ${domainJoinUserName} -domainJoinPassword ${domainJoinPassword} -domainName ${domainName} -resourceID ${managementServerVM.id} -tenantID ${tenant().tenantId} -keyVaultName ${keyVaultName} -secretName ${domainJoinPasswordSecretName} -primaryConnectionBroker ${prefixCBName}-01 -numberofCBs ${numberofCBs} -numberofSGs ${numberofSGs} -prefixCBName ${prefixCBName} -prefixSGName ${prefixSGName} -appPublisherName ${appPublisherName} -appProductName ${appProductName} -providerSelection ${providerSelection} -providerName ${providerName} -providerAppRegistrationName ${providerAppRegistrationName} -vnetId ${vnetId[vnetNewOrExisting]} -mgrID ${resourceGroup().id} -downloadURLRAS ${downloadURLRAS} -licenseType ${licenseType} '
     }
   }
   dependsOn: [managementServerDJ, connectionBrokerRAS, connectionBrokerPrimaryRAS, secureGatewayRAS]
@@ -597,7 +603,7 @@ resource keyvault 'Microsoft.KeyVault/vaults@2023-02-01' = {
 
 resource secretla 'Microsoft.KeyVault/vaults/secrets@2023-02-01' = {
   parent: keyvault
-  name: 'localAdminPassword'
+  name: localAdminPasswordSecretName
   properties: {
     value: localAdminPassword
   }
@@ -605,7 +611,7 @@ resource secretla 'Microsoft.KeyVault/vaults/secrets@2023-02-01' = {
 
 resource secretdj 'Microsoft.KeyVault/vaults/secrets@2023-02-01' = {
   parent: keyvault
-  name: 'domainJoinPassword'
+  name: domainJoinPasswordSecretName
   properties: {
     value: domainJoinPassword
   }
