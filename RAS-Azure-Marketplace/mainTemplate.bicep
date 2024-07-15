@@ -118,7 +118,7 @@ resource ConnectionBrokerNic 'Microsoft.Network/networkInterfaces@2023-04-01' = 
 
 resource connectionBrokerVM 'Microsoft.Compute/virtualMachines@2023-07-01' = [
   for i in range(1, numberofCBs): {
-    name: '${prefixCBName}-${padLeft(i, 2, '0')}-nic'
+    name: '${prefixCBName}-${padLeft(i, 2, '0')}'
     location: location
     properties: {
       osProfile: {
@@ -263,7 +263,7 @@ resource secureGatewayNic 'Microsoft.Network/networkInterfaces@2023-04-01' = [
 
 resource secureGatewayVM 'Microsoft.Compute/virtualMachines@2023-07-01' = [
   for i in range(1, numberofSGs): {
-    name: '${prefixSGName}-${padLeft(i, 2, '0')}-nic'
+    name: '${prefixSGName}-${padLeft(i, 2, '0')}'
     location: location
     properties: {
       osProfile: {
