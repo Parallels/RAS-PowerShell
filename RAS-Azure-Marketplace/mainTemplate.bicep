@@ -1,12 +1,35 @@
 param localAdminUser string = 'rasdmin'
 @secure()
 param localAdminPassword string
-param vnetName string
-param vnetNewOrExisting string
-param vnetkAddressPrefix string
-param vnetResourceGroup string
-param subnetName string
-param subnetAddressPrefix string
+
+param vnetNameCB string
+param vnetNewOrExistingCB string
+param vnetkAddressPrefixCB string
+param vnetResourceGroupCB string
+param subnetNameCB string
+param subnetAddressPrefixCB string
+
+param vnetNameSG string = vnetNameCB
+param vnetNewOrExistingSG string = vnetNewOrExistingCB
+param vnetkAddressPrefixSG string = vnetkAddressPrefixCB
+param vnetResourceGroupSG string = vnetResourceGroupCB
+param subnetNameSG string = subnetNameCB
+param subnetAddressPrefixSG string = subnetAddressPrefixCB
+
+param vnetNameMS string = vnetNameCB
+param vnetNewOrExistingMS string = vnetNewOrExistingCB
+param vnetkAddressPrefixMS string = vnetkAddressPrefixCB
+param vnetResourceGroupMS string = vnetResourceGroupCB
+param subnetNameMS string = subnetNameCB
+param subnetAddressPrefixMS string = subnetAddressPrefixCB
+
+param vnetNameSH string = vnetNameCB
+param vnetNewOrExistingSH string = vnetNewOrExistingCB
+param vnetkAddressPrefixSH string = vnetkAddressPrefixCB
+param vnetResourceGroupSH string = vnetResourceGroupCB
+param subnetNameSH string = subnetNameCB
+param subnetAddressPrefixSH string = subnetAddressPrefixCB
+
 param prefixCBName string
 param prefixSGName string
 param msName string
@@ -58,42 +81,116 @@ var accessPolicies = [
     }
   }
 ]
-var downloadURLRAS = rasVersion == 'customURL' ? customURLRAS : 'https://download.parallels.com/ras/latest/RASInstaller.msi'
+var downloadURLRAS = rasVersion == 'customURL'
+  ? customURLRAS
+  : 'https://download.parallels.com/ras/latest/RASInstaller.msi'
 var assetLocation = 'https://raw.githubusercontent.com/Parallels/RAS-PowerShell/master/RAS-Azure-Marketplace/'
 var configurationScriptRAS = 'RAS_Azure_MP_Install.ps1'
 var registerScriptRAS = 'RAS_Azure_MP_Register.ps1'
 var prereqScript = 'RAS_Azure_MP_prereq.ps1'
 var connectionBrokerPrimaryScript = 'RAS_Azure_MP_Primary_CB.ps1'
 var privateIPAllocationMethod = 'Dynamic'
-var vnetId = {
-  new: virtualNetwork.id
-  existing: resourceId(vnetResourceGroup, 'Microsoft.Network/virtualNetworks', vnetName)
+
+var vnetIdCB = {
+  new: virtualNetworkCB.id
+  existing: resourceId(vnetResourceGroupCB, 'Microsoft.Network/virtualNetworks', vnetNameCB)
 }
-var subnetId = '${vnetId[vnetNewOrExisting]}/subnets/${subnetName}'
+var subnetIdCB = '${vnetIdCB[vnetNewOrExistingCB]}/subnets/${subnetNameCB}'
+
+var vnetIdSG = {
+  new: virtualNetworkCB.id
+  existing: resourceId(vnetResourceGroupSG, 'Microsoft.Network/virtualNetworks', vnetNameSG)
+}
+var subnetIdSG = '${vnetIdSG[vnetNewOrExistingSG]}/subnets/${subnetNameSG}'
+
+var vnetIdMS = {
+  new: virtualNetworkCB.id
+  existing: resourceId(vnetResourceGroupMS, 'Microsoft.Network/virtualNetworks', vnetNameMS)
+}
+var subnetIdMS = '${vnetIdMS[vnetNewOrExistingMS]}/subnets/${subnetNameMS}'
+
+var vnetIdSH = {
+  new: virtualNetworkCB.id
+  existing: resourceId(vnetResourceGroupSH, 'Microsoft.Network/virtualNetworks', vnetNameSH)
+}
+
 var domainJoinOptions = 3
 var lbSkuName = 'Standard'
 var localAdminPasswordSecretName = 'localAdminPassword'
 var domainJoinPasswordSecretName = 'domainJoinPassword'
 var licenseType = 1
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-06-01' =
-  if (vnetNewOrExisting == 'new') {
-    name: vnetName
-    location: location
-    properties: {
-      addressSpace: {
-        addressPrefixes: [vnetkAddressPrefix]
-      }
-      subnets: [
-        {
-          name: subnetName
-          properties: {
-            addressPrefix: subnetAddressPrefix
-          }
-        }
-      ]
+resource virtualNetworkCB 'Microsoft.Network/virtualNetworks@2023-06-01' = if (vnetNewOrExistingCB == 'new') {
+  name: vnetNameCB
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [vnetkAddressPrefixCB]
     }
+    subnets: [
+      {
+        name: subnetNameCB
+        properties: {
+          addressPrefix: subnetAddressPrefixCB
+        }
+      }
+    ]
   }
+}
+
+resource virtualNetworkSG 'Microsoft.Network/virtualNetworks@2023-06-01' = if (vnetNewOrExistingSG == 'new') {
+  name: vnetNameSG
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [vnetkAddressPrefixSG]
+    }
+    subnets: [
+      {
+        name: subnetNameSG
+        properties: {
+          addressPrefix: subnetAddressPrefixSG
+        }
+      }
+    ]
+  }
+}
+
+resource virtualNetworkMS 'Microsoft.Network/virtualNetworks@2023-06-01' = if (vnetNewOrExistingMS == 'new') {
+  name: vnetNameMS
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [vnetkAddressPrefixMS]
+    }
+    subnets: [
+      {
+        name: subnetNameMS
+        properties: {
+          addressPrefix: subnetAddressPrefixMS
+        }
+      }
+    ]
+  }
+}
+
+resource virtualNetworkSH 'Microsoft.Network/virtualNetworks@2023-06-01' = if (vnetNewOrExistingSH == 'new') {
+  name: vnetNameSH
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [vnetkAddressPrefixSH]
+    }
+    subnets: [
+      {
+        name: subnetNameSH
+        properties: {
+          addressPrefix: subnetAddressPrefixSH
+        }
+      }
+    ]
+  }
+}
 
 resource ConnectionBrokerNic 'Microsoft.Network/networkInterfaces@2023-04-01' = [
   for i in range(1, numberofCBs): {
@@ -106,7 +203,7 @@ resource ConnectionBrokerNic 'Microsoft.Network/networkInterfaces@2023-04-01' = 
           properties: {
             privateIPAllocationMethod: privateIPAllocationMethod
             subnet: {
-              id: subnetId
+              id: subnetIdCB
             }
           }
         }
@@ -243,7 +340,7 @@ resource secureGatewayNic 'Microsoft.Network/networkInterfaces@2023-04-01' = [
           properties: {
             privateIPAllocationMethod: privateIPAllocationMethod
             subnet: {
-              id: subnetId
+              id: subnetIdSG
             }
             loadBalancerBackendAddressPools: [
               {
@@ -267,7 +364,7 @@ resource secureGatewayVM 'Microsoft.Compute/virtualMachines@2023-07-01' = [
     location: location
     properties: {
       osProfile: {
-        computerName: '${prefixSGName}-${padLeft(i, 2, '0')}'        
+        computerName: '${prefixSGName}-${padLeft(i, 2, '0')}'
         adminUsername: localAdminUser
         adminPassword: localAdminPassword
         windowsConfiguration: {
@@ -488,7 +585,7 @@ resource managementServerNic 'Microsoft.Network/networkInterfaces@2023-04-01' = 
         properties: {
           privateIPAllocationMethod: privateIPAllocationMethod
           subnet: {
-            id: subnetId
+            id: subnetIdMS
           }
         }
       }
@@ -577,7 +674,7 @@ resource managementServerRAS 'Microsoft.Compute/virtualMachines/extensions@2023-
       fileUris: ['${assetLocation}${configurationScriptRAS}', '${assetLocation}${registerScriptRAS}']
     }
     protectedSettings: {
-      commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File ${configurationScriptRAS} -domainJoinUserName ${domainJoinUserName} -domainJoinPassword ${domainJoinPassword} -domainName ${domainName} -resourceID ${managementServerVM.id} -tenantID ${tenant().tenantId} -keyVaultName ${keyVaultName} -secretName ${domainJoinPasswordSecretName} -primaryConnectionBroker ${prefixCBName}-01 -numberofCBs ${numberofCBs} -numberofSGs ${numberofSGs} -prefixCBName ${prefixCBName} -prefixSGName ${prefixSGName} -appPublisherName ${appPublisherName} -appProductName ${appProductName} -providerSelection ${providerSelection} -providerName ${providerName} -providerAppRegistrationName ${providerAppRegistrationName} -vnetId ${vnetId[vnetNewOrExisting]} -mgrID ${resourceGroup().id} -downloadURLRAS ${downloadURLRAS} -licenseType ${licenseType} '
+      commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File ${configurationScriptRAS} -domainJoinUserName ${domainJoinUserName} -domainJoinPassword ${domainJoinPassword} -domainName ${domainName} -resourceID ${managementServerVM.id} -tenantID ${tenant().tenantId} -keyVaultName ${keyVaultName} -secretName ${domainJoinPasswordSecretName} -primaryConnectionBroker ${prefixCBName}-01 -numberofCBs ${numberofCBs} -numberofSGs ${numberofSGs} -prefixCBName ${prefixCBName} -prefixSGName ${prefixSGName} -appPublisherName ${appPublisherName} -appProductName ${appProductName} -providerSelection ${providerSelection} -providerName ${providerName} -providerAppRegistrationName ${providerAppRegistrationName} -vnetId ${vnetIdSH[vnetNewOrExistingSH]} -mgrID ${resourceGroup().id} -downloadURLRAS ${downloadURLRAS} -licenseType ${licenseType} '
     }
   }
   dependsOn: [managementServerDJ, connectionBrokerRAS, connectionBrokerPrimaryRAS, secureGatewayRAS]
