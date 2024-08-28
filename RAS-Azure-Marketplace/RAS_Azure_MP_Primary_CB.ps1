@@ -4,7 +4,7 @@
 .NOTES  
     File Name  : RAS_Azure_MP_Primary_CB.ps1
     Author     : Freek Berson
-    Version    : v0.0.18
+    Version    : v0.0.29
     Date       : May 23 2024
 .EXAMPLE
     .\RAS_Azure_MP_Install.ps1
