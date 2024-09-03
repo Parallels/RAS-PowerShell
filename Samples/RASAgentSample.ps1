@@ -41,8 +41,8 @@ New-RASSession
 
 #Add two RD Session Host servers.
 log "Adding two RD Session host servers"
-$rds = New-RASRDS -Server $RDSServer1
-New-RASRDS -Server $RDSServer2
+$rds = New-RASRDSHost -Server $RDSServer1
+New-RASRDSHost -Server $RDSServer2
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"

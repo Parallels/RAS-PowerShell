@@ -47,7 +47,7 @@ New-RASGateway -Server $GWServer
 
 #Add an RD Session Host server.
 log "Adding new RD Session Host server"
-New-RASRDS -Server $RDSServer
+New-RASRDSHost -Server $RDSServer
 
 #Add a published desktop.
 log "Adding new RDS published desktop"

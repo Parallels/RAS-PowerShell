@@ -54,30 +54,30 @@ New-RASGateway -Server $GWServer
 #Add the first RD Session Host server
 #The $RDS1 variable receives an object of type RDS identifying the RD Session Host. 
 log "Adding the first RD Session Host server"
-$RDS1 = New-RASRDS -Server $RDSServer1
+$RDS1 = New-RASRDSHost -Server $RDSServer1
 
 #Update the description of RD Session Host specified by the $RDS1 variable. 
 log "Updating the RD Session description"
-Set-RASRDS -InputObject $RDS1 -Description $RDS1Desc
+Set-RASRDSHost -InputObject $RDS1 -Description $RDS1Desc
 
 #Add the second RD Session Host.
 log "Adding the second RD Session Host server"
-$RDS2 = New-RASRDS -Server $RDSServer2
+$RDS2 = New-RASRDSHost -Server $RDSServer2
 
 #Get the list of RD Session Host servers. The $RDSList variable receives an array of objects of type RDS.
 log "Retrieving the list of RD Session servers"
-$RDSList = Get-RASRDS
+$RDSList = Get-RASRDSHost
 
 log "Print the list of RD Session servers retrieved"
 Write-Host ($RDSList | Format-Table | Out-String)
 
 #Create an RD Session Host Group and add both RD Session Host objects to it.
 log "Add an RD Session host group (with list of RD Sessions)"
-New-RASRDSGroup -Name $RDSGroupName -RDSObject $RDSList
+New-RASRDSHostPool -Name $RDSGroupName -RDSObject $RDSList
 
 #Add the third RD Session Host server.
 log "Adding the third RD Session Host server"
-$RDS3 = New-RASRDS -Server $RDSServer3
+$RDS3 = New-RASRDSHost -Server $RDSServer3
 
 #Move the RD Session host to an existing RDS Group.
 log "Move the RD Session host to an existing RDS Group"
