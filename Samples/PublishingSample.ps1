@@ -26,6 +26,7 @@ $RDSServer2 = "rds2.company.dom" 	#(replace 'rds2.company.dom' with a valid FQDN
 $RDSGroupName = "My RDS Group"		#(replace with a more specific name).
 $RDSDefSettMaxSessions = 100		#(replace default value with preferred max sessions).
 $RDSDefSettAppMonitor = $true		#(replace default value with preferred App Monitoring value (Enabeld/Disabled)).
+$VMNameFormat       = "Win10-%ID:3%"
 
 $AccFldName = "AccDept"
 $AccFldDesc = "Accounting"
@@ -62,19 +63,20 @@ New-RASSession
 
 #Add two RD Session Host servers.
 log "Adding two RD Session host servers"
-$RDS1 = New-RASRDS -Server $RDSServer1
-$RDS2 = New-RASRDS -Server $RDSServer2
+$RDS1 = New-RASRDSHost -Server $RDSServer1
+$RDS2 = New-RASRDSHost -Server $RDSServer2
 
 #Get the list of RD Session Host servers. The $RDSList variable receives an array of objects of type RDS.
 log "Retrieving the list of RD Session servers"
-$RDSList = Get-RASRDS
+$RDSList = Get-RASRDSHost
 
 log "Print the list of RD Session servers retrieved"
 Write-Host ($RDSList | Format-Table | Out-String)
 
 #Create an RD Session Host Group and add both RD Session Host objects to it.
 log "Add an RD Session host group (with list of RD Sessions)"
-$RDSGrp = New-RASRDSGroup -Name $RDSGroupName -RDSObject $RDSList
+New-RASRDSHostPool -Name $RDSGroupName -Description "RDSTemplates Pool" -WorkLoadThreshold 50 -ServersToAddPerRequest 2 `
+-WorkLoadToDrain 20 -HostsToCreate 1 -HostName $VMNameFormat -MinServersFromTemplate 2 -MaxServersFromTemplate 2 -Autoscale $true -RDSObject $RDSList
 
 #Update default settings used to configure RD Session Host agents.
 log "Updating RDS default settings"

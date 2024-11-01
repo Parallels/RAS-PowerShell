@@ -52,7 +52,7 @@ New-RASSession
 
 #Adding a RAS RDS
 log "Adding new RD Session Host server"
-New-RASRDS -Server $RDSServer
+New-RASRDSHost -Server $RDSServer
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
@@ -63,7 +63,7 @@ Start-Sleep -Seconds 5
 
 # Get RDS status info
 log "Getting RAS RD Session host status information"
-Get-RASRDSStatus -Server $RDSServer
+Get-RASRDSHostStatus -Server $RDSServer
 
 
 ###### Secure Gateway status info ######

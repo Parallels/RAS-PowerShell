@@ -52,7 +52,7 @@ log "Connecting with RAS Licensing server"
 New-RASSession -Username $RASAdminUsername -Password $RASAdminPassword
 
 log "Retrieving list of Servers in '$RDSGroupName'" 
-$RDSGroupMembers = Get-RASRDSGroupMember -GroupName $RDSGroupName
+$RDSGroupMembers = Get-RASRDSHostPoolMember -HostPoolName $RDSGroupName
 
 log "Sort Server by ID"
 $SortedRDSGroupMembers = [System.Collections.ArrayList] ($RDSGroupMembers | Sort-Object -Property Id)
@@ -61,7 +61,7 @@ $BootServerCount =  [int]($SortedRDSGroupMembers.Count / 100 * $BootServerPercen
 Log "Booting $BootServerCount RDS Servers:"
 
 log "Retrieving RDS Status"
-$RDSStatusList = Get-RASRDSStatus
+$RDSStatusList = Get-RASRDSHostStatus
 
 For ($i=0; $i -lt $BootServerCount; $i++) {
     $RDS = $SortedRDSGroupMembers[0]
