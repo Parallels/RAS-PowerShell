@@ -158,7 +158,8 @@ function CreateXAApplication {
 		Description                     = $clixml | Select-Object -ExpandProperty Description -ErrorAction SilentlyContinue
 		WorkingDirectory                = $clixml | Select-Object -ExpandProperty WorkingDirectory -ErrorAction SilentlyContinue
 		RefId                           = $super.RefId
-		FolderPath                      = $clixml | Select-Object -ExpandProperty FolderPath -ErrorAction SilentlyContinue
+        ## strip trailing backslash as later lookup fails because it does lookup without the backslash
+		FolderPath                      = ($clixml | Select-Object -ExpandProperty AdminFolderName <#FolderPath#> -ErrorAction SilentlyContinue) -replace '\\+$'
 		ClientFolder                    = $clixml | Select-Object -ExpandProperty ClientFolder -ErrorAction SilentlyContinue
 		StartMenuFolder                 = $clixml | Select-Object -ExpandProperty StartMenuFolder -ErrorAction SilentlyContinue
 		CommandLineExecutable           = $clixml | Select-Object -ExpandProperty CommandLineExecutable -ErrorAction SilentlyContinue
@@ -168,8 +169,8 @@ function CreateXAApplication {
 		ContentAddress                  = $clixml | Select-Object -ExpandProperty ContentAddress -ErrorAction SilentlyContinue
 		WindowType                      = $clixml | Select-Object -ExpandProperty WindowType -ErrorAction SilentlyContinue
 		InstanceLimit                   = [int]($clixml | Select-Object -ExpandProperty InstanceLimit -ErrorAction SilentlyContinue)
-		UserFilter                      = (GetPropertyOrNull $clixml "Accounts.AccountId")
-		UserFilterByAccountName         = (GetPropertyOrNull $clixml "Accounts.AccountName")
+		UserFilter                      = $clixml | Select-Object -ExpandProperty Accounts -ErrorAction SilentlyContinue | Select-Object -ExpandProperty AccountId -ErrorAction SilentlyContinue ## (GetPropertyOrNull $clixml "Accounts.AccountId")
+		UserFilterByAccountName         = $clixml | Select-Object -ExpandProperty Accounts -ErrorAction SilentlyContinue | Select-Object -ExpandProperty AccountId -ErrorAction SilentlyContinue  ## (GetPropertyOrNull $clixml "Accounts.AccountName")
 		ColorDepth                      = $clixml | Select-Object -ExpandProperty ColorDepth -ErrorAction SilentlyContinue
 		Enabled                         = $false
 		Width                           = $null
@@ -757,55 +758,64 @@ function ParseADMachines ([System.Data.DataSet] $db) {
 
 function ExtractFolders([PSCustomObject]$app, [System.Data.DataSet]$db) {
     if( $null -ne $app -and  $app.PSObject.Properties[ 'FolderPath' ] -and -Not [string]::IsNullOrEmpty( $app.FolderPath ) ) {
-	[System.Collections.ArrayList]$folders = $app.FolderPath.Split('/')
-	$folders.RemoveAt(0) # remove the XenApp root folder.
+	    [System.Collections.ArrayList]$folders = ($app.FolderPath -Split '[\\/]+' ) ## split on / or \ as XA 6.x was / but XD 7.x is \
+        ## Commented out for XD 7.x as we don't have an empry folder
 
-	# first check if the app has a client folder.
-	if ([string]$app.ClientFolder) {
-		$tbl_folder = $db.Tables['tbl_folder']
-		$row = $tbl_folder.NewRow()
-		$row.Name = $app.ClientFolder
-		$folderPath = [string]::Empty
-
-		# if path to application has more than 0 folders
-		# Folder1/Folder2/application
-		if ($folders.Count -gt 0 ) {
-			$folderPath = [string]::Join("/", $folders.ToArray())
-			# full path to client folder.
-			$row.Path = [string]::Join("/", @($folderPath, $app.ClientFolder))
-		}
-		# if path to application is made up of 0 folders
-		# the path to application will be ClientFolder/
-		else {
-			$row.Path = $app.ClientFolder
+		if ($app.PSObject.Properties.ColorDepth -Contains "ColorDepth" -and -not [string]::IsNullOrWhiteSpace($app.ColorDepth)) ## Color Depth is only available for version 6.X
+		{
+			$folders.RemoveAt(0) # remove the XenApp root folder.
 		}
 
-		$row.Parent = $folderPath
-		$row.IsAdministrative = $false
-		try {
-			$tbl_folder.Rows.Add($row)
-		}
-		catch {
-			Log -type "INFO" -message "Folder $($row.Name) was already added [expected]"
-		}
-	}
+	    # first check if the app has a client folder.
+	    if ([string]$app.ClientFolder) {
+		    $tbl_folder = $db.Tables['tbl_folder']
+		    $row = $tbl_folder.NewRow()
+		    $row.Name = $app.ClientFolder
+		    $folderPath = [string]::Empty
 
-	while ($folders.Count -ne 0) {
-		$row = $tbl_folder.NewRow()
-		$row.Name = $folders[$folders.Count - 1]
-		$row.Path = [string]::Join("/", $folders.ToArray())
-		$row.IsAdministrative = $true
-		$folders.RemoveAt($folders.Count - 1)
-		$row.Parent = [string]::Join("/", $folders.ToArray())
-		try {
-			$tbl_folder.Rows.Add($row)
-		}
-		catch {
-			Log -type "INFO" -message "Folder $($row.Name) was already added [expected]"
-		}
-	}
+		    # if path to application has more than 0 folders
+		    # Folder1/Folder2/application
+		    if ($folders.Count -gt 0 ) {
+			    $folderPath = [string]::Join("/", $folders.ToArray())
+			    # full path to client folder.
+			    $row.Path = [string]::Join("/", @($folderPath, $app.ClientFolder))
+		    }
+		    # if path to application is made up of 0 folders
+		    # the path to application will be ClientFolder/
+		    else {
+			    $row.Path = $app.ClientFolder
+		    }
+
+		    $row.Parent = $folderPath
+		    $row.IsAdministrative = $false
+		    try {
+			    $tbl_folder.Rows.Add($row)
+		    }
+		    catch {
+			    Log -type "INFO" -message "Folder $($row.Name) was already added [expected]"
+		    }
+	    }
+
+	    while ($folders.Count -ne 0) {
+            if( -Not [string]::IsNullOrEmpty( $folders[$folders.Count - 1] )) { ## do not process empty path elements
+		        $row = $tbl_folder.NewRow()
+		        $row.Name = $folders[$folders.Count - 1]
+		        $row.Path = [string]::Join("/", $folders.ToArray())
+		        $row.IsAdministrative = $true
+		        $folders.RemoveAt($folders.Count - 1)
+		        $row.Parent = [string]::Join("/", $folders.ToArray())
+		        try {
+			        $tbl_folder.Rows.Add($row)
+		        }
+		        catch {
+			        Log -type "INFO" -message "Folder $($row.Name) was already added [expected]"
+		        }
+            }
+            else {
+		        $folders.RemoveAt($folders.Count - 1)
+            }
+	    }
     }
-    ## TODO what do we do for XenApp 7.x ?
 }
 
 function ParseAppFolders([string] $xmlPath, [System.Data.DataSet] $db) {
@@ -894,10 +904,12 @@ function ParseApplications ([string] $xmlPath, [System.Data.DataSet]$db) {
 	$tbl_application = $db.Tables["tbl_application"]
 
 	$dir = $settings.IconPath
-	if (![System.IO.Directory]::Exists($dir)) {
-		[System.IO.Directory]::CreateDirectory($dir) | Out-Null
+	if (! ( Test-Path -Path $dir -PathType Container)) {
+		New-Item -Path $dir -ItemType Directory | Out-Null
 	}
-	$dir = Resolve-Path $dir
+    ## in case in an FS provider path format
+	$dir = (Resolve-Path $dir) -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+
 	for ($i = 0; $i -lt $applications.Count; $i++) {
 		$app = CreateXAApplication -xml $applications[$i] -clixml $applicationsFromXml[ $i ]
 		
@@ -955,11 +967,15 @@ function ParseApplications ([string] $xmlPath, [System.Data.DataSet]$db) {
 
 		$folderpath = GetPropertyOrNull $app "FolderPath"
 		if(![string]::IsNullOrEmpty($folderpath)){
-			[System.Collections.ArrayList]$folders = $folderpath.Split('/')
+			[System.Collections.ArrayList]$folders = $folderpath -Split '[\\/]+'
 		}
 
+
 		if( $folders -and $folders.Count -gt 0 ) {
-		$folders.RemoveAt(0)
+			if ($app.PSObject.Properties.ColorDepth -Contains "ColorDepth" -and -not [string]::IsNullOrWhiteSpace($app.ColorDepth)) ## Color Depth is only available for version 6.X
+			{
+				$folders.RemoveAt(0) 
+			} 
         }
 
 		if ([string](GetPropertyOrNull $app "ClientFolder")) {
@@ -1273,8 +1289,15 @@ function GetVarNameFromCmdlet ([string] $cmdLet) {
 
 $vars = New-Object 'System.Collections.Generic.Dictionary[string, int]'
 function WriteToScript ([string]$command, [switch] $useVar, [int]$tabs = 1) {
-
-	[scriptblock]$script = [scriptblock]::Create($command)
+try {
+     ## replace single quote with double to escape it since the result becomes a script line
+     ## using positive lookbehind and lookahead of an alphabetic character since do not want to change where ' is at start or end of a string
+	[scriptblock]$script = [scriptblock]::Create( ($command -replace "(?<=\w)'(?=\w)" , "''") )
+} catch {
+    Write-Warning -Message "Problem with command: $command"
+    Write-Error $_
+    return
+}
 	$spaceIndex = $command.IndexOf(' ')
     $varname = $null
 
@@ -1406,7 +1429,7 @@ function PublishRDSApp ($app, $from, $publishSource, $parentFolder) {
 	}
 
 	WriteToScript "Set-RASPubRDSApp -Id $res -CreateShortcutOnDesktop `$$($app.AddToClientDesktop)  -InheritShortcutDefaultSettings `$false -CreateShortcutInStartFolder `$$($app.AddToClientStartMenu) -OneInstancePerUser `$$($app.MultipleInstancesPerUserAllowed) -InheritLicenseDefaultSettings `$false -ConCurrentLicenses $($app.InstanceLimit) -InheritDisplayDefaultSettings `$false -WaitForPrinters `$$($app.WaitOnPrinterCreation) -EnabledMode `Enabled -StartIn '$($app.WorkingDirectory)' -Parameters '$($app.Parameters)' -WinType $windowType"
-	$features16_5 = "Set-RASPubRDSApp -id $res -Icon '$($app.IconPath)'"
+	$features16_5 = "Set-RASPubRDSApp -id $res -Icon '$($app.IconPath -replace '^Microsoft\.PowerShell\.Core\\FileSystem::')'"
 	if ($app.ColorDepth -ne [System.DBNull]::Value -and $app.ColorDepth -ne '') {
 		$features16_5 += " -ColorDepth '$($app.ColorDepth)'"
 	}
@@ -1458,9 +1481,11 @@ function PublishRDSDesktop ($app, $from, $publishSource, $parentFolder) {
 
 function AddPubItemUserFilter ($userFilter, $rdsApp, $userFilterAccountNames = $null ) {
 	if ($userFilter -ne [System.DBNull]::Value) {
+		WriteToScript "Set-RASPubItemFilter -Id $rdsApp -Default Deny"
 		WriteToScript "Add-RASRule -RuleName rule -ObjType PubItem -Id $rdsApp"
 		$rule = WriteToScript "Get-RASRule -ObjType PubItem -Id $rdsApp" -useVar
-
+		$RuleId = $rule.Id
+		WriteToScript "Set-RASCriteria -ObjType PubItem -Id $rdsApp -RuleId $RuleId -SecurityPrincipalsEnabled $true"
 		WriteScript @"
 		if (`$FEATURES_16_5) {
 "@
@@ -1516,6 +1541,9 @@ function PublishPubItem ($app, $from, $publishSource, $parentFolder) {
 		"Content" {
 			$res = PublishRDSApp -app $app -from All -parentFolder $parentFolder
 		}
+        Default {
+            Write-Warning -Message "Unsupported app type `"$($app.Type)`" found for app `"$($app.name)`""
+        }
 	}
 	return $res
 }
@@ -1528,13 +1556,13 @@ function ExtractRelatedApplicationGroups ($app) {
 
 	$app_workgroups = $tbl_app_workgroup.Select("[AppName] like '$($app.Name)'")
 
-	$RDSGRoups = @()
+	$RDSHostPools = @()
 	foreach ($group in $app_workgroups) {
 		# try {
 		$res = $tbl_wg_server.Select("[WorkgroupName] like '$($group.WorkgroupName)'")
 		if ($res -and $res.Count -gt 0) {
-			$rdsGroup = WriteToScript "Get-RASRDSGroup -Name '$($group.WorkgroupName)'" -useVar
-			$RDSGRoups += $rdsGroup
+			$rdsHostPool = WriteToScript "Get-RASRDSHostPool -Name '$($group.WorkgroupName)'" -useVar
+			$RDSHostPools += $rdsHostPool
 		}
 		# }
 		# catch {
@@ -1545,9 +1573,9 @@ function ExtractRelatedApplicationGroups ($app) {
 		$ADGroups = $tbl_serverGroup.Select("[WorkgroupName] like '$($group.WorkgroupName)'")
 		foreach ($adgroup in $ADGroups) {
 			# try {
-			$rdsGroup = WriteToScript "Get-RASRDSGroup -Name '$($adgroup.Name)'" -useVar
-			# $RDSGRoups += GetVarNameFromCmdlet "Get-RDSGroup"
-			$RDSGRoups += $rdsGroup
+			$rdsHostPool = WriteToScript "Get-RASRDSHostPool -Name '$($adgroup.Name)'" -useVar
+			# $RDSHostPools += GetVarNameFromCmdlet "Get-RASRDSHostGroup"
+			$RDSHostPools += $rdsHostPool
 			# }
 			# catch {
 			# Log -type "ERROR" -message "Failed to get RDS Group." -exception $_.Exception
@@ -1562,15 +1590,15 @@ function ExtractRelatedApplicationGroups ($app) {
 					$name = $ou.GUID
 				}
 
-				$rdsGroup = WriteToScript "Get-RASRDSGroup -Name '$name'" -useVar
-				$RDSGRoups += $rdsGroup
+				$rdsHostPool = WriteToScript "Get-RASRDSHostPool -Name '$name'" -useVar
+				$RDSHostPools += $rdsHostPool
 			}
 			catch {
 				Log -type "ERROR" -message "Failed to get RDS Group." -exception $_.Exception
 			}
 		}
 	}
-	return $RDSGRoups
+	return $RDSHostPools
 }
 
 function ExtractRelatedApplicationServers ($app) {
@@ -1597,7 +1625,7 @@ function MigrateApplications([System.Data.DataSet] $db) {
 
 	foreach ($app in $tbl_application) {
 		WriteCommentLite -comment "Commands related to $($app.Name)"
-		$RDSGroups = ExtractRelatedApplicationGroups -app $app
+		$RDSHostPool = ExtractRelatedApplicationGroups -app $app
 		$RDSServers = ExtractRelatedApplicationServers -app $app
 		try {
             $res = $null
@@ -1607,10 +1635,10 @@ function MigrateApplications([System.Data.DataSet] $db) {
 			}
 
 			# if application is published from servers AND groups
-			if ( $RDSGroups -and ( ($RDSServers -and $RDSServers.Count -gt 0 -and $RDSGroups.Count -gt 0) -or $RDSGroups.Count -gt 0)) {
+			if ( $RDSHostPool -and ( ($RDSServers -and $RDSServers.Count -gt 0 -and $RDSHostPool.Count -gt 0) -or $RDSHostPool.Count -gt 0)) {
 				Log -type "INFO" -message "Publishing application $($app.Name) from groups"
-				Log -type "INFO" -message "RDSGroups.Count : $($RDSGroups.Count)."
-				$res = PublishPubItem -app $app -from Group -publishSource $RDSGroups -parentFolder $parentFolder
+				Log -type "INFO" -message "RDSGroups.Count : $($RDSHostPool.Count)."
+				$res = PublishPubItem -app $app -from Group -publishSource $RDSHostPool -parentFolder $parentFolder
 				$app.RASId = $res
 			}
 			else {
@@ -1684,7 +1712,7 @@ function MigrateServers([System.Data.DataSet] $db) {
 		try {
 			Log -type "INFO" -message "Adding new RDS for XA server ---> $($server.Name)"
 
-			$RDSServer = WriteToScript "New-RDS -Server '$($server.Name)' -NoInstall"
+			$RDSServer = WriteToScript "New-RASRDSHost -Server '$($server.Name)' -NoInstall"
 			$server["RASId"] = $RDSServer
 		}
 		catch [Exception] {
@@ -1698,7 +1726,7 @@ function MigrateServers([System.Data.DataSet] $db) {
 	foreach ($machine in $tbl_ADMachine) {
 		try {
 			Log -type "INFO" -message "Adding new RDS for AD server ---> $($machine.Name)"
-			$RDSServer = WriteToScript "New-RDS -Server '$($machine.Name)' -NoInstall"
+			$RDSServer = WriteToScript "New-RASRDSHost -Server '$($machine.Name)' -NoInstall"
 			$machine["RASId"] = $RDSServer
 		}
 		catch [Exception] {
@@ -1720,7 +1748,7 @@ function MigrateGroups ([System.Data.DataSet] $db) {
 		try {
 			[System.Data.DataRow[]]$servers = $tbl_server.Select("[WorkgroupName] like '$($workgroup.Name)'")
 			if ($servers -and $servers.Count -gt 0) {
-				$cmd = "New-RDSGroup -Name '$($workgroup.Name)'"
+				$cmd = "New-RASRDSHostPool -Name '$($workgroup.Name)'"
 				if ($workgroup.Description -ne [System.DBNull]::Value -and $workgroup.Description -ne '') {
 					WriteCommentLite -comment $workgroup.Description
 					$script = @"
@@ -1729,12 +1757,12 @@ function MigrateGroups ([System.Data.DataSet] $db) {
 	}
 "@
 				}
-				$RDSGroup = WriteToScript $cmd
+				$hostpool = WriteToScript $cmd
 				WriteScript $script
-				$workgroup["RASId"] = $RDSGroup
+				$workgroup["RASId"] = $hostpool
 
 				foreach ($server in $servers) {
-					WriteToScript "Move-RASRDSGroupMember -GroupName '$($workgroup.Name)' -RDSServer '$($server.Name)'"
+					WriteToScript "Move-RASRDSHostPoolMember -GroupName '$($workgroup.Name)' -RDSServer '$($server.Name)'"
 				}
 			}
 		}
@@ -1750,12 +1778,12 @@ function MigrateGroups ([System.Data.DataSet] $db) {
 	foreach ($serverGroup in $tbl_serverGroup) {
 		try {
 			Log -type "INFO" -message "Creating new RDS group ---> $($serverGroup.Name)"
-			$RDSGroup = WriteToScript "New-RDSGroup -Name '$($serverGroup.Name)'"
-			$serverGroup["RASId"] = $RDSGroup
+			$hostpool = WriteToScript "New-RASRDSHostPool -Name '$($serverGroup.Name)'"
+			$serverGroup["RASId"] = $hostpool
 			$machines = $tbl_ADMachine.Select("[ServerGroupName] like '$($serverGroup.Name)'")
 			foreach ($machine in $machines) {
 				if ([string]$machine.Name -ne [string]::Empty) {
-					WriteToScript "Move-RASRDSGroupMember -GroupName '$($serverGroup.Name)' -RDSServer '$($machine.Name)'"
+					WriteToScript "Move-RASRDSHostPoolMember -GroupName '$($serverGroup.Name)' -RDSServer '$($machine.Name)'"
 				}
 			}
 		}
@@ -1770,18 +1798,18 @@ function MigrateGroups ([System.Data.DataSet] $db) {
 	foreach ($ou in $tbl_ou) {
 		try {
 			if ([string]$ou.Name -eq [string]::Empty) {
-				$RDSGroup = WriteToScript "New-RDSGroup -Name '$($ou.GUID)'"
+				$hostpool = WriteToScript "New-RASRDSHostPool -Name '$($ou.GUID)'"
 				$machines = $tbl_ADMachine.Select("[OUGuid] like '$($ou.GUID)'")
 			}
 			else {
-				$RDSGroup = WriteToScript "New-RDSGroup -Name '$($ou.Name)'"
+				$hostpool = WriteToScript "New-RASRDSHostPool -Name '$($ou.Name)'"
 				$machines = $tbl_ADMachine.Select("[OUName] like '$($ou.Name)'")
 			}
-			$ou["RASId"] = $RDSGroup
+			$ou["RASId"] = $hostpool
 
 			foreach ($machine in $machines) {
 				if ([string]$machine.Name -ne [string]::Empty) {
-					WriteToScript "Move-RASRDSGroupMember -GroupName '$($ou.Name)' -RDSServer '$($machine.Name)'"
+					WriteToScript "Move-RASRDSHostPoolMember -GroupName '$($ou.Name)' -RDSServer '$($machine.Name)'"
 				}
 			}
 		}

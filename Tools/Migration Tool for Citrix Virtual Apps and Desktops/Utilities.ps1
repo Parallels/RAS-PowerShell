@@ -95,6 +95,7 @@ function Log ([string] $type, [string] $message, $testInfo = $null, $testStatus 
 
 function LoadXML ([string] $path) {
 	[xml] $data = New-Object xml
+    $xmlReader = $null
 	try {
 		$path = Resolve-Path $path
 		Log -type "INFO" -message "Reading XML from $($path) ..."
@@ -106,9 +107,11 @@ function LoadXML ([string] $path) {
 	}
 	catch {
 		Log -type "ERROR" -message "Failed to get XML data! $($_)"
-		Log -type "INFO" -message "Closing XMLReader stream and disposing ..."
-		$xmlReader.Close()
-		$xmlReader.Dispose()
+        if( $null -ne $xmlReader ) {
+		    Log -type "INFO" -message "Closing XMLReader stream and disposing ..."
+		    $xmlReader.Close()
+		    $xmlReader.Dispose()
+        }
 		Log -type "INFO" -message "Done."
 		throw
 	}
