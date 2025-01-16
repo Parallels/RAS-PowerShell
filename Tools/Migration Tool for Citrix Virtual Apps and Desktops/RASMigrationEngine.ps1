@@ -1484,8 +1484,7 @@ function AddPubItemUserFilter ($userFilter, $rdsApp, $userFilterAccountNames = $
 		WriteToScript "Set-RASPubItemFilter -Id $rdsApp -Default Deny"
 		WriteToScript "Add-RASRule -RuleName rule -ObjType PubItem -Id $rdsApp"
 		$rule = WriteToScript "Get-RASRule -ObjType PubItem -Id $rdsApp" -useVar
-		$RuleId = $rule.Id
-		WriteToScript "Set-RASCriteria -ObjType PubItem -Id $rdsApp -RuleId $RuleId -SecurityPrincipalsEnabled $true"
+		WriteToScript "Set-RASCriteria -ObjType PubItem -Id $rdsApp -RuleId $rule.Id -SecurityPrincipalsEnabled $true"
 		WriteScript @"
 		if (`$FEATURES_16_5) {
 "@
