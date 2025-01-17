@@ -1,11 +1,18 @@
+## ==================================================================
+##
+## Copyright (c) 2005-2024 Parallels Software International, Inc.
+## Released under the terms of MIT license (see LICENSE for details)
+##
+## ==================================================================
+
 <#  
 .SYNOPSIS  
-    PArallels RAS auto-deploy script for Azure MarketPlace Deployments
+    Parallels RAS auto-deploy script for Azure MarketPlace Deployments
+.DESCRIPTION  
+    This script is part of the Parallels RAS auto-deploy script for Azure MarketPlace Deployments and performs the installation and configuration needed on the management server.
 .NOTES  
     File Name  : RAS_Azure_MP_Install.ps1
-    Author     : Freek Berson
-    Version    : v0.0.29
-    Date       : Jun 27 2024
+    Author     : www.parallels.com
 .EXAMPLE
     .\RAS_Azure_MP_Install.ps1
 #>
