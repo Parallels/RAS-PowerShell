@@ -1,14 +1,22 @@
+## ==================================================================
+##
+## Copyright (c) 2005-2024 Parallels Software International, Inc.
+## Released under the terms of MIT license (see LICENSE for details)
+##
+## ==================================================================
+
 <#  
 .SYNOPSIS  
-    Parallels RAS register script for Azure MarketPlace Deployments
+    Parallels RAS auto-deploy script for Azure MarketPlace Deployments
+.DESCRIPTION  
+    This script is part of the Parallels RAS auto-deploy script for Azure MarketPlace Deployments and performs the registration and activation of the Parallels RAS deployment.
 .NOTES  
     File Name  : RAS_Azure_MP_Register.ps1
-    Author     : Freek Berson
-    Version    : v0.0.29
-    Date       : Jul 02 2024
+    Author     : www.parallels.com
 .EXAMPLE
     .\RAS_Azure_MP_Register.ps1
 #>
+
 function WriteLog {
     Param ([string]$LogString)
     $Stamp = (Get-Date).toString("yyyy/MM/dd HH:mm:ss")
