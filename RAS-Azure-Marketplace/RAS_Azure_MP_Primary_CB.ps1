@@ -1,13 +1,20 @@
+## ==================================================================
+##
+## Copyright (c) 2005-2024 Parallels Software International, Inc.
+## Released under the terms of MIT license (see LICENSE for details)
+##
+## ==================================================================
+
 <#  
 .SYNOPSIS  
-    Parallels RAS Connection Broker prereq script Azure MarketPlace Deployments
+    Parallels RAS auto-deploy script for Azure MarketPlace Deployments
+.DESCRIPTION  
+    This script is part of the Parallels RAS auto-deploy script for Azure MarketPlace Deployments and performs the installation and configuration of the primary Parallels RAS Connection Broker.
 .NOTES  
     File Name  : RAS_Azure_MP_Primary_CB.ps1
-    Author     : Freek Berson
-    Version    : v0.0.29
-    Date       : May 23 2024
+    Author     : www.parallels.com
 .EXAMPLE
-    .\RAS_Azure_MP_Install.ps1
+    .\RAS_Azure_MP_Primary_CB.ps1
 #>
 
 #Collect Parameters
