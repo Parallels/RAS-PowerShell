@@ -1,11 +1,18 @@
+## ==================================================================
+##
+## Copyright (c) 2005-2024 Parallels Software International, Inc.
+## Released under the terms of MIT license (see LICENSE for details)
+##
+## ==================================================================
+
 <#  
 .SYNOPSIS  
     Generate welcome message at first logon, and opens RAS Console
+.DESCRIPTION  
+    This script is part of the Parallels RAS auto-deploy script for Azure MarketPlace Deployments and Generate welcome message at first logon, and opens RAS Console
 .NOTES  
     File Name  : RAS_Azure_MP_AIO_Login.ps1
-    Author     : Freek Berson
-    Version    : v0.0.1
-    Date       : Jul 3 2024
+    Author     : www.parallels.com
 .EXAMPLE
     .\RAS_Azure_MP_AIO_Login.ps1
 #>
