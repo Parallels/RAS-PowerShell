@@ -1118,11 +1118,10 @@ function ParseXMLtoDB ([string] $zonesXmlPath, [string] $serversXmlPath, [string
 }
 
 function InitializeScript ([scriptblock]$appendToMain) {
-	if ([System.IO.File]::Exists("./ImportToRAS.ps1")) {
-		[System.IO.File]::Delete("./ImportToRAS.ps1")
+	if ([System.IO.File]::Exists($settings.ScriptPath)) {
+		[System.IO.File]::Delete($settings.ScriptPath)
 	}
 
-	$scriptPath = "./ImportToRAS.ps1"
 	$date = Get-Date
 	WriteScript @"
 <#
@@ -1484,7 +1483,7 @@ function AddPubItemUserFilter ($userFilter, $rdsApp, $userFilterAccountNames = $
 		WriteToScript "Set-RASPubItemFilter -Id $rdsApp -Default Deny"
 		WriteToScript "Add-RASRule -RuleName rule -ObjType PubItem -Id $rdsApp"
 		$rule = WriteToScript "Get-RASRule -ObjType PubItem -Id $rdsApp" -useVar
-		WriteToScript "Set-RASCriteria -ObjType PubItem -Id $rdsApp -RuleId $rule.Id -SecurityPrincipalsEnabled `$true"
+		WriteToScript "Set-RASCriteria -ObjType PubItem -Id $rdsApp -RuleId $rule.Id -SecurityPrincipalsEnabled `$true -SecurityPrincipalsMatchingMode IsOneOfTheFollowing"
 		WriteScript @"
 		if (`$FEATURES_16_5) {
 "@
