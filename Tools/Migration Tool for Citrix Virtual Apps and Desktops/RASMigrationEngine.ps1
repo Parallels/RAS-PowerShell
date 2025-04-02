@@ -1397,6 +1397,23 @@ function MigrateFolders([System.Data.DataSet] $db) {
 	Log -type "INFO" -message "Folders Migrated! Applications are now aware of RAS folder IDs and can be linked to them."
 }
 
+function PublishLocalApp($app){
+	$httpsItems = $app.ItemArray | Where-Object { $_ -match "^https://" }
+	$httpItems = $app.ItemArray | Where-Object { $_ -match "^http://" }
+	if($httpsItems){
+		$cmd = "New-RASPubLocalApp -Name '$($app.Name)' -URL '$httpsItems'"
+	}
+	if($httpItems){
+		$cmd = "New-RASPubLocalApp -Name '$($app.Name)' -URL '$httpItems'"
+	}
+	if ($app.Description -ne '') {
+		$cmd += " -Description '$($app.Description)'"
+	}
+	$res = WriteToScript $cmd -useVar
+
+	return $res
+}
+
 function PublishRDSApp ($app, $from, $publishSource, $parentFolder) {
 	$cmd = "New-RASPubRDSApp -PublishFrom '$from' -Target '$($app.Target)' -Name '$($app.Name)'"
 	if ($app.Description -ne '') {
@@ -1536,8 +1553,11 @@ function PublishPubItem ($app, $from, $publishSource, $parentFolder) {
 				$res = PublishRDSDesktop -app $app -from $from -publishSource $publishSource -parentFolder $parentFolder
 			}
 		}
-		"Content" {
+		"^Content$" {
 			$res = PublishRDSApp -app $app -from All -parentFolder $parentFolder
+		}
+		"^PublishedContent$" {
+			$res = PublishLocalApp -app $app
 		}
         Default {
             Write-Warning -Message "Unsupported app type `"$($app.Type)`" found for app `"$($app.name)`""
