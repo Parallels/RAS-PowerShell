@@ -926,7 +926,7 @@ function ParseApplications ([string] $xmlPath, [System.Data.DataSet]$db) {
         if( $bytes ) {
 			#$hash = "1A495F7E01F6D5FCA260152C6EF8D3E992648571CEF6D70129C779772E84AC3A"
 			$hash = Get-Hash $bytes
-			$path = "$($settings.IconPath)/$($hash).ico"
+			$path = "$($settings.IconPath)\$($hash).ico"
 			[System.IO.File]::WriteAllBytes("$dir/$($hash).ico", $bytes)
         }else{
 			$path = $null
@@ -1397,20 +1397,37 @@ function MigrateFolders([System.Data.DataSet] $db) {
 	Log -type "INFO" -message "Folders Migrated! Applications are now aware of RAS folder IDs and can be linked to them."
 }
 
-function PublishLocalApp($app){
+function PublishLocalApp($app, $parentfolder){
 	$httpsItems = $app.ItemArray | Where-Object { $_ -match "^https://" }
 	$httpItems = $app.ItemArray | Where-Object { $_ -match "^http://" }
+	
+	if(-Not ($httpItems -OR $httpsItems)){
+		return
+	}
+
 	if($httpsItems){
 		$cmd = "New-RASPubLocalApp -Name '$($app.Name)' -URL '$httpsItems'"
 	}
+
 	if($httpItems){
 		$cmd = "New-RASPubLocalApp -Name '$($app.Name)' -URL '$httpItems'"
 	}
+
 	if ($app.Description -ne '') {
 		$cmd += " -Description '$($app.Description)'"
 	}
+	
+	if ($parentfolder -ne $null) {
+		$cmd += " -ParentFolder $parentFolder"
+	}
 	$res = WriteToScript $cmd -useVar
-
+	
+	$features16_5 = "Set-RASPubLocalApp -id $res -Icon '$($app.IconPath -replace '^Microsoft\.PowerShell\.Core\\FileSystem::')'"
+	WriteScript @"
+	if (`$FEATURES_16_5) {
+		$features16_5
+	}
+"@
 	return $res
 }
 
@@ -1557,7 +1574,7 @@ function PublishPubItem ($app, $from, $publishSource, $parentFolder) {
 			$res = PublishRDSApp -app $app -from All -parentFolder $parentFolder
 		}
 		"^PublishedContent$" {
-			$res = PublishLocalApp -app $app
+			$res = PublishLocalApp -app $app -parentFolder $parentFolder
 		}
         Default {
             Write-Warning -Message "Unsupported app type `"$($app.Type)`" found for app `"$($app.name)`""
