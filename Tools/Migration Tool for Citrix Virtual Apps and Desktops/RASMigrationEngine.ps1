@@ -1416,6 +1416,14 @@ function PublishLocalApp($app, $parentfolder){
 	if ($app.Description -ne '') {
 		$cmd += " -Description '$($app.Description)'"
 	}
+
+	if($app.Enabled -eq $true){
+		$cmd += " -EnabledMode Enabled"
+	}
+
+	if($app.Enabled -eq $false){
+		$cmd += " -EnabledMode Disabled"
+	}
 	
 	if ($parentfolder -ne $null) {
 		$cmd += " -ParentFolder $parentFolder"
