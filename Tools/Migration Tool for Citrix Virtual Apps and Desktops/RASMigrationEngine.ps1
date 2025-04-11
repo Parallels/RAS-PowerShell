@@ -759,62 +759,46 @@ function ParseADMachines ([System.Data.DataSet] $db) {
 function ExtractFolders([PSCustomObject]$app, [System.Data.DataSet]$db) {
     if( $null -ne $app -and  $app.PSObject.Properties[ 'FolderPath' ] -and -Not [string]::IsNullOrEmpty( $app.FolderPath ) ) {
 	    [System.Collections.ArrayList]$folders = ($app.FolderPath -Split '[\\/]+' ) ## split on / or \ as XA 6.x was / but XD 7.x is \
-        ## Commented out for XD 7.x as we don't have an empry folder
-
+        $tbl_folder = $db.Tables['tbl_folder']
+		
 		if ($app.PSObject.Properties.ColorDepth -Contains "ColorDepth" -and -not [string]::IsNullOrWhiteSpace($app.ColorDepth)) ## Color Depth is only available for version 6.X
 		{
 			$folders.RemoveAt(0) # remove the XenApp root folder.
 		}
 
-	    # first check if the app has a client folder.
-	    if ([string]$app.ClientFolder) {
-		    $tbl_folder = $db.Tables['tbl_folder']
-		    $row = $tbl_folder.NewRow()
-		    $row.Name = $app.ClientFolder
-		    $folderPath = [string]::Empty
+		$currentPath = ""
+        $parentPath = ""
 
-		    # if path to application has more than 0 folders
-		    # Folder1/Folder2/application
-		    if ($folders.Count -gt 0 ) {
-			    $folderPath = [string]::Join("/", $folders.ToArray())
-			    # full path to client folder.
-			    $row.Path = [string]::Join("/", @($folderPath, $app.ClientFolder))
-		    }
-		    # if path to application is made up of 0 folders
-		    # the path to application will be ClientFolder/
-		    else {
-			    $row.Path = $app.ClientFolder
-		    }
+		for ($i = 0; $i -lt $folders.Count; $i++) {
+			$folderName = $folders[$i]
+			# Build the current path incrementally
+			$currentPath = if ($parentPath -eq "") { $folderName } else { "$parentPath/$folderName" }
+			$name = $folders[$i]
+			$existingFolder = $tbl_folder.Select("Name = '$name'")
 
-		    $row.Parent = $folderPath
-		    $row.IsAdministrative = $false
-		    try {
-			    $tbl_folder.Rows.Add($row)
-		    }
-		    catch {
-			    Log -type "INFO" -message "Folder $($row.Name) was already added [expected]"
-		    }
-	    }
+			if($existingFolder)
+			{
+				$parentPath = $existingFolder.Path
+				continue
+			}
 
-	    while ($folders.Count -ne 0) {
-            if( -Not [string]::IsNullOrEmpty( $folders[$folders.Count - 1] )) { ## do not process empty path elements
-		        $row = $tbl_folder.NewRow()
-		        $row.Name = $folders[$folders.Count - 1]
-		        $row.Path = [string]::Join("/", $folders.ToArray())
-		        $row.IsAdministrative = $true
-		        $folders.RemoveAt($folders.Count - 1)
-		        $row.Parent = [string]::Join("/", $folders.ToArray())
-		        try {
-			        $tbl_folder.Rows.Add($row)
-		        }
-		        catch {
-			        Log -type "INFO" -message "Folder $($row.Name) was already added [expected]"
-		        }
-            }
-            else {
-		        $folders.RemoveAt($folders.Count - 1)
-            }
-	    }
+			if ([string]$app.ClientFolder) {
+				$row = $tbl_folder.NewRow()
+				$row.Name = $name
+				$row.Path = $currentPath
+				$row.Parent = if ($i -eq 0) { '' } else { $parentPath }
+				$row.IsAdministrative = $i -ne 0
+				try {
+					$tbl_folder.Rows.Add($row)
+				}
+				catch {
+					Log -type "INFO" -message "Folder $($row.Name) was already added [expected]"
+				}
+			}
+
+			# Update the parent path for the next iteration
+ 			$parentPath = $currentPath
+		}
     }
 }
 
@@ -1354,7 +1338,7 @@ function MigrateFolders([System.Data.DataSet] $db) {
 			else {
 				$res = WriteToScript "New-RASPubFolder -Name '$($folder.Name)'" -useVar
 			}
-			$apps = $tbl_application.Select("[FolderPath] like '$($folder.Path)'")
+			$apps = $tbl_application | Where-Object { $_.FolderPath -like "*$($folder.Name)*" }
 			Log -type "INFO" -message "Updating 'tbl_applications' RASFolder ID ..."
 			foreach ($app in $apps) {
 				$app["RASFolderID"] = $res
@@ -1383,7 +1367,7 @@ function MigrateFolders([System.Data.DataSet] $db) {
 
 			Log -type "INFO" -message "Created '$($folder.Name)'. Path ---> $($folder.Path). RAS Folder ID ---> $($res)"
 			$folder["RASId"] = $res
-			$apps = $tbl_application.Select("[FolderPath] like '$($folder.Path)'")
+			$apps = $tbl_application | Where-Object { $_.FolderPath -like "*$($folder.Name)*" }
 			Log -type "INFO" -message "Updating 'tbl_applications' RASFolder ID ..."
 			foreach ($app in $apps) {
 				$app["RASFolderID"] = $res
