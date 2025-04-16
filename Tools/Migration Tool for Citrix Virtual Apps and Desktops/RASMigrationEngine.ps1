@@ -24,6 +24,36 @@ if($(Get-Module -ListAvailable -Verbose:$false -Debug:$false).Name.Contains("PSA
 	$PSAdminModule = "PSAdmin"
 }
 
+
+Function Write-Log {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$False)]
+        [ValidateSet("INFO","WARN","ERROR","FATAL","DEBUG")]
+        [String]
+        $Level = "INFO",
+
+        [Parameter(Mandatory=$True)]
+        [string]
+        $Message,
+
+        [Parameter(Mandatory=$False)]
+        [string]
+        $logfile = "$PSScriptRoot\migrationlog.txt"
+    )
+
+    $Stamp = (Get-Date).toString("yyyy/MM/dd HH:mm:ss")
+    $Line = "$Stamp $Level $Message"
+    If($logfile) {
+        Add-Content $logfile -Value $Line
+    }
+    Else {
+        Write-Output $Line
+    }
+}
+
+	
+
 function Get-Hash
 {
     ## Modified from https://xpertkb.com/compute-hash-string-powershell/ as MD5 in original not FIPS compliant
@@ -1386,6 +1416,7 @@ function PublishLocalApp($app, $parentfolder){
 	$httpItems = $app.ItemArray | Where-Object { $_ -match "^http://" }
 	
 	if(-Not ($httpItems -OR $httpsItems)){
+		Write-Log -Level "INFO" -Message "Unsupported app URL `"$($app.URL)`" found for app `"$($app.name)`""
 		return
 	}
 
@@ -1569,6 +1600,7 @@ function PublishPubItem ($app, $from, $publishSource, $parentFolder) {
 			$res = PublishLocalApp -app $app -parentFolder $parentFolder
 		}
         Default {
+			Write-Log -Level "INFO" -Message "Unsupported app type `"$($app.Type)`" found for app `"$($app.name)`""
             Write-Warning -Message "Unsupported app type `"$($app.Type)`" found for app `"$($app.name)`""
         }
 	}
