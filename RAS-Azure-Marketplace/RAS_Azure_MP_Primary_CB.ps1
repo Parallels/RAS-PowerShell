@@ -180,11 +180,19 @@ Start-Process msiexec.exe -ArgumentList "/i C:\install\RASInstaller.msi ADDFWRUL
 cmd /c "`"C:\Program Files (x86)\Parallels\ApplicationServer\x64\2XRedundancy.exe`" -c -AddRootAccount $domainJoinUserName"
 start-sleep -Seconds 30
 
+WriteLog "Remove impersonation"
+Remove-ImpersonateUser
+
 # Replace instances of '../4.0' with './4.0'
 $filePath = "C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdmin\RASAdmin.psd1"
 $content = Get-Content -Path $filePath
 $updatedContent = $content -replace "../4.0", "./4.0"
 Set-Content -Path $filePath -Value $updatedContent
+start-sleep -Seconds 10
+
+#Impersonate user with local admin permissins to install RAS
+WriteLog "Impersonating user"
+New-ImpersonateUser -Username $domainJoinUserName -Domain $domainName  -Password $domainJoinPassword
 
 # Enable RAS PowerShell module
 WriteLog "Import RAS PowerShell Module"
