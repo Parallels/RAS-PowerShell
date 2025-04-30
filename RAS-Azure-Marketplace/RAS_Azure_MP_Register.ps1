@@ -644,18 +644,19 @@ if ($retreivedData.licenseType -eq 0) {
 invoke-RASApply
 
 #Create Azure or AVD in RAS if specified
+#Create Azure or AVD in RAS if specified
 if ($retreivedData.providerSelection -eq "AVDProvider") {
     WriteLog "AVDProvider is selected"
     $appPassword = ConvertTo-SecureString -String $secret.SecretText -AsPlainText -Force
     Set-RASAVDSettings -Enabled $true
     invoke-RASApply
-    New-RASProvider $retreivedData.providerName -AVDVersion AVD -AVD -TenantID $retreivedData.tenantID -SubscriptionID $retreivedData.SubscriptionId -ProviderUsername $app.AppId -ProviderPassword $appPassword -NoInstall | Out-Null
+    New-RASProvider -Name $retreivedData.providerName -AVD -AVDVersion 'AVD' -TenantID $retreivedData.tenantID -SubscriptionID $retreivedData.SubscriptionId -ProviderUsername $app.AppId -ProviderPassword $appPassword -NoInstall | Out-Null
     invoke-RASApply
 }
 if ($retreivedData.providerSelection -eq "AzureProvider") {
     WriteLog "AzureProvider is selected"
     $appPassword = ConvertTo-SecureString -String $secret.SecretText -AsPlainText -Force
-    New-RASProvider $retreivedData.providerName -AzureVersion Azure -Azure -TenantID $retreivedData.tenantID -SubscriptionID $retreivedData.SubscriptionId -ProviderUsername $app.AppId -ProviderPassword $appPassword -NoInstall | Out-Null
+    New-RASProvider -Name $retreivedData.providerName -Azure -AzureVersion 'Azure' -TenantID $retreivedData.tenantID -SubscriptionID $retreivedData.SubscriptionId -ProviderUsername $app.AppId -ProviderPassword $appPassword -NoInstall | Out-Null
     invoke-RASApply
 }
 
