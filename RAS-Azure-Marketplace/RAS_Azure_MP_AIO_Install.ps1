@@ -206,6 +206,12 @@ if ($addsSelection -eq "adds") {
     Remove-ImpersonateUser
 }
 
+# Replace instances of '../4.0' with './4.0'
+$filePath = "C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdmin\RASAdmin.psd1"
+$content = Get-Content -Path $filePath
+$updatedContent = $content -replace "../4.0", "./4.0"
+Set-Content -Path $filePath -Value $updatedContent
+
 # Enable RAS PowerShell module
 Import-Module 'C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdmin\RASAdmin.psd1'
 
