@@ -179,13 +179,19 @@ WriteLog "Install Connection Broker role"
 Start-Process msiexec.exe -ArgumentList "/i C:\install\RASInstaller.msi ADDFWRULES=1 ADDLOCAL=F_Controller,F_PowerShell /norestart /qn /log C:\install\RAS_Install.log" -Wait 
 cmd /c "`"C:\Program Files (x86)\Parallels\ApplicationServer\x64\2XRedundancy.exe`" -c -AddRootAccount $domainJoinUserName"
 
+# Replace instances of '../4.0' with './4.0'
+$filePath = "C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdmin\RASAdmin.psd1"
+$content = Get-Content -Path $filePath
+$updatedContent = $content -replace "../4.0", "./4.0"
+Set-Content -Path $filePath -Value $updatedContent
+
 # Enable RAS PowerShell module
 WriteLog "Import RAS PowerShell Module"
 Import-Module 'C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdmin\RASAdmin.psd1'
 
 #Create new RAS PowerShell Session
 start-sleep -Seconds 10
-WriteLog "Creat new RAS PowerShell Session"
+WriteLog "Create new RAS PowerShell Session"
 New-RASSession -Username $domainJoinUserName -Password $secdomainJoinPassword
 
 #Add AD group as RAS Admins
