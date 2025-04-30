@@ -206,6 +206,8 @@ if ($addsSelection -eq "adds") {
     Remove-ImpersonateUser
 }
 
+start-sleep -Seconds 30
+
 # Replace instances of '../4.0' with './4.0'
 $filePath = "C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdmin\RASAdmin.psd1"
 $content = Get-Content -Path $filePath
