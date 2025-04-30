@@ -178,7 +178,7 @@ New-ImpersonateUser -Username $domainJoinUserName -Domain $domainName  -Password
 WriteLog "Install Connection Broker role"
 Start-Process msiexec.exe -ArgumentList "/i C:\install\RASInstaller.msi ADDFWRULES=1 ADDLOCAL=F_Controller,F_PowerShell /norestart /qn /log C:\install\RAS_Install.log" -Wait 
 cmd /c "`"C:\Program Files (x86)\Parallels\ApplicationServer\x64\2XRedundancy.exe`" -c -AddRootAccount $domainJoinUserName"
-start-sleep -Seconds 10
+start-sleep -Seconds 30
 
 # Replace instances of '../4.0' with './4.0'
 $filePath = "C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdmin\RASAdmin.psd1"
@@ -230,7 +230,7 @@ try {
     if ($license -eq 'trial') {
         #Create new RAS PowerShell Session
         start-sleep -Seconds 10
-        WriteLog "Creat new RAS PowerShell Session"
+        WriteLog "Create new RAS PowerShell Session"
         New-RASSession -Username $domainJoinUserName -Password $secdomainJoinPassword
         #Activate 30 day trial using Azure MP Parallels Business account
         WriteLog "Activating RAS License"
