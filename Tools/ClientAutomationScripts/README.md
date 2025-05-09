@@ -1,4 +1,4 @@
-# Imprivata Scripts
+# Client Automation Scripts
 
 ### License ###
 

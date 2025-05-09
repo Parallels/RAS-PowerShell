@@ -5,7 +5,7 @@ This folder contains a number of tools:
 * [Citrix to RAS Migration](Citrix-RAS%20Migration) - A Migration Tool for Citrix XenApp 6.0 and Citrix XenApp 6.5 to Parallels RAS 16.2 or Parallels RAS 16.5.
 * [RDS Session Management](RDSSessionMgt) - A Powershell UI sample tool to manage RAS Parallels RDS sessions and applications.
 * [RAS Quick Deployment Application](RASDeployApp) - A tool to download and deploy a farm automatedly.
-* [RAS integration with Imprivata](Imprivata) - The Logon and Disconnect scripts to integrate with Imprivata.
+* [Client Automation Scripts](ClientAutomationScripts) - sample of client automation logon & disconnect scripts for Parallels RAS.
 
 ### License ###
 

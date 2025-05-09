@@ -1,7 +1,7 @@
 '#######################################################################
 '# Author - Paul Fisher - Parallels                                    #
 '# Date   - 28/02/2023                                                 #
-'# Description: Logon script for Imprivata with Parallels RAS.         #
+'# Description: Client Automated Logon script for Parallels RAS.       #
 '# Description: Replace ApplicationID with desired Parallels RAS appID #
 '#######################################################################
  
@@ -10,8 +10,7 @@ On Error Resume Next
   'Set connection properties.
   Server = "servername.here.com"
   Port = "443"
- 
-  'Get SSO credentials - from OneSign agent variables.
+
   'Set authentication properties.
   Domain = "domain.local"
   Username = "Username"
