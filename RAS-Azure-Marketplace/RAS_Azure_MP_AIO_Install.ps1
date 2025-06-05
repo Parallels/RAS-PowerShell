@@ -250,7 +250,7 @@ if ($license -eq 'trial') {
 
 #Add VM Appliance RDS Server
 writelog "Adding VM Appliance RDS Server"
-New-RASRDS "localhost" -NoInstall -ErrorAction Ignore
+New-RASRDSHost "localhost" -NoInstall -ErrorAction Ignore
 invoke-RASApply
 
 # Publish Applications & RDSH Desktop
