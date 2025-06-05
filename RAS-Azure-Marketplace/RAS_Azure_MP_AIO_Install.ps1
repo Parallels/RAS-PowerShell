@@ -47,7 +47,10 @@ param(
     [string]$maU,
 
     [Parameter(Mandatory = $true)]
-    [string]$maP
+    [string]$maP,
+
+    [Parameter(Mandatory = $true)]
+    [string]$downloadURLRAS
 )
 
 function New-ImpersonateUser {
@@ -159,7 +162,6 @@ function Set-RunOnceScriptForAllUsers {
 #Set variables
 $Temploc = 'C:\install\RASInstaller.msi'
 $installPath = "C:\install"
-$downloadURLRAS = 'https://download.parallels.com/ras/latest/RASInstaller.msi'
 $hostname = hostname
 $localAdminPasswordSecure = ConvertTo-SecureString $localAdminPassword -AsPlainText -Force
 $maPSecure = ConvertTo-SecureString $maP -AsPlainText -Force
