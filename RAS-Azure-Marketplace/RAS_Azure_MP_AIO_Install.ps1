@@ -287,6 +287,14 @@ Set-ItemProperty -Path $regPath -Name "DesktopImagePath" -Value $wallpaperPath
 Set-ItemProperty -Path $regPath -Name "DesktopImageUrl" -Value $wallpaperPath
 Set-ItemProperty -Path $regPath -Name "DesktopImageStatus" -Value 1
 
+# Disable the OOBE Privacy Experience
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE" -Name "DisablePrivacyExperience" -Value 1 -Type DWord
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE" -Name "PrivacyConsentStatus" -Value 1 -Type DWord
+
+# Disable the OOBE First Logon Animation
+New-Item -Path "HKLM:\SOFTWARE\Microsoft\ServerManager" -Force | Out-Null
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\ServerManager" -Name "DoNotOpenServerManagerAtLogon" -Value 1 -Type DWord
+
 #Install RDSH role and reboot
 Add-WindowsFeature -Name "RDS-RD-Server" -Restart
 
