@@ -185,10 +185,11 @@ Remove-ImpersonateUser
 
 # Replace instances of '../4.0' with './4.0'
 $filePath = "C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdmin\RASAdmin.psd1"
-$content = Get-Content -Path $filePath
-$updatedContent = $content -replace "../4.0", "./4.0"
+$pattern = [regex]::Escape("../4.0")
+$replacement = "./4.0"
+$content = Get-Content -Path $filePath -Raw
+$updatedContent = $content -replace $pattern, $replacement
 Set-Content -Path $filePath -Value $updatedContent
-start-sleep -Seconds 10
 
 #Impersonate user with local admin permissins to install RAS
 WriteLog "Impersonating user"
