@@ -1,0 +1,122 @@
+#!/bin/bash
+
+# Copyright (c) 2009-2024 Parallels International GmbH. All rights reserved.
+
+################################################################
+#
+# Parallels Client Unnatended Deployment Script
+# http://www.parallels.com
+#
+################################################################
+
+# NOTE : all these 'set' options must be inherited by subshell
+set -o nounset # Treat unset variables as an error when substituting.
+set -o pipefail # pipeline ret val is the status of the last non-zero exit status command
+
+# Trap ERR and exit in main shell and subshells (ERR trap is set to be inherited).
+# EXIT trap is not inherited bu subhells, so main shell is the only place where do 'cleanup',
+# subshells will only exit on ERR.
+set -o errtrace
+trap exit ERR
+trap OnExit EXIT
+
+#
+# Declare variables
+#
+readonly shell_pid=$$
+
+# Getting package root path.
+# Root path is given as $1 argument with bundle's path.
+readonly root_path=$(dirname "$0")
+readonly contents_path="${root_path}/Contents"
+# Declare functions
+#
+
+# Autodeployment logger.
+# Log can be found at: /var/log/install.log
+Log() {
+	# Do not return any error from here
+	logger -p install.info -t "Parallels Client($shell_pid)" "$@" || true
+} &>/dev/null
+
+OnExit() {
+	local -r err=$?
+	[ $err -ne 0 ] || return 0 # return success if no error
+
+
+	Log "Error $err, Backtrace "$(get_backtrace)""
+	return $err
+}
+
+Abort() {
+	Log "Error : $@"
+	exit 1
+}
+
+ get_backtrace() {
+	local -r depth=${#FUNCNAME[@]}
+	for ((i=1; i<$depth; i++)); do
+		local func="${FUNCNAME[$i]}"
+		local line="${BASH_LINENO[$((i-1))]}"
+		echo "<- line $line: $func()"
+	done
+}
+
+get_console_user() {
+	[ ! -e /dev/console ] || stat -f%Su /dev/console
+}
+
+get_user_home() {
+	local user="$1"
+	[ -z "$user" ] && return 1
+	# Get the home directory of the user
+	dscacheutil -q user -a name "$user" | grep ^dir: | sed 's,^dir:\ ,,'
+}
+
+InstallParallelsClient() {
+	Log "Installing Parallels Client..."
+	
+	# Scan for a pkg file in the root path
+	local pkg_file=$(find "$contents_path" -maxdepth 1 -name "*.pkg" | head -n 1)
+	if [ -z "$pkg_file" ]; then
+		Abort "No Parallels Client package found in $contents_path"
+	fi
+
+	Log "Found Parallels Client package: $pkg_file"
+
+	# Install Parallels Client
+	Log "Installing Parallels Client from $contents_path"
+	/usr/bin/sudo /usr/sbin/installer -pkg "$pkg_file" -target / || Abort "Failed to install Parallels Client"
+}
+
+Open2XCFile() {
+	Log "Opening 2XC file..."
+	
+	# Scan for a 2xc file in the root path
+	local xc_file=$(find "$contents_path" -maxdepth 1 -name "*.2xc" | head -n 1)
+	if [ -z "$xc_file" ]; then
+		Abort "No 2XC file found in $contents_path"
+	fi
+
+	# Extract the file name without path
+	local file_name=$(basename "$xc_file")
+	Log "2XC file found: '$file_name'"
+
+	# Get the console user
+	local console_user=$(get_console_user)
+	[ -z "$console_user" ] && Abort "Failed to get console user"
+
+	# Copy the 2XC file to the user's home directory
+	local user_home=$(get_user_home "$console_user")
+	[ -z "$user_home" ] && Abort "Failed to get home directory for user $console_user"
+	local dest_path="$user_home/$file_name"
+	/bin/cp "$xc_file" "$dest_path" || Abort "Failed to copy 2XC file to $dest_path"
+
+	# Open 2XC file as the console user
+	Log "Opening 2XC file as user $console_user"
+	/usr/bin/sudo -u "$console_user" /usr/bin/open -a "/Applications/Parallels Client.app" "$dest_path" || Abort "Failed to open 2XC file as user $console_user"
+}
+
+InstallParallelsClient
+
+Open2XCFile
