@@ -5,9 +5,8 @@
 This tool allows administrators to easily create a custom Parallels MacOS client install package for mass deployment using an exported .2xc file from a template MacOS client configuration downloaded from this location [Parallels Client for MacOS](https://www.parallels.com/products/ras/download/links/).
 It allows administrators to preconfigure common client settings during the deployment which is useful when deploying clients at scale. 
 
-## Download and Extract the tool
-* Download the file [Ras_With_Pkg_2XC_Search.zip](https://github.com/Parallels/RAS-PowerShell/tree/master/Tools) and extract it's contents
-* It will extract to a folder called RasClientDeploy with a number of sub-folders and two bash scripts within. One called 'createpackage' and the other called 'postinstall'
+## Download the tool
+* Download the full contents of the folder 'RAS Custom MACOS' - this folder contains a subfolder called RasClientDeploy with a number of sub-folders and two bash scripts within. One called 'createpackage' and the other called 'postinstall'
 
 
 ## Tool contents
