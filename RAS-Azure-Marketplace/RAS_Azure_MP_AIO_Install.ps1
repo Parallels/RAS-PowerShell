@@ -261,7 +261,6 @@ New-RASPubRDSDesktop -Name "Published Desktop"
 New-RASPubRDSApp -Name "Calculator" -Target "C:\Windows\System32\calc.exe" -PublishFrom All -WinType Maximized
 New-RASPubRDSApp -Name "Paint" -Target "C:\Windows\System32\mspaint.exe" -PublishFrom All -WinType Maximized
 New-RASPubRDSApp -Name "Notepad" -Target "C:\Windows\System32\notepad.exe"  -PublishFrom All -WinType Maximized 
-New-RASPubRDSApp -Name "Snipping tool" -Target "C:\Windows\System32\SnippingTool.exe"  -PublishFrom All -WinType Maximized 
 invoke-RASApply
 
 #Deploy Run Once script to launch post deployment actions at next admin logon
@@ -306,3 +305,4 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\ServerManager" -Name "DoNotOpen
 Add-WindowsFeature -Name "RDS-RD-Server" -Restart
 
 WriteLog "Finished installing RAS..."
+
