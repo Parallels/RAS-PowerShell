@@ -111,18 +111,13 @@ Set-RASPubRDSApp -InputObject $App_Sales -InheritShortcutDefaultSettings $false 
 
 #Set AD account filters by ID.
 log "Set Active Directory filters for Accounts published desktop"
-Set-RASCriteria -ObjType PubItem -InputObject $Desk_Sales -Enable $true -Replicate $true
+Set-RASCriteria -ObjType PubItem -Id $Desk_Sales.Id -SecurityPrincipalsEnabled $true -RuleId 1
 Add-RASCriteriaSecurityPrincipal -Account "Accounts" -SID "10" -Id $Desk_Acc.Id -ObjType PubItem -RuleId 1
-
-#Set AD account filters by object.
-log "Set Active Directory filters for Sales published desktop"
-Set-RASCriteria -InputObject $Desk_Sales -Enable $true -Replicate $true
-Add-RASCriteriaSecurityPrincipal -InputObject $App_Acc -IP "10.0.0.1-10.0.0.12"
 
 #Set an IP filter (with range) on application.
 log "Set IP filters for Accounts published application"
-Set-RASCriteria -ObjType PubItem -InputObject $App_Acc -Enable $true
-Add-RASCriteriaSecurityPrincipal -InputObject $App_Acc -IP "10.0.0.1-10.0.0.12"
+Set-RASCriteria -ObjType PubItem -Id $App_Acc.Id -IPsEnabled $true -RuleId 1
+Add-RASCriteriaIP -InputObject $App_Acc -IP "10.0.0.1-10.0.0.12" -IPType Version4 -RuleId 1
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
