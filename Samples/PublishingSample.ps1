@@ -73,7 +73,7 @@ $RDSList = Get-RASRDSHost
 log "Print the list of RD Session servers retrieved"
 Write-Host ($RDSList | Format-Table | Out-String)
 
-#Create an RD Session Host Group and add both RD Session Host objects to it.
+#Create an RD Session Host Pool and add both RD Session Host objects to it.
 log "Add an RD Session host group (with list of RD Sessions)"
 New-RASRDSHostPool -Name $RDSGroupName -Description "RDSTemplates Pool" -WorkLoadThreshold 50 -ServersToAddPerRequest 2 `
 -WorkLoadToDrain 20 -HostsToCreate 1 -HostName $VMNameFormat -MinServersFromTemplate 2 -MaxServersFromTemplate 2 -Autoscale $true -RDSObject $RDSList
@@ -109,20 +109,15 @@ Set-RASPubRDSApp -InputObject $App_Sales -InheritShortcutDefaultSettings $false 
 
 ###### PUB FILTERING CONFIGURATION ######
 
-#Set AD account filters by ID.
-log "Set Active Directory filters for Accounts published desktop"
-Set-RASCriteria -ObjType PubItem -InputObject $Desk_Sales -Enable $true -Replicate $true
+#Set Security Principal for Accounts published desktop by ID.
+log "Set Security Principal for Accounts published desktop"
+Set-RASCriteria -ObjType PubItem -Id $Desk_Sales.Id -SecurityPrincipalsEnabled $true -RuleId 1
 Add-RASCriteriaSecurityPrincipal -Account "Accounts" -SID "10" -Id $Desk_Acc.Id -ObjType PubItem -RuleId 1
-
-#Set AD account filters by object.
-log "Set Active Directory filters for Sales published desktop"
-Set-RASCriteria -InputObject $Desk_Sales -Enable $true -Replicate $true
-Add-RASCriteriaSecurityPrincipal -InputObject $App_Acc -IP "10.0.0.1-10.0.0.12"
 
 #Set an IP filter (with range) on application.
 log "Set IP filters for Accounts published application"
-Set-RASCriteria -ObjType PubItem -InputObject $App_Acc -Enable $true
-Add-RASCriteriaSecurityPrincipal -InputObject $App_Acc -IP "10.0.0.1-10.0.0.12"
+Set-RASCriteria -ObjType PubItem -Id $App_Acc.Id -IPsEnabled $true -RuleId 1
+Add-RASCriteriaIP -InputObject $App_Acc -IP "10.0.0.1-10.0.0.12" -IPType Version4 -RuleId 1
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"

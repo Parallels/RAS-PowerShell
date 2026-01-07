@@ -26,7 +26,7 @@ $RDSServer1 = "rds1.company.dom" 	#(replace 'rds1.company.dom' with a valid FQDN
 $RDSServer2 = "rds2.company.dom" 	#(replace 'rds2.company.dom' with a valid FQDN, computer name, or IP address).
 $RDSServer3 = "rds3.company.dom" 	#(replace 'rds3.company.dom' with a valid FQDN, computer name, or IP address).
 $RDS1Desc = "Updating RDS Host 1"	#(replace with a more specific name).
-$RDSGroupName = "My RDS Group"		#(replace with a more specific name).
+$RDSHostPoolName = "My RDS HP"		#(replace with a more specific name).
 $RDSDefSettMaxSessions = 100		#(replace default value with preferred max sessions).
 $RDSDefSettAppMonitor = $true		#(replace default value with preferred App Monitoring value (Enabeld/Disabled)).
 $PubDeskName = "PubDesktop"			#(replace with a more specific name).
@@ -73,7 +73,7 @@ Write-Host ($RDSList | Format-Table | Out-String)
 
 #Create an RD Session Host Group and add both RD Session Host objects to it.
 log "Add an RD Session host group (with list of RD Sessions)"
-New-RASRDSHostPool -Name $RDSGroupName -RDSObject $RDSList
+New-RASRDSHostPool -Name $RDSHostPoolName -RDSObject $RDSList
 
 #Add the third RD Session Host server.
 log "Adding the third RD Session Host server"
@@ -81,7 +81,7 @@ $RDS3 = New-RASRDSHost -Server $RDSServer3
 
 #Move the RD Session host to an existing RDS Group.
 log "Move the RD Session host to an existing RDS Group"
-Move-RASRDSGroupMember -GroupName $RDSGroupName -RDSServer $RDS3.Server
+Move-RASRDSHostPoolMember -HostPoolName $RDSHostPoolName -RDSServer $RDS3.Server
 
 #Update default settings used to configure RD Session Host agents.
 log "Updating RDS default settings"
