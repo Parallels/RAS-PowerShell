@@ -54,7 +54,7 @@ New-RASSession
 
 #Add a Provider.
 log "Adding a new Provider"
-$Provider = New-RASProvider -Server $VDIServer VMwareESXi -VmwareESXiVersion v6_5 -ProviderUsername root -ProviderPassword $AdminPassword -VDIAgent $VDIAgent -Username $AdminUsername -Password $AdminPassword
+$Provider = New-RASProvider -VMwareESXi -VmwareESXiVersion v6_5 -Server $VDIServer -ProviderUsername root -ProviderPassword $AdminPassword -VDIAgent $VDIAgent -Username $AdminUsername -Password $AdminPassword
 
 #Apply all settings. This cmdlet performs the same action as the Apply button in the RAS console.
 log "Appling settings"
