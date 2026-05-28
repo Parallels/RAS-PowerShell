@@ -281,7 +281,7 @@ For the best onboarding experience, use the samples in the following order:
 
 # Testing the Samples
 
-The samples can be tested using the included Tool Validation Framework.
+The samples can be tested using the included [Tool Validation Framework](https://github.com/Parallels/RAS-PowerShell/tree/master/Custom-Provider-Framework/Framework%20Test%20Kit).
 
 Common validation scripts include:
 
