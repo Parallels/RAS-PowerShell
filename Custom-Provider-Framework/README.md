@@ -8,9 +8,9 @@
 > Technical Preview builds and installation media can be accessed through [Parallels My Account](https://my.parallels.com/login).
 > 
 
-The Parallels RAS Custom Provider Framework (CPF) allows customers and partners to integrate virtualization platforms and cloud providers with Parallels RAS using a script-based connector model.
+The Parallels RAS Custom Provider Framework allows customers and partners to integrate virtualization platforms and cloud providers with Parallels RAS using a script-based connector model.
 
-Using CPF, administrators can connect platforms that are not currently available as built-in Tier 1 providers in Parallels RAS. Examples include Proxmox VE, KVM-based platforms, Xen-based environments, private cloud implementations, edge deployments, and other custom virtualization solutions.
+Using Custom Provider Framework, administrators can connect platforms that are not currently available as built-in Tier 1 providers in Parallels RAS. Examples include Proxmox VE, KVM-based platforms, Xen-based environments, private cloud implementations, edge deployments, and other custom virtualization solutions.
 
 The framework uses a JSON-based request/response protocol over standard input and output (`stdin` / `stdout`) and can be implemented in PowerShell, Python, or any language capable of processing JSON messages.
 
@@ -20,8 +20,8 @@ The framework uses a JSON-based request/response protocol over standard input an
 
 | Folder | Description |
 |---|---|
-| [`Samples`](./Samples) | Sample CPF implementations for learning and testing |
-| [`Framework Test Kit`](./Framework%20Test%20Kit) | Validation toolkit for testing CPF scripts outside of RAS |
+| [`Samples`](./Samples) | Sample Custom Provider Framework implementations for learning and testing |
+| [`Framework Test Kit`](./Framework%20Test%20Kit) | Validation toolkit for testing Custom Provider Framework scripts outside of RAS |
 
 ---
 
@@ -45,7 +45,7 @@ The Technical Preview Guide contains the complete protocol reference, supported 
 
 The guide includes:
 
-- CPF architecture overview
+- Custom Provider Framework architecture overview
 - JSON protocol reference
 - Provider capabilities
 - Guest operations
@@ -59,7 +59,8 @@ The guide includes:
 
 # Samples
 
-The repository includes several sample implementations to help you understand and build Custom Provider integrations.
+The repository includes several sample implementations to help you understand and build Custom Provider Framework integrations.
+
 
 | Sample | Description |
 |---|---|
@@ -69,7 +70,7 @@ The repository includes several sample implementations to help you understand an
 
 ## Recommended Learning Path
 
-Not all CPF methods need to be implemented from the beginning. The framework is designed to support incremental adoption, allowing you to implement only the functionality required for your specific use case.
+Not all Custom Provider Framework methods need to be implemented from the beginning. The framework is designed to support incremental adoption, allowing you to implement only the functionality required for your specific use case.
 
 ### 1. Start with the Basic Sample
 
@@ -82,11 +83,12 @@ Not all CPF methods need to be implemented from the beginning. The framework is 
 - VM control operations
 - Structured error handling
 
-This sample uses static data and is intended for learning the CPF protocol and execution model.
+This sample uses static data and is intended for learning the Custom Provider Framework protocol and execution model.
+
 
 ### 2. Move to Platform Integration
 
-[`Parallels-RAS-CPF-Proxmox-Basic.ps1`](./Samples/Proxmox/Parallels-RAS-CPF-Proxmox-Basic.ps1) demonstrates how to integrate a real hypervisor platform with Parallels RAS using the CPF protocol.
+[`Parallels-RAS-CPF-Proxmox-Basic.ps1`](./Samples/Proxmox/Parallels-RAS-CPF-Proxmox-Basic.ps1) demonstrates how to integrate a real hypervisor platform with Parallels RAS using the Custom Provider Framework protocol.
 
 The sample includes:
 
@@ -112,7 +114,7 @@ The sample includes:
 
 # Framework Test Kit
 
-The included Framework Test Kit can be used to validate CPF implementations outside of the Parallels RAS Console.
+The included Framework Test Kit can be used to validate Custom Provider Framework implementations outside of the Parallels RAS Console.
 
 🔧 [Open Framework Test Kit](./Framework%20Test%20Kit)
 
@@ -143,7 +145,7 @@ Common validation scripts include:
 
 ---
 
-# Core CPF Concepts
+# Core Custom Provider Framework Concepts
 
 ## Execution Model
 
