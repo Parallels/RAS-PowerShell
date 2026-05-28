@@ -12,9 +12,9 @@ These scripts are reference implementations only and are provided for evaluation
 
 | Script | Purpose | Functionality Level |
 |---|---|---|
-| `Parallels-RAS-CPF-Basic.ps1` | Minimal reference implementation using dummy data | Basic |
-| `Parallels-RAS-CPF-Proxmox-Basic.ps1` | Example integration for Proxmox VE with VM discovery and power control | Basic |
-| `Parallels-RAS-CPF-Proxmox-Advanced.ps1` | Advanced Proxmox VE integration including templates, cloning, and snapshots | Template Versioning |
+| [`Parallels-RAS-CPF-Basic.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Parallels-RAS-CPF-Basic.ps1) | Minimal reference implementation using dummy data | Basic |
+| [`Parallels-RAS-CPF-Proxmox-Basic.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Parallels-RAS-CPF-Proxmox-Basic.ps1) | Example integration for Proxmox VE with VM discovery and power control | Basic |
+| [`Parallels-RAS-CPF-Proxmox-Advanced.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Parallels-RAS-CPF-Proxmox-Advanced.ps1) | Advanced Proxmox VE integration including templates, cloning, and snapshots | Template Versioning |
 
 ---
 
