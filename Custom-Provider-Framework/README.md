@@ -1,5 +1,11 @@
 # Parallels RAS Custom Provider Framework (CPF)
 
+> **Technical Preview – Parallels RAS 21.2**
+>
+> The Custom Provider Framework (CPF) is currently available as a Technical Preview feature for Parallels RAS 21.2.
+>
+> Technical Preview builds and installation media can be accessed through [Parallels My Account](https://my.parallels.com/login).
+
 The Parallels RAS Custom Provider Framework (CPF) allows customers and partners to integrate virtualization platforms and cloud providers with Parallels RAS using a script-based connector model.
 
 Using CPF, administrators can connect platforms that are not currently available as built-in Tier 1 providers in Parallels RAS. Examples include Proxmox VE, KVM-based platforms, Xen-based environments, private cloud implementations, edge deployments, and other custom virtualization solutions.
