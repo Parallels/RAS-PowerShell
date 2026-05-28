@@ -12,9 +12,9 @@ These scripts are reference implementations only and are provided for evaluation
 
 | Script | Purpose | Functionality Level |
 |---|---|---|
-| [`Parallels-RAS-CPF-Basic.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Parallels-RAS-CPF-Basic.ps1) | Minimal reference implementation using dummy data | Basic |
-| [`Parallels-RAS-CPF-Proxmox-Basic.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Parallels-RAS-CPF-Proxmox-Basic.ps1) | Example integration for Proxmox VE with VM discovery and power control | Basic |
-| [`Parallels-RAS-CPF-Proxmox-Advanced.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Parallels-RAS-CPF-Proxmox-Advanced.ps1) | Advanced Proxmox VE integration including templates, cloning, and snapshots | Template Versioning |
+| [`Parallels-RAS-CPF-Basic.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Basic/Parallels-RAS-CPF-Basic.ps1) | Minimal reference implementation using dummy data | Basic |
+| [`Parallels-RAS-CPF-Proxmox-Basic.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Proxmox/Parallels-RAS-CPF-Proxmox-Basic.ps1) | Example integration for Proxmox VE with VM discovery and power control | Basic |
+| [`Parallels-RAS-CPF-Proxmox-Advanced.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Proxmox/ProxmoxParallels-RAS-CPF-Proxmox-Advanced.ps1) | Advanced Proxmox VE integration including templates, cloning, and snapshots | Template Versioning |
 
 ---
 
@@ -22,7 +22,7 @@ These scripts are reference implementations only and are provided for evaluation
 
 ## Overview
 
-[`Parallels-RAS-CPF-Basic.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Parallels-RAS-CPF-Basic.ps1) is the recommended starting point for understanding the Parallels RAS Custom Provider Framework protocol.
+[`Parallels-RAS-CPF-Basic.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Basic/Parallels-RAS-CPF-Basic.ps1) is the recommended starting point for understanding the Parallels RAS Custom Provider Framework protocol.
 
 The script uses static and mock data to demonstrate:
 
@@ -86,7 +86,7 @@ C:\CPF_Scripts
 
 ## Overview
 
-[`Parallels-RAS-CPF-Proxmox-Basic.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Parallels-RAS-CPF-Proxmox-Basic.ps1) demonstrates how to integrate Proxmox VE with Parallels RAS using the Custom Provider Framework.
+[`Parallels-RAS-CPF-Proxmox-Basic.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Proxmox/Parallels-RAS-CPF-Proxmox-Basic.ps1) demonstrates how to integrate Proxmox VE with Parallels RAS using the Custom Provider Framework.
 
 This implementation extends the basic sample and introduces real hypervisor communication using the Proxmox API.
 
@@ -163,7 +163,7 @@ It does not implement:
 
 ## Overview
 
-[`Parallels-RAS-CPF-Proxmox-Advanced.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Parallels-RAS-CPF-Proxmox-Advanced.ps1) builds on the Proxmox basic sample and introduces advanced template and provisioning workflows.
+[`Parallels-RAS-CPF-Proxmox-Advanced.ps1`](https://github.com/Parallels/RAS-PowerShell/blob/master/Custom-Provider-Framework/Samples/Proxmox/ProxmoxParallels-RAS-CPF-Proxmox-Advanced.ps1) builds on the Proxmox basic sample and introduces advanced template and provisioning workflows.
 
 This sample demonstrates how to implement:
 
