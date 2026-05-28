@@ -311,23 +311,5 @@ Common validation scripts include:
 - Use structured JSON error responses instead of free-form output.
 - Use `stdout` for CPF protocol communication and `stderr` for diagnostics and logging.
 
----
 
-# Additional Resources
-
-For additional details about the protocol, supported methods, capabilities, workflows, and validation framework, refer to the main project documentation:
-
-- `README.md`
-- `Parallels RAS - Custom Provider Framework - Technical Preview Guide.pdf`
-
-The Technical Preview Guide includes:
-
-- Protocol reference
-- Capability definitions
-- Snapshot and template behavior
-- Validation framework documentation
-- Operational guidance
-- Troubleshooting guidance
-- Example onboarding workflows
-- Logging recommendations
 
