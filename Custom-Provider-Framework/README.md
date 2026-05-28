@@ -69,6 +69,8 @@ The repository includes several sample implementations to help you understand an
 
 ## Recommended Learning Path
 
+Not all CPF methods need to be implemented from the beginning. The framework is designed to support incremental adoption, allowing you to implement only the functionality required for your specific use case.
+
 ### 1. Start with the Basic Sample
 
 [`Parallels-RAS-CPF-Basic.ps1`](./Samples/Basic/Parallels-RAS-CPF-Basic.ps1) is the recommended starting point for understanding:
