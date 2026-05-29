@@ -179,6 +179,49 @@ RAS only invokes workflows that the provider advertises as supported.
 
 ---
 
+## Configuring a Custom Provider in Parallels RAS
+
+Once a Custom Provider Framework implementation has been developed and validated, it can be onboarded into Parallels RAS through the **Providers** section of the RAS Console.
+
+The onboarding process consists of the following high-level steps:
+
+1. Open the **RAS Console** and navigate to **Providers**.
+2. Create a new provider and select **Custom Provider**.
+3. Specify the provider name, description, and optional credentials used by RAS.
+4. Configure the provider executable, including:
+   - Command path
+   - Command arguments
+   - Working directory
+5. Define any provider-specific variables required by the implementation, such as API endpoints, usernames, tokens, or other custom settings.
+6. Review and validate the configuration.
+7. Apply the configuration and verify that the provider status reports as healthy.
+8. Optionally perform a credential validation check.
+9. Start using the provider for host discovery, template management, cloning, and provisioning workflows.
+
+The Custom Provider Framework passes all custom variables directly to the provider implementation. This allows each integration to define its own settings and authentication requirements without requiring changes to Parallels RAS.
+
+### Typical Configuration Example
+
+| Setting | Example |
+|----------|----------|
+| Command | `C:\Program Files\PowerShell\7\pwsh.exe` |
+| Arguments | `-NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\CPF_Scripts\Parallels-RAS-CPF-Proxmox-Basic.ps1` |
+| Working Directory | `C:\CPF_Scripts` |
+
+Common custom variables include:
+
+- `host`
+- `username`
+- `token_name`
+- `token_secret`
+
+The exact variables required depend on the provider implementation.
+
+> [!TIP]
+> The **Check Credentials** option becomes available after the provider connection details and custom variables have been configured. Use this option to verify connectivity and authentication before onboarding workloads.
+
+For a detailed step-by-step walkthrough, screenshots, and example configurations, refer to the [Technical Preview Guide](https://download.parallels.com/ras-beta/Parallels-RAS-Custom-Provider-Technical-Preview-Guide.pdf).
+
 # Important Notes
 
 - CPF is currently provided as a Technical Preview feature.
