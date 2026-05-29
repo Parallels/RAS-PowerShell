@@ -1,6 +1,6 @@
 # Parallels RAS Custom Provider Framework (CPF)
 
->
+> [!NOTE]
 > **Technical Preview – Parallels RAS 21.2**
 >
 > The Custom Provider Framework (CPF) is currently available as a Technical Preview feature for Parallels RAS 21.2.
