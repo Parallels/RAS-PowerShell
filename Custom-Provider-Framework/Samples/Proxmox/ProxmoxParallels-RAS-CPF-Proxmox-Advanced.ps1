@@ -424,7 +424,8 @@ function Invoke-ProxmoxApi {
 
 function Get-ProxmoxClusterVMs {
     $resp = Invoke-ProxmoxApi -Method GET -Path '/api2/json/cluster/resources?type=vm'
-    return @($resp.data)
+    # Filter to QEMU VMs only — LXC containers use different API endpoints
+    return @($resp.data | Where-Object { [string]$_.type -eq 'qemu' })
 }
 
 function Get-ProxmoxVmNode {
