@@ -21,7 +21,7 @@ The framework uses a JSON-based request/response protocol over standard input an
 
 A recommended onboarding flow for developing a Custom Provider is:
 
-1. Review the Technical Preview Guide
+1. Review the Custom Provider Framework Guide 
 2. Start with the Basic sample implementation
 3. Validate the script using the Framework Test Kit
 4. Extend the provider with real platform integration
