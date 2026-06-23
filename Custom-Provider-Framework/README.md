@@ -29,7 +29,7 @@ A recommended onboarding flow for developing a Custom Provider is:
 
 ---
 
-# Technical Preview Guide
+# Custom Provider Framework Guide
 
 The Custom Provider Framework Guide contains the complete protocol reference, supported methods, capabilities, validation workflows, operational guidance, and configuration examples.
 
