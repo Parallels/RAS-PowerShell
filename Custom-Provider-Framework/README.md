@@ -216,7 +216,6 @@ For a detailed step-by-step walkthrough, screenshots, and example configurations
 
 # Important Notes
 
-- CPF is currently provided as a Technical Preview feature.
 - Sample scripts are reference implementations and are not production-ready integrations.
 - Customers and partners are responsible for provider-specific automation logic, security hardening, retry handling, and platform compatibility.
 - Always validate implementations in a non-production environment before deployment.
