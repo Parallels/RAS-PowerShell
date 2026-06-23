@@ -1,13 +1,5 @@
 # Parallels RAS Custom Provider Framework (CPF)
 
-> [!NOTE]
-> **Technical Preview – Parallels RAS 21.2**
->
-> The Custom Provider Framework (CPF) is currently available as a Technical Preview feature for Parallels RAS 21.2.
->
-> Technical Preview builds and full documentation can be accessed through [Parallels My Account](https://my.parallels.com/login).
-> 
-
 The Parallels RAS Custom Provider Framework allows customers and partners to integrate virtualization platforms and cloud providers with Parallels RAS using a script-based connector model.
 
 Using Custom Provider Framework, administrators can connect platforms that are not currently available as built-in Tier 1 providers in Parallels RAS. Examples include Proxmox VE, KVM-based platforms, Xen-based environments, private cloud implementations, edge deployments, and other custom virtualization solutions.
@@ -39,9 +31,9 @@ A recommended onboarding flow for developing a Custom Provider is:
 
 # Technical Preview Guide
 
-The Technical Preview Guide contains the complete protocol reference, supported methods, capabilities, validation workflows, operational guidance, and configuration examples.
+The Custom Provider Framework Guide contains the complete protocol reference, supported methods, capabilities, validation workflows, operational guidance, and configuration examples.
 
-📘 [Download the Technical Preview Guide](https://download.parallels.com/ras-beta/Parallels-RAS-Custom-Provider-Technical-Preview-Guide.pdf)
+📘 [Consult Custom Provider Framework Guide](https://docs.parallels.com/landing/ras-cpf-integration-guide)
 
 The guide includes:
 
