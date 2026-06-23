@@ -226,7 +226,7 @@ For a detailed step-by-step walkthrough, screenshots, and example configurations
 
 # Additional Resources
 
-- [Technical Preview Guide](https://download.parallels.com/ras-beta/Parallels-RAS-Custom-Provider-Technical-Preview-Guide.pdf)
+- [Custom Provider Framework Guide](https://docs.parallels.com/landing/ras-cpf-integration-guide)
 - [Samples](./Samples)
 - [Framework Test Kit](./Framework%20Test%20Kit)
 
