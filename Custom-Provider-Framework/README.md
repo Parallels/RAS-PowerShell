@@ -212,7 +212,7 @@ The exact variables required depend on the provider implementation.
 > [!TIP]
 > The **Check Credentials** option becomes available after the provider connection details and custom variables have been configured. Use this option to verify connectivity and authentication before onboarding workloads.
 
-For a detailed step-by-step walkthrough, screenshots, and example configurations, refer to the [Technical Preview Guide](https://download.parallels.com/ras-beta/Parallels-RAS-Custom-Provider-Technical-Preview-Guide.pdf).
+For a detailed step-by-step walkthrough, screenshots, and example configurations, refer to the [Custom Provider Framework Guide ](https://docs.parallels.com/landing/ras-cpf-integration-guide).
 
 # Important Notes
 
