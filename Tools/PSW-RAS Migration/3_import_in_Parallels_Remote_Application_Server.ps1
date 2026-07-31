@@ -83,7 +83,7 @@ $Apps = (Get-Content -Path "data/apps.json" | ConvertFrom-Json).results
 $SSLCerts = (Get-Content -Path "data/ssl-offloader-certificates.json" | ConvertFrom-Json).results
 
 # Currently, only domains pointing to the same Microsoft Windows back end infrastructure are supported in this script.
-$Selection = $Domains | Select-Object name, domain | Out-GridView -Title "Select $PSW domains" -PassThru
+$Selection = $Domains | Select-Object name, fqdn, netbios | Out-GridView -Title "Select $PSW domains" -PassThru
 
 # To keep the migration script simple: Create a theme for each Workspace domain. 
 # This can be used to map the login permissions.
@@ -193,7 +193,7 @@ $Domains | ForEach-Object {
                     -Name $Domain.name `
                     -Account $SAMAccountName
 
-                $Permission | fl
+                $Permission | Format-List
 
                 if($null -eq $Permission) {
                         
@@ -340,12 +340,15 @@ $Domains | ForEach-Object {
 
                             Write-Host "For broker $($Broker): Create RDS Host $($SessionHost.SessionHost)"
 
-                            $RASHost = New-RASRDSHost `
-                                -SiteId $SiteId `
-                                -Server $SessionHost.SessionHost `
-                                -Username $Upn `
-                                -Password $($Password | ConvertTo-SecureString -Force -AsPlainText) `
-                                -ErrorAction Stop
+                            $Params = @{
+                                SiteId = $SiteId
+                                Server = $SessionHost.SessionHost
+                                Username = $Upn
+                                Password = $($Password | ConvertTo-SecureString -Force -AsPlainText)
+                                ErrorAction = "Stop"
+                            }
+
+                            $RASHost = New-RASRDSHost @Params
 
                             $RASHosts.Add($RASHost)
                             
@@ -354,8 +357,8 @@ $Domains | ForEach-Object {
                         }
                         catch {
                             Write-Host -ForegroundColor Red $_
-                            $Params
-                            Write-Host "Unable to create and configure host."
+                            $Params | Format-Table
+                            Write-Host "Unable to create host (managed by broker)."
                         }
 
 
@@ -368,12 +371,11 @@ $Domains | ForEach-Object {
                                 # The "name" (PSW) can not be directly mapped in RAS; it could only be added into the description.
                                 
                                 $Params = @{
-                                    SiteId = $SiteId
                                     Id = $RASHost.Id
                                     Enabled = $AppServer.enabled
-                                    Description = $AppServer.Description
+                                    Description = ($null -eq $AppServer.Description ? "" : $AppServer.Description)
                                     Port = $AppServer.port
-                                    MaxSessions = $AppServer.max_connections
+                                    MaxSessions = ($AppServer.max_connections -eq 0 ? 1000 : $AppServer.max_connections)
                                     ErrorAction = "Stop"
                                 }
                                 
@@ -385,8 +387,8 @@ $Domains | ForEach-Object {
                             }
                             catch {
                                 Write-Host -ForegroundColor Red $_
-                                $Params
-                                Write-Host "Unable to create and configure host."
+                                $Params | Format-Table
+                                Write-Host "Unable to configure host."
                             }
 
                         }
@@ -423,7 +425,7 @@ $Domains | ForEach-Object {
 
                 $RASHosts.Add($RASHost)
 
-                Write-Host "Server already exists."
+                Write-Host "RDS Host already exists."
 
             }
             catch {
@@ -432,30 +434,43 @@ $Domains | ForEach-Object {
 
                     Write-Host "Create Host $($AppServer.host) (RDSH)."
 
-                    $RASHost = New-RASRDSHost `
-                        -SiteId $SiteId `
-                        -Server $AppServer.host `
-                        -Username $Upn `
-                        -Password $($Password | ConvertTo-SecureString -Force -AsPlainText) `
-                        -ErrorAction Stop
+                    $Params = @{
+                        SiteId = $SiteId
+                        Server = $AppServer.host
+                        Username = $Upn
+                        Password = $($Password | ConvertTo-SecureString -Force -AsPlainText)
+                        ErrorAction = "Stop"
+                    }
+
+                    $Params | Format-Table
+
+                    $RASHost = New-RASRDSHost @Params
 
                     $RASHosts.Add($RASHost)
+
+                    Write-Host "Configure Host."
+
+                    $Params | Format-Table
+
+                    $Params = @{
+                        SiteId = $SiteId
+                        Id = $RASHost.Id
+                        Enabled = $AppServer.enabled
+                        Description = $AppServer.description
+                        Port = $AppServer.port
+                        MaxSessions = $AppServer.max_connections
+                        ErrorAction = "Stop"
+                    }
                 
                     # The "name" (PSW) can not be directly mapped in RAS; it could only be added into the description.
-                    Set-RASRDSHost `
-                        -SiteId $SiteId `
-                        -Id $RASHost.Id `
-                        -Enabled $AppServer.enabled `
-                        -Description $AppServer.description `
-                        -Port $AppServer.port `
-                        -MaxSessions $AppServer.max_connections `
-                        -ErrorAction Stop
+                    Set-RASRDSHost @Params
                     
                     Write-Host "Host successfully added."
 
                 }
                 catch {
                     Write-Host -ForegroundColor Red $_
+                    $Params | Format-Table
                     Write-Host "Unable to create and configure host."
                 }
 
@@ -470,11 +485,13 @@ $Domains | ForEach-Object {
 
             try {
                 
-                    
-                $Provider = Get-RASProvider `
-                    -SiteId $SiteId `
-                    -Name $ProviderName `
-                    -ErrorAction Stop
+                $Params = @{
+                    SiteId = $SiteId
+                    Name = $ProviderName
+                    ErrorAction = "Stop"
+                }
+
+                $Provider = Get-RASProvider @Params
 
                 Write-Host "Found existing RAS Provider: $($ProviderName)"
 
@@ -483,21 +500,58 @@ $Domains | ForEach-Object {
 
                 Write-Host "Create new RAS Provider: $($ProviderName)"
 
-                $Provider = New-RASProvider `
-                    -SiteId $SiteId `
-                    -RemotePCStatic `
-                    -RemotePCStaticVersion RemotePCStatic `
-                    -Server $Server `
-                    -ProviderUsername $Upn `
-                    -ProviderPassword $($Password | ConvertTo-SecureString -AsPlainText -Force)
+                # "name" is not allowed here.
+                $Params = @{
+                    RemotePCStaticVersion = "RemotePCStatic"
+                    SiteId = $SiteId
+                    Server = $Server
+                    ProviderUsername = $Upn
+                    ProviderPassword = $($Password | ConvertTo-SecureString -AsPlainText -Force)
+                    ErrorAction = "Stop"
+                }
 
-                Set-RASProvider -Id $Provider.Id -Description "A provider created during migration from $PSW to $RAS"
+                $Params | Format-Table
+
+                $Provider = New-RASProvider -RemotePCStatic @Params
+
+                Invoke-RASApply
 
                 Write-Host "Created new RAS Provider: $($ProviderName)"
+                
+                $Params = @{
+                    Id = $Provider.Id
+                    NewName = $ProviderName
+                    Description = "A provider created during migration from $PSW to $RAS"
+                }
+
+                Set-RASProvider @Params
+
+                Invoke-RASApply
+                
+                # Re-query now that the name has changed, and the property is read-only.
+
+                $Params = @{
+                    SiteId = $SiteId
+                    Name = $ProviderName
+                    ErrorAction = "Stop"
+                }
+
+                $Provider = Get-RASProvider @Params
+                
 
             }
 
-            if((Get-RASProviderRemotePCStatic -SiteId $SiteId -Id $Provider.Id).Name -contains $AppServer.host) {
+            Write-Host "Provider details:"
+            $Provider | Format-List
+
+            $Params = @{
+                SiteId = $SiteId
+                Name = $Provider.Name
+            }
+            
+            $Params | Format-Table
+
+            if((Get-RASProviderRemotePCStatic @Params).Name -contains $AppServer.host) {
 
                 Write-Host "Server already exists."
 
@@ -509,10 +563,14 @@ $Domains | ForEach-Object {
                 try {
                     
                     Write-Host "Create Host $($AppServer.host) (RemotePC)."
-                    Add-RASProviderRemotePCStatic `
-                        -RemotePCStaticName $AppServer.host `
-                        -Id $Provider.Id `
-                        -ErrorAction Stop
+
+                    $Params = @{
+                        RemotePCStaticName = $AppServer.host
+                        Id = $Provider.Id
+                        ErrorAction = "Stop"
+                    }
+
+                    Add-RASProviderRemotePCStatic @Params
 
                     Write-Host "Host successfully added."
 
@@ -528,37 +586,54 @@ $Domains | ForEach-Object {
 
             
             # Create host pool with one provider (that contains one remote PC).
+            $HostPoolName = ($AppServer.host -replace '[^a-zA-Z0-9-]', '-')
 
             try {
 
                 $RemotePCPool = Get-RASVDIHostPool `
                     -SiteId $SiteId `
-                    -Name $AppServer.host `
+                    -Name $HostPoolName `
                     -ErrorAction Stop
 
-                Write-Host "Found existing RAS VDI Host Pool: $($AppServer.host)"
+                Write-Host "Found existing RAS VDI Host Pool: $($HostPoolName)"
 
             }
             catch {
 
-                $RemotePCPool = New-RASVDIHostPool `
-                    -SiteId $SiteId `
-                    -Name $AppServer.host `
-                    -Enabled $AppServer.enabled `
-                    -ProvisioningType Standalone `
-                    -ErrorAction Stop
+                $Params = @{
+                    SiteId = $SiteId
+                    Name = $HostPoolName
+                    Enabled = $AppServer.enabled
+                    ProvisioningType = "Standalone"
+                    ErrorAction = "Stop"
+                }
 
-                Write-Host "Created new RAS VDI Host Pool: $($AppServer.host)"
+                $Params | Format-Table
+
+                $RemotePCPool = New-RASVDIHostPool @Params
+
+                Write-Host "Created new RAS VDI Host Pool: $($HostPoolName)"
 
             }
 
-            if((Get-RASVDIHostPoolMember).length -eq 0) {
+            $RemotePCPool | Format-List
+
+            $Params = @{
+                VdiHostPoolId = $RemotePCPool.Id
+            }
+
+            if((Get-RASVDIHostPoolMember @Params).length -eq 0) {
+
+                $Params = @{
+                    Name = $Provider.Name
+                    VDIHostPoolId = $RemotePCPool.Id
+                    ProviderId = $Provider.Id
+                    Type = "AllHostsInProvider" # Note: The provider only contains one remote PC.
+                }
+
+                $Params | Format-Table
                 
-                Add-RASVDIHostPoolMember `
-                    -SiteId $SiteId `
-                    -VDIHostPoolId $RemotePCPool.Id `
-                    -ProviderId $Provider.Id `
-                    -Name $AppServer.host
+                Add-RASVDIHostPoolMember @Params
 
             }
 
@@ -696,7 +771,7 @@ $Domains | ForEach-Object {
                 catch {
 
                     Write-Host -ForegroundColor Red $_
-                    $Params
+                    $Params | Format-Table
                     Write-Host "Unable to create RAS RDS Desktop."
 
                 }
@@ -761,7 +836,7 @@ $Domains | ForEach-Object {
 
                 # Debug
                 Write-Host "Linked hosts:"
-                $LinkedHosts | fl
+                $LinkedHosts | Format-List
                 $LinkedHosts.Id
 
                 
@@ -811,7 +886,7 @@ $Domains | ForEach-Object {
             return
         }
 
-        $RASApp | fl
+        $RASApp | Format-List
 
         # For maximum security, the default rule will deny access.
         Set-RASPubItemFilter -SiteId $SiteId -Id $RASApp.Id -Default Deny
@@ -829,20 +904,40 @@ $Domains | ForEach-Object {
 
         if($null -eq $RASRule) {
 
-            $RASRule = Add-RASRule `
-                -SiteId $SiteId `
-                -ObjType PubItem `
-                -Id $RASApp.Id `
-                -Enabled $True `
-                -RuleName $RASRuleName `
-                -ErrorAction Stop
+            Write-Host "Create rule $RASRuleName for app $($RASApp.Name)"
+
+            $Params = @{
+                SiteId = $SiteId
+                ObjType = "PubItem"
+                Id = $RASApp.Id
+                Enabled = $true
+                RuleName = $RASRuleName
+                ErrorAction = "Stop"
+            }
+
+            $Params | Format-Table
+
+            Add-RASRule @Params
 
             Invoke-RASApply
+
+            $RASRule = Get-RASRule `
+                -SiteId $SiteId `
+                -ObjType PubItem `
+                -Id $RASApp.Id | `
+                Where-Object { $_.Name -eq $RASRuleName }
+
+
 
         }
 
         Write-Host "Rule:"
-        $RASRule | fl
+        $RASRule | Format-List
+
+        if($null -eq $RASRule) {
+            Write-Host -ForegroundColor Red "Failed to create or retrieve RAS rule."
+            return
+        }
 
         # Note: Do not use -SiteId here, it breaks things.
         $RASRuleCriteriaTheme = Get-RASCriteriaTheme `
@@ -852,19 +947,27 @@ $Domains | ForEach-Object {
 
         if($RASRuleCriteriaTheme.length -eq 0) {
 
-            $RASRuleCriteriaTheme = Add-RASCriteriaTheme `
-                -ObjType PubItem `
-                -Id $RASApp.Id `
-                -RuleId $RASRule.Id `
-                -ThemeId $Theme.Id
+            $Params = @{
+                ObjType = "PubItem"
+                Id = $RASApp.Id
+                RuleId = $RASRule.Id
+                ThemeId = $Theme.Id
+                ErrorAction = "Stop"
+            }
+
+            $RASRuleCriteriaTheme = Add-RASCriteriaTheme @Params
 
             # Do not use -SiteId here.
-            Set-RASCriteria `
-                -ObjType PubItem `
-                -Id $RASApp.Id `
-                -RuleId $RASRule.Id `
-                -ThemesEnabled $true `
-                -ThemesMatchingMode IsOneOfTheFollowing
+            $Params = @{
+                ObjType = "PubItem"
+                Id = $RASApp.Id
+                RuleId = $RASRule.Id
+                ThemesEnabled = $true
+                ThemesMatchingMode = "IsOneOfTheFollowing"
+                ErrorAction = "Stop"
+            }
+
+            Set-RASCriteria @Params
 
             Invoke-RASApply
 
@@ -872,12 +975,16 @@ $Domains | ForEach-Object {
 
         # Prepare for user filtering too.
         # Do not use -SiteId here.
-        Set-RASCriteria `
-            -ObjType PubItem `
-            -Id $RASApp.Id `
-            -RuleId $RASRule.Id `
-            -SecurityPrincipalsEnabled $($App.user_labels -ne "") `
-            -SecurityPrincipalsMatchingMode IsOneOfTheFollowing
+
+            $Params = @{
+                ObjType = "PubItem"
+                Id = $RASApp.Id
+                RuleId = $RASRule.Id
+                SecurityPrincipalsEnabled = $($App.user_labels -ne "")
+                SecurityPrincipalsMatchingMode = "IsOneOfTheFollowing"
+                ErrorAction = "Stop"
+            }
+            Set-RASCriteria @Params
 
         # User labels (Parallels Secure Workspace) will be converted into criteria for Parallels Remote Application Server.
         # The admin: label must be replaced with the actual usernames/admins.
@@ -899,7 +1006,7 @@ $Domains | ForEach-Object {
             elseif($Key -match "all") {
                 
                 $SAMAccountName = "$($Domain.netbios)\Domain Users"
-                $SID = "SID://$($Domain.netbios)/$Value"
+                $SID = "SID://$($Domain.netbios)/Domain Users"
 
             }
             else {
@@ -917,30 +1024,38 @@ $Domains | ForEach-Object {
                 Write-Host "Check permission for security principal $SAMAccountName - Published item $($RasApp.Id) - Rule $($RASRule.Id)"
 
                 # Note: Do not use -SiteId here, it breaks things.
-                $RASCriteriaPrincipal = Get-RASCriteriaSecurityPrincipal `
-                    -ObjType PubItem `
-                    -Id $RASApp.Id `
-                    -RuleId $RASRule.Id `
-                    -ErrorAction Stop | `
-                    Where-Object { $_.Account -eq $SID }
+                $Params = @{
+                    ObjType = "PubItem"
+                    Id = $RASApp.Id
+                    RuleId = $RASRule.Id
+                    ErrorAction = "Stop"
+                }
+
+                $Params | Format-Table
+
+                $RASCriteriaPrincipal = Get-RASCriteriaSecurityPrincipal @Params | Where-Object { $_.Account -eq $SID }
 
                 if($null -eq $RASCriteriaPrincipal) {
                     
                     Write-Host "Add permission for security principal $SAMAccountName"
 
-                    # Note: Do not use -SiteId here, it breaks things.
-                    Add-RASCriteriaSecurityPrincipal `
-                        -ObjType PubItem `
-                        -Id $RASApp.Id `
-                        -RuleId $RASRule.Id `
-                        -Account $SAMAccountName `
-                        -ErrorAction Stop
+                    $Params = @{
+                        ObjType = "PubItem"
+                        Id = $RASApp.Id
+                        RuleId = $RASRule.Id
+                        Account = $SAMAccountName
+                        ErrorAction = "Stop"
+                    }
 
+                    $Params | Format-Table
+
+                    # Note: Do not use -SiteId here, it breaks things.
+                    Add-RASCriteriaSecurityPrincipal @Params
                 }
                 else {
 
                     Write-Host "Permission for security principal $SAMAccountName already exists."
-                    $RASCriteriaPrincipal | fl
+                    $RASCriteriaPrincipal | Format-List
 
                 }
 
