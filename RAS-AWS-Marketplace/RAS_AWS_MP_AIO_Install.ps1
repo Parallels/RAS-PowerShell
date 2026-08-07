@@ -164,7 +164,7 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OOBE" -Name "D
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\ServerManager" -Name "DoNotOpenServerManagerAtLogon" -Value 1 -Type DWord -Force
 
 #Install RDSH role and reboot
-Add-WindowsFeature -Name "RDS-RD-Server"
+# Add-WindowsFeature -Name "RDS-RD-Server"
 
 WriteLog "Finished installing RAS..."
 
