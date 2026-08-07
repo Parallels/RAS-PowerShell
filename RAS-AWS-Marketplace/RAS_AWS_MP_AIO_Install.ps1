@@ -66,7 +66,7 @@ $localAdminPasswordSecure = ConvertTo-SecureString $localAdminPassword -AsPlainT
 if (-not (Test-Path -Path $installPath)) { New-Item -Path $installPath -ItemType Directory }
 
 #Configute logging
-$Logfile = "C:\install\RAS_Azure_MP_Install.log"
+$Logfile = "C:\install\RAS_AWS_MP_Install.log"
 function WriteLog {
     Param ([string]$LogString)
     $Stamp = (Get-Date).toString("yyyy/MM/dd HH:mm:ss")
@@ -103,19 +103,11 @@ Set-Content -Path $filePath -Value $updatedContent
 # Enable RAS PowerShell module
 Import-Module 'C:\Program Files (x86)\Parallels\ApplicationServer\Modules\RASAdmin\RASAdmin.psd1'
 
-#Add all members from local administrators group user as root admin
+# Add all members from local administrators group user as root admin
 WriteLog "Configuring Root admins..."
 $allLocalAdmins = Get-LocalGroupMember -Group "Administrators"
 Foreach ($localAdmin in $allLocalAdmins) {
     cmd /c "`"C:\Program Files (x86)\Parallels\ApplicationServer\x64\2XRedundancy.exe`" -c -AddRootAccount $localAdmin"
-}
-
-#add permissions to the local admin group
-if ($addsSelection -eq "workgroup") {
-    WriteLog "New RAS Session for workgroup user"
-    New-RASSession -Username $localAdminUser -Password $localAdminPasswordSecure
-    Set-RASAuthSettings -AllTrustedDomains $false -Domain Workgroup/$hostname
-    invoke-RASApply
 }
 
 # Create RAS Session
@@ -127,7 +119,7 @@ invoke-RASApply
 # Trial activation intentionally removed
 WriteLog "Skipping activation (AWS Marketplace v0)"
 
-#Add VM Appliance RDS Server
+# Add VM Appliance RDS Server
 writelog "Adding VM Appliance RDS Server"
 New-RASRDSHost "localhost" -NoInstall -ErrorAction Ignore
 invoke-RASApply
@@ -141,24 +133,13 @@ New-RASPubRDSApp -Name "Notepad" -Target "C:\Windows\System32\notepad.exe"  -Pub
 New-RASPubRDSApp -Name "Snipping tool" -Target "C:\Windows\System32\SnippingTool.exe"  -PublishFrom All -WinType Maximized 
 invoke-RASApply
 
-#Deploy Run Once script to launch post deployment actions at next admin logon
+# Deploy Run Once script to launch post deployment actions at next admin logon
 WriteLog "Deploying Run Once script to launch post deployment actions at next admin logon"
-$basePath = 'C:\Packages\Plugins\Microsoft.Compute.CustomScriptExtension'
-$latestVersionFolder = Get-ChildItem -Path $basePath -Directory | Sort-Object Name -Descending | Select-Object -First 1
-
-if ($null -ne $latestVersionFolder) {
-    # Construct the full script path
-    $scriptPath = Join-Path -Path $latestVersionFolder.FullName -ChildPath 'Downloads\0\RAS_Azure_MP_AIO_Login.ps1'
-
-    # Run the command with the constructed script path
-    Set-RunOnceScriptForAllUsers -ScriptPath $scriptPath
-}
-else {
-    WriteLog "No version subfolders found in '$basePath'."
-}
+$scriptPath = "C:\install\RAS_AWS_MP_AIO_Login.ps1"
+Set-RunOnceScriptForAllUsers -ScriptPath $scriptPath
 
 # Configure the default wallpaper for all users
-$wallpaperPath = Join-Path -Path $latestVersionFolder.FullName -ChildPath 'Downloads\0\logo-full-color-on-black.jpg'
+$wallpaperPath = "C:\install\logo-full-color-on-black.jpg"
 $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\PersonalizationCSP"
 New-Item -Path $regPath 
 Set-ItemProperty -Path $regPath -Name "DesktopImagePath" -Value $wallpaperPath
@@ -180,6 +161,6 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OOBE" -Name "D
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\ServerManager" -Name "DoNotOpenServerManagerAtLogon" -Value 1 -Type DWord -Force
 
 #Install RDSH role and reboot
-Add-WindowsFeature -Name "RDS-RD-Server" -Restart
+Add-WindowsFeature -Name "RDS-RD-Server"
 
 WriteLog "Finished installing RAS..."
