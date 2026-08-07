@@ -17,8 +17,6 @@
     .\RAS_AWS_MP_AIO_Install.ps1
 #>
 
-Start-Transcript -Path C:\install\RAS_AWS_MP_Transcript.log -Force
-
 param(
     [Parameter(Mandatory = $false)]
     [string]$localAdminUser,
@@ -29,6 +27,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$downloadURLRAS
 )
+
+Start-Transcript -Path C:\install\RAS_AWS_MP_Transcript.log -Force
 
 function Set-RunOnceScriptForAllUsers {
     [CmdletBinding()]
