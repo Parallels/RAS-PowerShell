@@ -16,6 +16,9 @@
 .EXAMPLE
     .\RAS_AWS_MP_AIO_Install.ps1
 #>
+
+Start-Transcript -Path C:\install\RAS_AWS_MP_Transcript.log -Force
+
 param(
     [Parameter(Mandatory = $false)]
     [string]$localAdminUser,
@@ -164,3 +167,5 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\ServerManager" -Name "DoNotOpen
 Add-WindowsFeature -Name "RDS-RD-Server"
 
 WriteLog "Finished installing RAS..."
+
+Stop-Transcript
