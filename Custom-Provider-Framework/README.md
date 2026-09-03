@@ -14,6 +14,7 @@ The framework uses a JSON-based request/response protocol over standard input an
 |---|---|
 | [`Samples`](./Samples) | Sample Custom Provider Framework implementations for learning and testing |
 | [`Framework Test Kit`](./Framework%20Test%20Kit) | Validation toolkit for testing Custom Provider Framework scripts outside of RAS |
+| [`Community`](./Community) | Community-developed Custom Provider Framework integrations, scripts and utilities|
 
 ---
 
