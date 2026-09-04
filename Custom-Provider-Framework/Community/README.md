@@ -1,7 +1,21 @@
-# Parallels RAS Custom Provider Framework
+# Community
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PowerShell 7+](https://img.shields.io/badge/PowerShell-7%2B-5391FE.svg?logo=powershell&logoColor=white)](https://github.com/PowerShell/PowerShell)
+
+This folder provides a central location for sharing **community-developed Custom Provider Framework (CPF) integrations, scripts, utilities, and other supporting resources** for Parallels RAS. The goal is simple: make it easier to share what we build, collaborate on integrations, and help others get more value from the Custom Provider Framework.
+
+## Samples vs. Community
+
+The repository contains both **Samples** and **Community** content, with different purposes.
+
+### Samples
+
+The [Samples](https://github.com/Parallels/RAS-PowerShell/tree/master/Custom-Provider-Framework/Samples) folder contains reference implementations maintained as part of the Custom Provider Framework project. These examples are designed primarily as learning material to demonstrate the CPF protocol, capabilities, and recommended implementation patterns. If you are new to CPF, **start with the Samples folder**.
+
+### Community
+
+The **Community** folder contains integrations and tools contributed by Parallels employees and other contributors. These projects may originate from customer scenarios, lab environments, demonstrations, proofs of concept, or integrations with third-party platforms. Community projects can range from small utilities to complete CPF provider implementations.
 
 Sample providers and a test harness for the Parallels RAS **Custom Provider
 Framework (CPF)**. CPF lets you integrate hypervisors and platforms that RAS
@@ -13,21 +27,11 @@ line to stdin, and the provider replies with one JSON object per line on stdout.
 > Only the **Proxmox VE** provider (`proxmox/`) has been tested and validated.
 > The OpenShift, HPE VM Essentials, XCP-ng, Virtuozzo and Azure providers are
 > reference samples built against each platform's API documentation; they have
-> not been validated against a live system. Review, test and adapt them before
+> not been validated against a live system. Review, test, and adapt them before
 > any production use.
 
 > [!WARNING]
-> **Disclaimer.** This is a personal project, shared in a personal capacity. It
-> is **not** official Parallels software, **not** part of the Parallels RAS
-> product, and **not** supported, endorsed or maintained by Parallels or Alludo.
-> The scripts are provided "as is", without warranty of any kind, express or
-> implied. They can break, they are not production ready, and using them is
-> entirely at your own risk. Test everything in an isolated lab before going
-> anywhere near production, and validate against the official
-> [Custom Provider Framework documentation](https://docs.parallels.com/landing/ras-cpf-integration-guide/custom-provider-framework).
-> Per the framework's shared-responsibility model, the provider script and the
-> platform automation it performs remain entirely the author's responsibility,
-> not a Parallels support obligation. Views expressed here are my own.
+> **Disclaimer.**  The sources in this repository are a community effort. They are not Parallels software, are not part of the Parallels RAS product, and are not supported or endorsed by Parallels. All scripts and other content are provided "as is", without warranty of any kind, express or implied. They may contain errors, may not be production-ready, and may cause unexpected behavior or disruption. Use of any content from this repository is entirely at your own risk. Always test scripts thoroughly in an isolated lab environment before considering their use in production, and validate your implementation against the official Custom Provider Framework documentation. In accordance with the framework's shared-responsibility model, the provider script and any platform automation or operations performed by it remain the responsibility of the script author and/or user and are not a Parallels support obligation.
 
 ## Repository structure
 
@@ -273,6 +277,18 @@ Returns the status of an asynchronous task ID.
 
 To add a provider for a new platform, see [CONTRIBUTING.md](CONTRIBUTING.md).
 Notable changes are recorded in [CHANGELOG.md](CHANGELOG.md).
+
+Contributions do not need to be complete new integrations. We encourage everyone to contribute through pull requests, including:
+
+- Improvements to existing CPF integrations
+- Bug fixes
+- New functionality
+- Documentation improvements
+- Examples and additional use cases
+- Suggestions and ideas for improving existing implementations
+- Alternative approaches or implementation patterns
+
+If you have an idea or see something that can be improved, feel free to open a pull request. Contributions of any size are welcome and help strengthen the CPF community.
 
 ## Reference
 
