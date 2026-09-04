@@ -61,6 +61,11 @@ virtuozzo/                     Virtuozzo Hybrid Infrastructure (OpenStack) provi
   Parallels-RAS-CFP-Virtuozzo.ps1
   Virtuozzo-API.md
   tests/Test-Virtuozzo.ps1
+
+Oracle KVM/                     Oracle KVM Infrastructure provider
+  OLVM-CustomProvider.ps1
+  tests/pester/OLVM.Initialize.Tests.ps1
+
 ```
 
 ## Providers
@@ -73,6 +78,7 @@ virtuozzo/                     Virtuozzo Hybrid Infrastructure (OpenStack) provi
 | XCP-ng (XenAPI) | `xcp-ng/` | Sample, not validated | [xcp-ng/README.md](xcp-ng/README.md) |
 | Virtuozzo Hybrid Infrastructure (OpenStack) | `virtuozzo/` | Sample, not validated | [virtuozzo/README.md](virtuozzo/README.md) |
 | Microsoft Azure (ARM REST API) | `azure/` | Sample, not validated | [azure/README.md](azure/README.md) |
+| Oracle KVM | `Oracle KVM/` | Sample, not validated | [Oracle KVM/ADMINGUIDE.md](Oracle KVM/ADMINGUIDE.MD) |
 | Generic skeleton | `basic/` | Reference skeleton | [basic/README.md](basic/README.md) |
 
 ## How it works
