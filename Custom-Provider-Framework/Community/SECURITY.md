@@ -2,7 +2,7 @@
 
 This is a community project of sample scripts and a test harness for the
 Parallels RAS Custom Provider Framework. It is not official Parallels software
-and is not supported by Parallels or Alludo. See the disclaimer in the
+and is not supported by Parallels. See the disclaimer in the
 [README](README.md).
 
 ## Reporting a vulnerability
