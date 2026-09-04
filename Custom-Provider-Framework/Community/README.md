@@ -25,7 +25,7 @@ line to stdin, and the provider replies with one JSON object per line on stdout.
 
 > [!IMPORTANT]
 > Only the **Proxmox VE** provider (`proxmox/`) has been tested and validated.
-> The OpenShift, HPE VM Essentials, XCP-ng, Virtuozzo and Azure providers are
+> The OpenShift, HPE VM Essentials, XCP-ng, Virtuozzo, Oracle-KVM and Azure providers are
 > reference samples built against each platform's API documentation; they have
 > not been validated against a live system. Review, test, and adapt them before
 > any production use.
