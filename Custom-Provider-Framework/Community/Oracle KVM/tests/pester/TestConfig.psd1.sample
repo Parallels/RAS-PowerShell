@@ -1,0 +1,46 @@
+# Copy this file to TestConfig.psd1 (same folder) and fill in your test farm's
+# details. TestConfig.psd1 is gitignored - never commit real credentials.
+#
+# See ../../TESTING.md for what the test farm needs (a dedicated OLVM/ovirt
+# user, a cluster, templates with/without the QEMU guest agent, etc).
+@{
+    # Launches the provider under test exactly like Parallels RAS would, via
+    # CustomProvider.psm1's Invoke-ScriptBlock.
+    CommandPath = 'C:\Program Files\PowerShell\7\pwsh.exe'
+    CommandArgs = '-File "C:\Work\Custom-Provider\Oracle KVM\OLVM-CustomProvider.ps1"'
+
+    # Passed as provider/connect params.settings. Use a dedicated, non-prod
+    # OLVM user scoped to a test cluster - see TESTING.md.
+    CustomSettings = @{
+        engine_url = 'https://olvm-test.example.com/ovirt-engine/api'
+        username   = 'ras-test@internal'
+        password   = 'CHANGE-ME'
+        insecure   = $true
+        cluster    = 'Default'
+    }
+
+    # tasks/get polling used by the test suite's own Wait-OlvmTask helper
+    # (not the provider's tasks_polling_rate/tasks_polling_retries capability).
+    TaskPollingSeconds = 5
+    TaskTimeoutSeconds  = 900
+
+    # The no-guest-agent clone test waits out the provider's own
+    # $script:TaskMaxAgeMinutes ceiling (30 minutes by default) before it can
+    # assert the task actually terminates instead of hanging. Give it enough
+    # headroom over that.
+    NoAgentCloneTimeoutSeconds = 2100
+
+    # VM/template IDs (as strings, matching the CPF wire format - OLVM UUIDs)
+    # of templates already present on the test farm. Leave a value as '' to
+    # skip the tests that need it - they report as Skipped, not failed, so an
+    # incomplete test farm doesn't break the rest of the suite.
+    Templates = @{
+        # Baseline template with a QEMU guest agent installed. Used for
+        # generic clone/convert/snapshot regression tests.
+        Baseline = ''
+
+        # Template WITHOUT a QEMU guest agent installed. Required for the
+        # "clone must terminate, not hang forever, without an agent" test.
+        NoGuestAgent = ''
+    }
+}
