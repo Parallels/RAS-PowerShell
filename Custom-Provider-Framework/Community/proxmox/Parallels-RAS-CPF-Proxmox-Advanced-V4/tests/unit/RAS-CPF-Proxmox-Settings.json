@@ -1,0 +1,71 @@
+{
+  "schema_version": 3,
+  "locations": {
+    "log_file": "Proxmox-RAS-Provider.log",
+    "clone_state_file": "Proxmox-RAS-CloneState.json",
+    "settings_reload_interval_seconds": 30
+  },
+  "capabilities": {
+    "can_suspend_guests": true,
+    "guests_polling_rate": 30,
+    "tasks_polling_rate": 11,
+    "tasks_polling_retries": 180,
+    "template_method": "basic",
+    "can_link_clones": false
+  },
+  "cloning": {
+    "pipelined_cloning": {
+      "enabled": true,
+      "completion_seconds": 10,
+      "max_concurrent_clone_operations": 2,
+      "start_poll_interval_seconds": 5,
+      "start_max_wait_seconds": 1800
+    },
+    "timeouts": {
+      "delete_hard_stop_poll_interval_seconds": 2,
+      "delete_hard_stop_max_wait_seconds": 60,
+      "cluster_resources_cache_ttl_seconds": 30,
+      "recently_deleted_retention_seconds": 300,
+      "recently_controlled_retention_seconds": 120,
+      "recently_converted_retention_seconds": 120,
+      "sweep_min_interval_seconds": 5,
+      "completed_clone_task_output_retention_seconds": 600,
+      "control_retry_max_attempts": 3,
+      "control_retry_delay_seconds": 1,
+      "tag_write_timeout_seconds": 3,
+      "clone_tracking_max_age_seconds": 1800
+    },
+    "load_balancing": {
+      "enabled": false,
+      "strategy": "resource",
+      "resource_metric": "both",
+      "excluded_nodes": [],
+      "node_stats_cache_ttl_seconds": 15,
+      "preserve_node_on_recreation": true
+    }
+  },
+  "virtual_machines": {
+    "guest_agent": {
+      "timeout_seconds": 1,
+      "quarantine_after_seconds": 60,
+      "quarantine_min_failures": 2
+    },
+    "orphan_detection": {
+      "enabled": true,
+      "check_interval_seconds": 300,
+      "stale_poll_after_seconds": 180
+    },
+    "tags": {
+      "ras_exclude_tag": "rasExclude",
+      "ras_quarantine_tag": "rasQuarantine",
+      "ras_template_tag_prefix": "rasTemplate",
+      "ras_clone_tag_prefix": "rasClone",
+      "ras_orphan_candidate_tag": "rasOrphanCandidate"
+    }
+  },
+  "logging": {
+    "log_level": 5,
+    "log_rotate_max_mb": 20,
+    "log_rotate_max_generations": 3
+  }
+}

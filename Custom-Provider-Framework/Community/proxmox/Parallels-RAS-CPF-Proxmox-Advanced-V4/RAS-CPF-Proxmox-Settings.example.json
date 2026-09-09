@@ -1,0 +1,97 @@
+{
+  "_comment": "Every leaf setting is {value, default, description} so an admin can see current vs. default and what a key does without opening SETTINGS.md. 'value' is the only field the provider actually reads; 'default' and 'description' are informational, written once when the file is (re)seeded and otherwise ignored by the parser.",
+  "schema_version": 3,
+
+  "locations": {
+    "data_directory": { "value": "C:\\Scripts", "default": "C:\\Scripts", "description": "Where the log, clone-state file, and this settings file itself live. Defaults to the script's own folder." },
+    "log_file": { "value": "Proxmox-RAS-Provider.log", "default": "Proxmox-RAS-Provider.log", "description": "Log filename, relative to data_directory unless given as an absolute path." },
+    "clone_state_file": { "value": "Proxmox-RAS-CloneState.json", "default": "Proxmox-RAS-CloneState.json", "description": "Persisted in-flight-clone tracking, relative to data_directory unless absolute. Survives a provider restart." },
+    "settings_reload_interval_seconds": { "value": 30, "default": 30, "description": "How often this file's own last-write time is checked and reloaded if changed. Checked opportunistically on incoming requests, no background timer." }
+  },
+
+  "capabilities": {
+    "_comment": "Mirrors RAS CPF's provider/initialize response field-for-field -- what this file's admin sets here is exactly what RAS is told the provider supports.",
+    "can_suspend_guests": { "value": true, "default": true, "description": "Advertises guests/control(suspend) support to RAS." },
+    "guests_polling_rate": { "value": 30, "default": 30, "description": "Seconds between RAS's own guests/get polls per guest, as advertised to RAS (RAS decides whether to honor it)." },
+    "tasks_polling_rate": { "value": 11, "default": 11, "description": "Seconds between RAS's tasks/get polls for an in-flight task. Must stay above cloning.pipelined_cloning.completion_seconds, or a clone that meets that threshold still waits for RAS's next scheduled poll." },
+    "tasks_polling_retries": { "value": 180, "default": 180, "description": "How many tasks/get polls RAS makes before giving up on a task, as advertised to RAS." },
+    "template_method": { "value": "basic", "default": "basic", "description": "CPF template-creation contract level: \"none\", \"basic\", or \"versioning\". \"basic\" is required for linked clones (can_link_clones)." },
+    "can_link_clones": { "value": false, "default": false, "description": "Master switch for linked clones -- advertised to RAS AND what Handle-GuestClone actually gates on (single source of truth, deliberately not split across two settings). Off by default: confirm the storage backend supports it first (see DISTRIBUTED-PLACEMENT.md / LINKED-CLONES.md #3) before enabling on a new cluster." }
+  },
+
+  "cloning": {
+    "linked_clone_fallback": { "value": "full", "default": "full", "description": "What happens when RAS asks for a linked clone but the live source is not a Proxmox template. \"full\": log and proceed as a full clone. \"error\": refuse instead." },
+
+    "pipelined_cloning": {
+      "_comment": "Lets RAS submit the next guests/clone before a full clone's disk copy actually finishes. See PIPELINED-CLONING.md. Has no effect on linked clones (their real completion is already sub-second).",
+      "enabled": { "value": true, "default": true, "description": "Master switch. false = a clone task only reports 'completed' once Proxmox's own job finished (full clones only -- linked clones are unaffected either way)." },
+      "completion_seconds": { "value": 10, "default": 10, "description": "Seconds after clone submission before a still-running full clone is reported 'completed' anyway. Keep at or below (capabilities.tasks_polling_rate - 1)." },
+      "max_concurrent_clone_operations": { "value": 2, "default": 2, "description": "Even past completion_seconds, a clone only pipelines through if fewer than this many full clones are currently active -- the real concurrency gate on Proxmox's disk-I/O-heavy clone jobs." },
+      "start_poll_interval_seconds": { "value": 5, "default": 5, "description": "How often guests/control(start)'s defensive guard polls the real Proxmox clone task while waiting for it to finish, before ever calling Proxmox's own start endpoint." },
+      "start_max_wait_seconds": { "value": 1800, "default": 1800, "description": "Ceiling for the same wait -- fails loudly rather than hanging the shared stdin/stdout pipe on a stuck clone." }
+    },
+
+    "timeouts": {
+      "_comment": "Deletion, caching, retry, and sweep timing -- everything that bounds a wait or a retention window but isn't specific to pipelining or load balancing.",
+      "delete_hard_stop_poll_interval_seconds": { "value": 2, "default": 2, "description": "Poll interval for the forced hard stop guests/control(delete) issues before destroying a VM." },
+      "delete_hard_stop_max_wait_seconds": { "value": 60, "default": 60, "description": "Ceiling for the same wait -- fails loudly rather than hanging if a hard stop never completes." },
+      "cluster_resources_cache_ttl_seconds": { "value": 30, "default": 30, "description": "How long the bulk VM listing (GET /cluster/resources?type=vm) is reused before re-fetching. Keep in sync with capabilities.guests_polling_rate." },
+      "recently_deleted_retention_seconds": { "value": 300, "default": 300, "description": "How long a VM this provider deleted stays hidden from guests/list even if Proxmox's own view hasn't caught up. Self-expiring, so a reused VMID is never permanently hidden. Also the window cloning.load_balancing.preserve_node_on_recreation checks." },
+      "recently_controlled_retention_seconds": { "value": 120, "default": 120, "description": "After this provider issues a control action, how long power state is read live (authoritative) instead of from the lagging cluster listing." },
+      "recently_stopped_retention_seconds": { "value": 10, "default": 10, "description": "After this provider's own 'stop', how long the guest-agent probe is skipped outright instead of racing Proxmox's teardown." },
+      "template_delete_confirm_seconds": { "value": 10, "default": 10, "description": "After guests/convert(is_template:false), how long to wait for a guests/control(start) before concluding RAS deleted the Template (not entering maintenance) and removing the rasTemplate<id> tag." },
+      "recently_converted_retention_seconds": { "value": 120, "default": 120, "description": "Same idea as recently_controlled, for the template flag after a guests/convert." },
+      "sweep_min_interval_seconds": { "value": 5, "default": 5, "description": "The opportunistic re-check of every OTHER in-flight clone on each guests/get is throttled to at most once per tracked id per this many seconds." },
+      "completed_clone_task_output_retention_seconds": { "value": 600, "default": 600, "description": "How long a completed clone task's clone_id is remembered after tracking is cleared, so a racing tasks/get can still answer correctly." },
+      "control_retry_max_attempts": { "value": 3, "default": 3, "description": "guests/control retries this many times total on a transient Proxmox 5xx. Set to 1 to disable retrying." },
+      "control_retry_delay_seconds": { "value": 1, "default": 1, "description": "Delay between control-action retry attempts." },
+      "tag_write_timeout_seconds": { "value": 3, "default": 3, "description": "Timeout on every rasTemplate/rasClone tag PUT -- best-effort metadata that must never dominate the request it rides along on." },
+      "http_timeout_seconds": { "value": 3, "default": 3, "description": "Default timeout (seconds) for a Proxmox API call that does not set its own tighter timeout. One retry on a fresh connection happens automatically before a failure is returned." },
+      "clone_tracking_max_age_seconds": { "value": 1800, "default": 1800, "description": "Hard ceiling (seconds) a clone stays tracked without reaching ready before its tracking is force-retired regardless of state -- the backstop for a clone deleted outside guests/control(delete), or one that never becomes ready for any other reason." }
+    },
+
+    "load_balancing": {
+      "_comment": "Spreading clone compute across cluster nodes instead of always landing on the source template's own node. See DISTRIBUTED-PLACEMENT.md. Requires shared storage (e.g. Ceph/RBD) -- target only moves compute, never disk.",
+      "enabled": { "value": false, "default": false, "description": "Master switch. false = every clone lands on the source's own node, exactly like before this feature existed. A live scheduling change on real infrastructure -- opt in deliberately." },
+      "strategy": { "value": "resource", "default": "resource", "description": "\"resource\": pick the least-loaded eligible node per resource_metric. \"round_robin\": ignore load, cycle eligible nodes in name order." },
+      "resource_metric": { "value": "both", "default": "both", "description": "Only used when strategy = \"resource\". \"cpu\", \"ram\", or \"both\" (average of the two load fractions). Lower is better in every case." },
+      "excluded_nodes": { "value": [], "default": [], "description": "Node names never chosen as a clone target even if online, e.g. a node that also runs the RAS Connection Broker/this provider. Case-sensitive, must match Proxmox's node names exactly." },
+      "node_stats_cache_ttl_seconds": { "value": 15, "default": 15, "description": "How long a fetched node-resource snapshot (GET /cluster/resources?type=node) is reused. Separate from timeouts.cluster_resources_cache_ttl_seconds -- different endpoint, different freshness need." },
+      "preserve_node_on_recreation": { "value": true, "default": true, "description": "When RAS deletes a guest and clones a new VM under the same name, land it back on the node it was already on instead of re-running strategy selection. Only applies within timeouts.recently_deleted_retention_seconds of the delete." }
+    },
+    "mac_preservation": {
+      "enabled": { "value": false, "default": false, "description": "When RAS deletes a guest and clones a new VM under the same name, give its NIC(s) the same MAC address(es) the old one had -- keeps a DHCP reservation or MAC-keyed licensing continuous across a recreate. Off by default." }
+    }
+  },
+
+  "virtual_machines": {
+    "guest_agent": {
+      "timeout_seconds": { "value": 1, "default": 1, "description": "Explicit timeout on the guest-agent network-interfaces call. A healthy agent answers in tens of ms; Proxmox's own default would otherwise block ~3s per agent-less VM." },
+      "quarantine_after_seconds": { "value": 60, "default": 60, "description": "How long a VM must be confirmed agent-less before it's tagged rasQuarantine and the agent stops being probed (paired with quarantine_min_failures below)." },
+      "quarantine_min_failures": { "value": 2, "default": 2, "description": "How many separate poll failures, alongside quarantine_after_seconds, before quarantine tagging kicks in." }
+    },
+    "orphan_detection": {
+      "enabled": { "value": true, "default": true, "description": "Periodically flags (log + rasOrphanCandidate tag only, never stops or deletes) a rasClone-tagged VM this provider is no longer tracking AND RAS hasn't polled recently -- a lead that RAS may have permanently lost track of the guest." },
+      "check_interval_seconds": { "value": 300, "default": 300, "description": "How often the audit runs, throttled opportunistically like everything else in this provider (no background timer)." },
+      "stale_poll_after_seconds": { "value": 180, "default": 180, "description": "How long since RAS's last guests/get for a VM before it qualifies as a candidate." }
+    },
+    "tags": {
+      "_comment": "Proxmox tag names this provider reads/writes -- a single ';'-separated string on the VM's own config, visible and editable by an admin in the Proxmox UI too.",
+      "ras_exclude_tag": { "value": "rasExclude", "default": "rasExclude", "description": "Manual, admin-set -- this VM does not exist for RAS at all (never listed, guests/get reports not-found)." },
+      "ras_quarantine_tag": { "value": "rasQuarantine", "default": "rasQuarantine", "description": "Automatic -- see guest_agent above." },
+      "ras_template_tag_prefix": { "value": "rasTemplate", "default": "rasTemplate", "description": "Automatic -- <prefix><id> applied to a clone's SOURCE, where <id> is the source's own VMID." },
+      "ras_clone_tag_prefix": { "value": "rasClone", "default": "rasClone", "description": "Automatic -- <prefix><id> applied to a fresh clone once its Proxmox job is confirmed done, where <id> is the SOURCE's VMID." },
+      "ras_orphan_candidate_tag": { "value": "rasOrphanCandidate", "default": "rasOrphanCandidate", "description": "Automatic -- see orphan_detection above." }
+    },
+    "pool_scope": {
+      "pool_name": { "value": "", "default": "", "description": "Proxmox pool id (poolid) this provider is scoped to. Empty (default) = no pool filtering, every pool and every unpooled VM is visible. When set, a VM not in this exact pool is invisible to RAS -- never listed, guests/get reports not-found -- identically to ras_exclude_tag. Case-sensitive, must match the poolid exactly." },
+      "inherit_on_clone": { "value": true, "default": true, "description": "Whether a clone is created in its source template's own Proxmox pool (via the clone API's own 'pool' parameter), so pool-scoped visibility and any pool-based Proxmox permissions extend to clones automatically. Independent of pool_name -- applies whenever the source VM actually belongs to a pool, even if pool_name filtering itself is off." }
+    }
+  },
+
+  "logging": {
+    "log_level": { "value": 5, "default": 5, "description": "3 = Standard (lifecycle + errors only), 4 = Extended (+ every lifecycle/control/tag event), 5 = Verbose (+ every RPC and HTTP call). Accepts the number or the word." },
+    "log_rotate_max_mb": { "value": 100, "default": 100, "description": "Log file size (MB) that triggers rotation." },
+    "log_rotate_max_generations": { "value": 3, "default": 3, "description": "How many rotated generations are kept." }
+  }
+}
