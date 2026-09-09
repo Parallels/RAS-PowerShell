@@ -2,19 +2,13 @@
 
 A Parallels RAS Custom Provider Framework (CPF) integration that connects
 **Proxmox VE** as a VDI provider through the Proxmox REST API
-(`/api2/json`). See the [repository README](../../README.md) for the
-framework overview and [CONTRIBUTING.md](../../CONTRIBUTING.md) for the
-contributor guide.
+(`/api2/json`).
 
-This is an **advanced** implementation: beyond the guest lifecycle every
-CPF provider needs, it adds full and linked clones, template versioning,
+This is an **advanced** implementation: beyond the guest lifecycle every CPF
+provider needs, it adds full and linked clones, template versioning,
 distributed clone placement, pool-scoped visibility, MAC address
-preservation, guest-agent quarantine handling, orphaned-clone detection,
-and a self-seeding, schema-versioned settings file for every tunable. If
-you're looking for a smaller starting point, see the other Proxmox
-provider samples in this folder's parent, or the [Basic
-sample](../../../Samples/Basic/Parallels-RAS-CPF-Basic.ps1) in this
-repository.
+preservation, guest-agent quarantine handling, orphaned-clone detection, and
+a self-seeding, schema-versioned settings file for every tunable.
 
 ## Files
 
@@ -27,50 +21,83 @@ repository.
 - `tests/` — a regression suite (unit, subprocess and end-to-end,
   438 assertions) plus the shared `Test-*.ps1` harness. See
   [tests/README.md](tests/README.md).
+- `Framework Test Kit/` — a developer harness for exercising the provider's
+  request/response protocol without a live RAS install. Not needed to
+  deploy the provider; see [quick start](#quick-start) below for that.
 
 ## Requirements
 
-- PowerShell 7 or later.
+- PowerShell 7 or later, installed on the RAS host.
 - Network access from the RAS host to your Proxmox VE API endpoint.
 - A Proxmox API token with permissions for VM listing, power control,
   snapshot, clone, tag and task operations.
-- Parallels RAS configured to launch the provider via `CustomProvider.psd1`.
 
-## Configure `CustomProvider.psd1`
+## Quick start
 
-Point the shared `CustomProvider.psd1` (repository root) at this script and
-provide the Proxmox connection settings:
+Steps for an administrator adding this provider to a RAS farm, following the
+[CPF integration guide](https://docs.parallels.com/landing/ras-cpf-integration-guide/custom-provider-framework.md):
 
-```powershell
-@{
-  CommandPath = 'C:\Program Files\PowerShell\7\pwsh.exe'
-  CommandArgs = '-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "C:\CPF_Scripts\Parallels-RAS-CPF-Proxmox-Advanced.ps1"'
-  CustomSettings = @{
-    host         = 'proxmox.example.com'
-    username     = 'root@pam'
-    token_name   = 'automation'
-    token_secret = 'XXX'
-  }
-}
-```
+1. **Copy the script onto the RAS host**, e.g.
+   `C:\CPF_Scripts\proxmox\Parallels-RAS-CPF-Proxmox-Advanced.ps1`. You don't
+   need to bring a settings file — on first run the script seeds
+   `RAS-CPF-Proxmox-Settings.json` next to itself, with every tunable at its
+   documented default. If you'd rather start from a fully-annotated copy,
+   place `RAS-CPF-Proxmox-Settings.example.json` next to the script instead,
+   renamed to `RAS-CPF-Proxmox-Settings.json`, before the first run.
 
-On Linux:
+2. **Tune the settings** for your environment: open
+   `RAS-CPF-Proxmox-Settings.json` and adjust clone behavior, polling rates,
+   pool scoping, MAC preservation, logging, and so on — see
+   [docs/SETTINGS.md](docs/SETTINGS.md) for every key before changing
+   anything. Most sections are hot-reloaded (checked at most every 30
+   seconds); only `locations` requires a provider restart to take effect.
 
-```powershell
-@{
-  CommandPath = '/usr/bin/pwsh'
-  CommandArgs = '-NoProfile -NonInteractive -File "/opt/cpf/proxmox/Parallels-RAS-CPF-Proxmox-Advanced.ps1"'
-}
-```
+3. **Add the script as a custom provider**: in the RAS Console, go to
+   `Farm > Site > Providers > Add > Custom Provider`. Point `CommandPath` at
+   `pwsh.exe` and `CommandArgs` at the script, e.g.:
 
-The same four values (`host`, `username`, `token_name`, `token_secret`) are
-also entered directly in the RAS Console when adding the provider under
-`Farm > Site > Providers > Add > Custom Provider`.
+   ```powershell
+   CommandPath = 'C:\Program Files\PowerShell\7\pwsh.exe'
+   CommandArgs = '-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "C:\CPF_Scripts\proxmox\Parallels-RAS-CPF-Proxmox-Advanced.ps1"'
+   ```
 
-On first run the script seeds `RAS-CPF-Proxmox-Settings.json` next to
-itself, with every tunable at its documented default — see
-[docs/SETTINGS.md](docs/SETTINGS.md) before changing anything, and
-`RAS-CPF-Proxmox-Settings.example.json` for a fully worked reference copy.
+4. **Configure the launch/connection settings**: supply the four Proxmox
+   connection values as Customization variables in the RAS Console (mark
+   `token_secret` as secure) — or, if registering via a shared
+   `CustomProvider.psd1` file, in its `CustomSettings`:
+
+   ```powershell
+   CustomSettings = @{
+     host         = 'proxmox.example.com:8006'
+     username     = 'root@pam'
+     token_name   = 'automation'
+     token_secret = 'XXX'
+   }
+   ```
+
+   Variable names must match exactly what `Handle-Connect` reads
+   (`host`, `username`, `token_name`, `token_secret`), or `provider/connect`
+   fails with `Invalid connection parameters`.
+
+   `host` is used as-is to build `https://<host>` — it must be
+   `fqdn-or-ip:port` (Proxmox's API/UI default is `:8006`) with **no**
+   scheme prefix; a bare `proxmox.example.com` resolves to port 443, not
+   Proxmox's API port, and `https://proxmox.example.com:8006` would produce
+   a broken double-scheme URL.
+
+   **No SSL/TLS certificate check**: the script unconditionally disables
+   certificate validation for every Proxmox API call — `SkipCertificateCheck`
+   on PowerShell 7+, a global `ServerCertificateValidationCallback` override
+   on Windows PowerShell 5.1 — and there is no setting to turn it back on.
+   This applies regardless of whether the endpoint's certificate is trusted,
+   so treat network path/firewalling as the actual control here, not TLS.
+
+5. **Connect and verify**: enable the provider connection in the RAS
+   Console, then check the log file (see [docs/LOGGING.md](docs/LOGGING.md))
+   to confirm `provider/connect` and `guests/list` succeed before moving any
+   guests onto it. Review the optional features below — linked clones, pool
+   scoping, MAC preservation, distributed placement — and their linked docs
+   before enabling them.
 
 ## Capabilities
 
@@ -120,21 +147,10 @@ file:
 - **HTTP timeout and retry**: every Proxmox API call is bounded and gets
   one automatic retry on a fresh connection before a failure reaches RAS.
 
-## Quick start
-
-1. Update `CustomProvider.psd1` so `CommandArgs` points to
-   `Parallels-RAS-CPF-Proxmox-Advanced.ps1`.
-2. Add the Proxmox connection details to `CustomSettings` (or the RAS
-   Console's provider variables).
-3. Run the connection test: `pwsh -File "Framework Test Kit/Test-Connect.ps1"`.
-4. Review [docs/SETTINGS.md](docs/SETTINGS.md) and adjust the seeded
-   settings file for your environment before enabling optional features
-   (linked clones, pool scoping, MAC preservation, distributed placement).
-
 ## Sample requests
 
 ```json
-{"method":"provider/connect","params":{"settings":{"host":"proxmox.example.com","username":"root@pam","token_name":"automation","token_secret":"XXX"}}}
+{"method":"provider/connect","params":{"settings":{"host":"proxmox.example.com:8006","username":"root@pam","token_name":"automation","token_secret":"XXX"}}}
 {"method":"guests/list"}
 {"method":"guests/get","params":{"id":"101"}}
 {"method":"guests/clone","params":{"id":"101","name":"Clone of 101"}}
@@ -146,9 +162,11 @@ file:
 
 - LXC containers are intentionally out of scope — only `type=qemu` VMs are
   considered.
-- TLS certificate validation is not currently configurable; see
-  [docs/SETTINGS.md](docs/SETTINGS.md) before exposing this to an untrusted
-  network path.
+- **No SSL/TLS certificate check, and it's not configurable**: every
+  Proxmox API call skips certificate validation unconditionally (see
+  [Quick start step 4](#quick-start)) — there is no `skip_tls`/`verify_ssl`
+  setting to re-enable it. Don't expose the RAS-to-Proxmox path to an
+  untrusted network on the assumption that TLS is protecting it.
 - Pool scoping and MAC preservation both rely on Proxmox API fields
   (`cluster/resources`'s `pool` field, and per-interface MAC data from the
   VM config) that are the documented, standard shape but have not been
@@ -156,5 +174,4 @@ file:
   no restoration) if the field is ever absent. See the respective docs.
 - Linked clones require a storage backend that supports Proxmox's own
   linked-clone mechanism; confirm this before enabling `can_link_clones`.
-- Provided as is, without warranty. See the disclaimer in the root
-  [README](../../README.md) and the [LICENSE](../../LICENSE).
+- Provided as is, without warranty.
