@@ -1,33 +1,28 @@
-<#
-.SYNOPSIS
-    Parallels RAS Custom Provider for Proxmox VE (Advanced)
-.DESCRIPTION
-    A Parallels RAS Custom Provider Framework (CPF) integration for Proxmox VE,
-    speaking JSON-RPC over stdin/stdout. Beyond the core guest lifecycle (list, get,
-    power control, template conversion) it adds full and linked clones, template
-    versioning via snapshots, distributed clone placement across cluster nodes,
-    pool-scoped visibility, MAC address preservation across a same-name recreate,
-    guest-agent quarantine handling, orphaned-clone detection, automatic HTTP
-    retry/timeout handling, and a self-seeding, schema-versioned JSON settings file
-    for every tunable -- see README.md and docs/ for the full reference.
-
-    Requires PowerShell 7 or later.
-.NOTES
-    File Name : Parallels-RAS-CPF-Proxmox-Advanced.ps1
-    Settings  : RAS-CPF-Proxmox-Settings.json (self-seeding, sibling to this script)
+<#  
+.SYNOPSIS  
+    Parallels RAS Custom Provider Sample Script for Proxmox VE
+.DESCRIPTION  
+    This script implements a custom provider for Parallels RAS to integrate with Proxmox VE
+    hypervisor. It listens for JSON-RPC requests on standard input, processes them according
+    to the defined methods, and returns responses on standard output. The provider supports
+    connecting to Proxmox using API tokens, listing VMs, retrieving VM information,
+    controlling VM power state, converting VMs to templates, tracking clone operations, and cloning VMs.
+    This script reuires PowerShell 7 or later for best compatibility.
+.NOTES  
+    File Name  : Parallels-RAS-CFP-Proxmox-package2-v2.ps1
+    Author     : www.parallels.com
 .EXAMPLE
-    .\Parallels-RAS-CPF-Proxmox-Advanced.ps1
+    .\Parallels-RAS-CFP-Proxmox-package2-v2.ps1
+    Sample requests in json
 
-    Sample JSON-RPC requests, one per line on stdin:
-
-    {"method":"provider/connect","params":{"settings":{"host":"proxmox.example.com","username":"root@pam","token_name":"automation","token_secret":"XXX"}}}
-    {"method":"guests/list"}
-    {"method":"guests/get","params":{"id":"101"}}
-    {"method":"guests/get","params":{"id":["101","102"]}}
-    {"method":"guests/control","params":{"control":"start","id":"101"}}
-    {"method":"guests/convert","params":{"id":"101","is_template":true}}
-    {"method":"guests/clone","params":{"id":"101","name":"Clone of 101"}}
-    {"method":"tasks/get","params":{"id":"<task_id>"}}
+    {"method": "provider/connect", "params" : { "settings": {"host":"proxmox.example.com","username":"root@pam","token_name":"automation","token_secret":"XXX"}}}
+    {"method": "guests/list"}
+    {"method": "guests/control","params":{"control":"start","id":"101"}}
+    {"method": "guests/get","params":{"id":"101"}}
+    {"method": "guests/get","params":{"id":["101","102"]}}
+    {"method": "hosts/get,"params":{"id":"101"}}
+    {"method": "guests/convert_to_template","params":{"id":"101"}}
+    {"method": "guests/clone","params":{"source_id":"101","target_id":"102","name":"Clone of 101"}}
 #>
 
 
@@ -57,9 +52,8 @@ $writer.NewLine = "`n"
 
 $script:ProviderNamePrefix = 'Proxmox:'
 # Single source of truth for both the startup banner (below) and provider/initialize's
-# own `version` field (Handle-Initialize) -- deliberately one place, not two separately
-# hardcoded literals that could drift apart. Follows semantic versioning; see
-# CHANGELOG.md for what changed at each version.
+# own `version` field (Handle-Initialize) -- was two separately-hardcoded '1.0.0'
+# literals before, with no guard against them drifting apart.
 $script:ProviderVersion = '1.0.0'
 $script:LogPath = Join-Path -Path $PSScriptRoot -ChildPath 'Proxmox-RAS-Provider.log'   # bootstrap default; see above
 $script:LogLevel = 5   # bootstrap default (Verbose) -- see Set-ProviderRuntimeFromSettings
@@ -145,7 +139,7 @@ function Get-MemberNames {
     # [System.Collections.IDictionary] (not just [hashtable]) so this also covers
     # [ordered]@{} (System.Collections.Specialized.OrderedDictionary) -- a genuinely
     # different .NET type from Hashtable that a plain -is [hashtable] check misses
-    # entirely -- surfaced by MAC-PRESERVATION.md's preserved_macs field,
+    # entirely. Found 2026-09-08 building MAC-PRESERVATION.md's preserved_macs field,
     # which is an [ordered]@{} while still in $script:TaskContext (in-memory) but a
     # PSCustomObject once round-tripped through Set-CloneStateEntry/Get-CloneStateEntry
     # (JSON) -- this function needs to handle both shapes correctly either way.
@@ -157,7 +151,7 @@ function Get-MemberNames {
 # The settings FILE's shape, not the provider's own version. Originally reserved only
 # for a change that moves/renames/regroups an existing key (a plain new key at an
 # existing path never needed a bump, since it always just fell back to its default on an
-# older file) -- broadened to also cover a version that adds new keys, now
+# older file) -- broadened 2026-09-08 to also cover a version that adds new keys, now
 # that Import-ProviderSettings actually acts on the difference (see
 # Update-SettingsFileSchema below) instead of the mismatch being purely informational.
 # See SETTINGS.md's migration notes for what changed at each version -- there is no
@@ -169,10 +163,10 @@ $script:CurrentSettingsSchemaVersion = 3
 function Get-DefaultProviderSettings {
     return [ordered]@{
         _comment         = "Every leaf setting is {value, default, description} so an admin can see current vs. default and what a key does without opening SETTINGS.md. 'value' is the only field the provider actually reads; 'default'/'description' are informational, written once when the file is (re)seeded and otherwise ignored by the parser."
-        # Bumped whenever this file's shape changes -- a key moves/renames/regroups, or
-        # new keys are added -- see $script:CurrentSettingsSchemaVersion near
-        # Import-ProviderSettings, and Update-SettingsFileSchema, which actually rewrites
-        # an older file up to this.
+        # Bumped whenever this file's shape changes -- a key moves/renames/regroups, OR
+        # (as of 2026-09-08) new keys are added -- see $script:CurrentSettingsSchemaVersion
+        # near Import-ProviderSettings, and Update-SettingsFileSchema, which actually
+        # rewrites an older file up to this.
         schema_version   = $script:CurrentSettingsSchemaVersion
         locations        = [ordered]@{
             data_directory                    = [ordered]@{ value = $PSScriptRoot; default = $PSScriptRoot; description = "Where the log, clone-state file, and this settings file itself live. Defaults to the script's own folder." }
@@ -190,14 +184,13 @@ function Get-DefaultProviderSettings {
             # This is THE single source of truth for linked-clone support -- both
             # Handle-Initialize's advertised capability and Handle-GuestClone's actual
             # gate read this exact same value, never two settings that could drift apart.
-            # That single-source property is load-bearing, not cosmetic: a settings
+            # That single-source property is load-bearing, not cosmetic: a live settings
             # file having this independently true while the underlying feature could not
-            # actually serve it is exactly how a client ends up calling
-            # 'guests/snapshots/create' only to get '-32601 Method not found' back (see
-            # LINKED-CLONES.md #5) -- the failure mode of the earlier, schema-1 shape
-            # where this key was capabilities-only and unconnected to any real
-            # implementation. It is safe to keep it here now specifically because it IS
-            # the real gate, not a separate advertisement of one.
+            # actually serve it is exactly how run-6's 'guests/snapshots/create -32601
+            # Method not found' happened (see LINKED-CLONES.md #5) -- back when this key
+            # was capabilities-only and unconnected to any real implementation. It is
+            # safe to keep it here now specifically because it IS the real gate, not a
+            # separate advertisement of one.
             can_link_clones       = [ordered]@{ value = $false; default = $false; description = 'Master switch for linked clones. Off by default: confirm the storage backend supports it first (see LINKED-CLONES.md #3) before enabling on a new cluster.' }
         }
         cloning          = [ordered]@{
@@ -304,11 +297,10 @@ function Get-DefaultProviderSettings {
                 # The default ceiling for every Proxmox HTTP call that doesn't set its own
                 # (guest_agent.timeout_seconds and tag_write_timeout_seconds below are
                 # deliberately separate, tighter knobs). Was unbounded (PowerShell's own
-                # HttpClient default) -- a hung hypervisor connection could otherwise stall
-                # the shared stdin/stdout pipe indefinitely. Every such call also gets
-                # exactly one retry on a fresh connection (never the same possibly-broken
-                # pooled one) before the failure reaches the caller -- see LOGGING.md's
-                # HTTP component notes.
+                # HttpClient default) before 2026-09-08 -- see AGENTS.md's timeout/retry
+                # review. Every such call also gets exactly one retry on a fresh
+                # connection (never the same possibly-broken pooled one) before the
+                # failure reaches the caller -- see LOGGING.md's HTTP component notes.
                 http_timeout_seconds                          = [ordered]@{ value = 3; default = 3; description = 'Default timeout (seconds) for a Proxmox API call that does not set its own tighter timeout. One retry on a fresh connection happens automatically before a failure is returned.' }
                 # Best-effort metadata writes (the rasTemplate/rasClone tag PUTs) must
                 # never dominate the request they ride along on. 3s is generous for a
@@ -324,9 +316,10 @@ function Get-DefaultProviderSettings {
                 # completed real task, never on failed) and
                 # Get-RasGuestObjectForCloneAwareFlow reporting powering_on forever. Past
                 # this age the entry is retired unconditionally and logged, regardless of
-                # whether the VM is resolvable or just never became ready. Default (30
-                # min) comfortably exceeds a typical full-clone's clone+boot time; raise
-                # it if your own environment's clones routinely take longer.
+                # whether the VM is resolvable or just never became ready -- mirrors the
+                # HPE VME sibling provider's CloneBabysitWindowSeconds (7200s there; much
+                # shorter here since this cluster's real clone+boot times run well under
+                # 5 minutes even for full clones).
                 clone_tracking_max_age_seconds                = [ordered]@{ value = 1800; default = 1800; description = 'Hard ceiling (seconds) a clone stays tracked without reaching ready before its tracking is force-retired regardless of state -- the backstop for a clone deleted outside guests/control(delete), or one that never becomes ready for any other reason.' }
             }
 
@@ -443,15 +436,13 @@ function Get-DefaultProviderSettings {
                 ras_clone_tag_prefix     = [ordered]@{ value = 'rasClone'; default = 'rasClone'; description = "Automatic -- <prefix><id> applied to a fresh clone once its Proxmox job is confirmed done, where <id> is the SOURCE's VMID." }
                 ras_orphan_candidate_tag = [ordered]@{ value = 'rasOrphanCandidate'; default = 'rasOrphanCandidate'; description = 'Automatic -- see orphan_detection above.' }
             }
-            # Restricts the fleet RAS sees to one Proxmox pool -- an out-of-scope VM is
-            # excluded before any handler ever sees it (Get-ProxmoxClusterVMs), so it
-            # is "not found" everywhere, the same outcome as tags.ras_exclude_tag above,
-            # just scoped by pool membership instead of an individual tag. See
-            # POOL-SCOPING.md.
-            # Note: relies on cluster/resources's per-VM 'pool' field. This is Proxmox's
-            # documented, standard field, but has not been confirmed against every
-            # Proxmox VE version -- see POOL-SCOPING.md for the fallback behavior if it
-            # is ever absent on a pooled VM.
+            # Restricts the fleet RAS sees to one Proxmox pool -- same shape and
+            # enforcement point as tags.ras_exclude_tag above (Get-ProxmoxVmNode reports
+            # "not found"; Handle-GuestList/Handle-HostList filter it directly), just
+            # scoped by pool membership instead of an individual tag. See POOL-SCOPING.md.
+            # # VERIFY: relies on cluster/resources's per-VM 'pool' field, which this
+            # provider has not been run against a live cluster to confirm is always
+            # present when a VM is pooled -- see POOL-SCOPING.md's own VERIFY note.
             pool_scope       = [ordered]@{
                 _comment         = 'Pool-level visibility scoping and clone pool inheritance -- see POOL-SCOPING.md.'
                 pool_name        = [ordered]@{ value = ''; default = ''; description = 'Proxmox pool id (poolid) this provider is scoped to. Empty (default) = no pool filtering, every pool and every unpooled VM is visible. When set, a VM not in this exact pool is invisible to RAS -- never listed, guests/get reports not-found -- identically to ras_exclude_tag. Case-sensitive, must match the poolid exactly.' }
@@ -804,7 +795,7 @@ function Import-ProviderSettings {
     # failed to parse (we fall back to pure in-memory defaults, which are current-schema
     # too) -- in neither case have we actually observed an old file to justify claiming
     # otherwise. Only a successfully parsed file that's missing the field is genuinely
-    # schema 1 (the original flat shape, from before this field existed at all).
+    # schema 1 (the flat pre-2026-09-07 shape, from before this field existed at all).
     # A genuine mismatch (older file, successfully parsed) is acted on further down,
     # once $script:Settings itself is built -- see Update-SettingsFileSchema.
     $schemaVersion = $script:CurrentSettingsSchemaVersion
@@ -874,15 +865,16 @@ function Import-ProviderSettings {
             $canLinkClonesSetExplicitly = $true
         }
     }
-    # Deliberately OUTSIDE the 'capabilities' presence check above: a schema-1 file
-    # sets cloning.linked_clones_enabled with no 'capabilities' section at all, which
+    # Deliberately OUTSIDE the 'capabilities' presence check above: the
+    # e2e-proxmox test fixture (and plenty of real pre-2026-09-07 files) sets
+    # cloning.linked_clones_enabled with no 'capabilities' section at all, which
     # would otherwise skip this fallback entirely and silently leave can_link_clones
     # at its default -- exactly the kind of quiet regression this migration exists to
     # avoid.
     if (-not $canLinkClonesSetExplicitly -and $null -ne $parsed -and
         (Get-MemberNames -Object $parsed) -contains 'cloning' -and
         (Get-MemberNames -Object $parsed.cloning) -contains 'linked_clones_enabled') {
-        # Original key location (schema 1). capabilities.can_link_clones is now
+        # Pre-2026-09-07 key location (schema 1). capabilities.can_link_clones is now
         # the single source of truth both Handle-Initialize and Handle-GuestClone
         # read -- see the comment on its default above for why that single-source
         # property matters. Read the old key once as a migration fallback so an
@@ -1067,13 +1059,13 @@ function Import-ProviderSettings {
     # file that PARSED (a corrupt one is never touched, same rule as everywhere else),
     # is genuinely older than this script,
     # and is schema 2 or newer -- deliberately NOT for a genuine schema-1 file. Schema
-    # 1->2 RELOCATED several keys, and only capabilities.can_link_clones has a real
-    # fallback-read from its old location (see the migration-fallback block above);
-    # every other schema-1 key sitting at its OLD path is simply invisible to this
-    # script and $script:Settings has already resolved it to a bare DEFAULT by this
+    # 1->2 (2026-09-07) RELOCATED several keys, and only capabilities.can_link_clones has
+    # a real fallback-read from its old location (see the migration-fallback block
+    # above); every other schema-1 key sitting at its OLD path is simply invisible to
+    # this script and $script:Settings has already resolved it to a bare DEFAULT by this
     # point. Auto-rewriting a schema-1 file would bake that default into the file
     # permanently, silently discarding whatever the admin actually had customized under
-    # the old flat shape -- a real, if narrow, data-loss risk. Schema 2->3
+    # the old flat shape -- a real, if narrow, data-loss risk. Schema 2->3 (2026-09-08)
     # was purely additive (no relocations), so this risk does not apply there: every
     # value $script:Settings resolved for a schema-2-or-newer file is exactly what was on
     # disk (or this script's own default for a key that's genuinely new), safe to write
@@ -1431,7 +1423,7 @@ $script:RecentlyControlledIds = @{}   # vmid -> controlled_at (UTC DateTime)
 # Narrower than RecentlyControlledIds above: only a 'stop' sets this, and any OTHER
 # control action on the same vmid clears it immediately (see Handle-GuestControl). Lets
 # Get-ProxmoxVmNetworkData skip a guest-agent probe that would otherwise reliably race
-# Proxmox's own teardown.
+# Proxmox's own teardown -- see CHAIN-ANALYSIS-2026-09-05-RUN5.md #5.
 $script:RecentlyStoppedIds = @{}       # vmid -> stopped_at (UTC DateTime)
 
 # RAS drives both "enter maintenance" and "delete the Template object" through the same
@@ -2207,8 +2199,8 @@ function Invoke-ProxmoxRestMethod {
         [object]$Body = $null,
 
         # 0 (default) means "use cloning.timeouts.http_timeout_seconds" -- every call
-        # gets SOME bound (rather than PowerShell's own unbounded HttpClient default).
-        # Set explicitly to give a call its own tighter
+        # gets SOME bound now (2026-09-08; was unbounded before, PowerShell's own
+        # HttpClient default in effect). Set explicitly to give a call its own tighter
         # ceiling: guest_agent.timeout_seconds (Get-ProxmoxVmGuestAgentInterfaces) and
         # tag_write_timeout_seconds (Set-ProxmoxVmTagList) both do.
         [int]$TimeoutSec = 0,
@@ -2227,10 +2219,10 @@ function Invoke-ProxmoxRestMethod {
 
         # A network blip (a stale pooled connection, a dropped packet, a momentary
         # routing hiccup) gets exactly one retry on a DELIBERATELY FRESH connection
-        # before the failure reaches the caller. This provider's stdin loop is
-        # single-threaded, so a call that just hangs blocks every other request behind
-        # it -- bounding + retrying + then failing fast beats hanging indefinitely or
-        # failing on the very first blip. Opt out with -NoRetry for a
+        # before the failure reaches the caller -- see AGENTS.md's timeout/retry review
+        # for why (single-threaded stdin loop: a call that just hangs blocks every other
+        # request behind it, so bounding + retrying + then failing fast beats hanging
+        # indefinitely or failing on the very first blip). Opt out with -NoRetry for a
         # call where retrying doesn't address the actual failure mode: the guest-agent
         # probe (a fresh connection doesn't make an unbooted guest's agent answer any
         # sooner -- it's not a network problem) and tag writes (best-effort, must never
@@ -2658,10 +2650,8 @@ function Test-ProxmoxVmHasTagPrefix {
 
 # See POOL-SCOPING.md. cluster/resources carries 'pool' directly on each VM entry when
 # it belongs to one -- no extra HTTP call, same reasoning as Get-ProxmoxVmTagList.
-# Note: not confirmed against every Proxmox VE version that this field is always
-# present for every pooled VM -- see POOL-SCOPING.md. A VM whose pool membership
-# isn't visible for any reason falls back to treated-as-unpooled below, never
-# silently misclassified.
+# # VERIFY: not confirmed against a live cluster that this field is always present for
+# every pooled VM on every Proxmox VE version -- see POOL-SCOPING.md.
 function Get-ProxmoxVmPool {
     param([object]$ClusterVm)
 
@@ -2678,6 +2668,25 @@ function Get-ProxmoxVmPool {
 # every VM in scope regardless of pool, including unpooled ones. Set, a VM is in scope
 # only if its own pool matches exactly (case-sensitive, like every other Proxmox id this
 # provider compares).
+#
+# Propagation-lag fallback: POOL-SCOPING.md documented (unverified) that Proxmox assigns
+# pool membership atomically as part of the clone job, so a pooled clone should never be
+# visible-but-unpooled. Confirmed false against a live cluster -- cluster/resources can
+# report a just-cloned VM's own pool as empty for one to several poll cycles (~60s
+# observed) before self-correcting, with no separate event marking the correction. Under
+# active pool_name filtering that transient gap excludes the VM from
+# Get-ProxmoxClusterVMs's cache, which makes Get-ProxmoxVmNode throw "not found" and
+# forces Get-RasGuestObjectForCloneAwareFlow's synthesized-stub fallback for as long as it
+# lasts -- fine for a few seconds, but on a slow poll cycle it can outlast RAS's own
+# clone-creation timeout and the clone is reported failed even though it succeeded on
+# Proxmox. Rather than lean on that timeout-bounded fallback, resolve the ambiguity here,
+# at the source: an empty *live* pool on a VM this provider itself is still tracking as an
+# in-flight clone is exactly the propagation-lag case, not a genuine unpooled VM -- so
+# trust the pool this provider requested for the clone (Handle-GuestClone's own
+# expected_pool, stashed in the clone-tracking context) instead of the not-yet-caught-up
+# live value. Same reasoning Get-RasGuestObjectForCloneAwareFlow already applies to that
+# VM's name. Once cluster/resources actually reports a pool (empty or not), that live
+# value is trusted again -- this fallback only fires while the live field is blank.
 function Test-ProxmoxVmInPoolScope {
     param([object]$ClusterVm)
 
@@ -2685,7 +2694,22 @@ function Test-ProxmoxVmInPoolScope {
         return $true
     }
 
-    return (Get-ProxmoxVmPool -ClusterVm $ClusterVm) -eq $script:PoolScopeName
+    $livePool = Get-ProxmoxVmPool -ClusterVm $ClusterVm
+
+    if ([string]::IsNullOrWhiteSpace($livePool) -and $null -ne $ClusterVm) {
+        $vmid = [string]$ClusterVm.vmid
+        if ($script:TrackedCloneVmIds.Contains($vmid)) {
+            $tracked = Get-TrackedCloneContextByVmId -VmId $vmid
+            if ($null -ne $tracked -and $tracked.context.ContainsKey('expected_pool') -and
+                -not [string]::IsNullOrWhiteSpace([string]$tracked.context.expected_pool)) {
+                $expectedPool = [string]$tracked.context.expected_pool
+                Write-DebugLog "Pool-scope check for tracked clone VM [$vmid]: live pool is still empty (propagation lag), using expected pool [$expectedPool] from its own clone request instead." -Level 'T' -Component '03' -Ref $vmid
+                return $expectedPool -eq $script:PoolScopeName
+            }
+        }
+    }
+
+    return $livePool -eq $script:PoolScopeName
 }
 
 # Any read-modify-write against a VM's tag string needs the LIVE value, not the cached
@@ -3084,12 +3108,13 @@ function Get-ProxmoxVmNetworkData {
     $isRunning = -not [string]::IsNullOrWhiteSpace($RawState) -and $RawState.Trim().ToLowerInvariant() -eq 'running'
 
     if ($isRunning -and (Test-ProxmoxRecentlyStopped -VmId $VmId)) {
-        # RAS often polls again within ~80ms of the stop POST this provider just issued,
+        # RAS often polls again within ~80ms of the stop POST we ourselves just issued,
         # and Proxmox's own status/current can still say 'running' for a brief window
         # after that -- even though the qemu process is already tearing down. The
-        # provider already prefers that live read for power state, so this costs
-        # nothing there; it only avoids a guest-agent probe that would otherwise
-        # reliably 500 ("VM <id> is not running") once qemu actually exits mid-call.
+        # provider already prefers that live read for power state (correct precedence:
+        # CHAIN-ANALYSIS-2026-09-05-RUN5.md #5), so this costs nothing there; it only
+        # avoids a guest-agent probe that would otherwise reliably 500 ("VM <id> is not
+        # running") once qemu actually exits mid-call.
         Write-DebugLog "Skipping guest-agent probe for VM [$VmId]: this provider stopped it moments ago." -Level 'T' -Component '03' -Ref $VmId
         if ($script:AgentFailureTracker.ContainsKey($VmId)) { $script:AgentFailureTracker.Remove($VmId) }
         if ($script:LastKnownNetworkData.ContainsKey($VmId)) { $script:LastKnownNetworkData.Remove($VmId) }
@@ -3372,12 +3397,14 @@ function Get-TrackedCloneContextByVmId {
             $ctx.clone_id = [string]$VmId
         }
 
-        # NOT a disk read, despite the log line's "FOUND VIA ... CACHE" wording --
+        # NOT a disk read despite the historical "FOUND IN FILE" wording this replaced --
         # Get-CloneStateEntry/Get-CloneStateAll serve from $script:CloneStateMemory, an
         # in-memory mirror of the persisted file. The real distinction from the FOUND IN
         # MEMORY case above is which in-memory structure hit: $script:TaskContext
         # (per-process, keyed by task_id) vs. this VmId-keyed clone-state cache (loaded
         # once and kept current, so it also answers correctly after a provider restart).
+        # CHAIN-ANALYSIS-2026-09-05-RUN5.md #5: the old wording made a 562-vs-78 split
+        # read like an 82% cache-miss rate when it was not one.
         Write-DebugLog "TRACKED CLONE FOUND VIA CLONE-STATE CACHE for VM [$VmId]" -Level 'D' -Component '04' -Ref $VmId
         return @{
             task_id = $null
@@ -3606,12 +3633,17 @@ function Get-RasGuestObjectForCloneAwareFlow {
         # path. Report this as still provisioning instead of surfacing the hard error; a
         # later poll resolves it once the id becomes visible.
         #
-        # The name reported here must be the clone's real, RAS-requested name (already
-        # known -- Set-CloneStateEntry stored it at clone-submission time), never a
-        # generic "VM-<id>" placeholder: Proxmox itself keeps a fresh clone under a
-        # placeholder name for a short window after creation, and if RAS sees that
-        # placeholder on its very first guests/get for this id, it may be unable to
-        # correlate the guest back to the guests/clone request it is waiting on.
+        # The name below MUST be the clone's real, RAS-requested name (already known --
+        # Set-CloneStateEntry stored it as $ctx0.name at clone-submission time), never a
+        # synthesized "VM-<id>" placeholder. RAS's own inventory sync can poll guests/get
+        # for this exact id in this exact window -- if it gets back a name it doesn't
+        # recognize, it files the guest as a brand-new, uncorrelated object instead of
+        # linking it to the guests/clone request already waiting on it, permanently
+        # orphaning that clone-creation workflow (it later times out and fails, even
+        # though the clone itself completed fine on Proxmox) -- confirmed against a real
+        # RAS log in production: a clone reported "Timeout while waiting for guest
+        # handle" / "Clone step [CloneStepCloneGuest] failed" while this exact stub was
+        # the first thing RAS's inventory poller ever saw for that VM id.
         $trackedCloneName = if ($ctx0.ContainsKey('name') -and -not [string]::IsNullOrWhiteSpace([string]$ctx0.name)) { [string]$ctx0.name } else { "VM-$VmId" }
         Write-DebugLog "CLONE-AWARE FLOW: VM [$VmId] not yet resolvable ($($_.Exception.Message)) -- reporting powering_on for tracked clone instead of erroring." -Level 'T' -Component '04' -Ref $VmId
         $guest = @{
@@ -4641,9 +4673,9 @@ function Handle-GuestControl {
             $script:RecentlyControlledIds[$vmId] = [DateTime]::UtcNow
         }
 
-        # Narrower marker for the guest-agent-probe race above -- only a 'stop' sets it,
-        # and any other action clears it right away so a quick restart is never left
-        # suppressed by a stale stop.
+        # Narrower marker for the guest-agent-probe race (CHAIN-ANALYSIS-2026-09-05-
+        # RUN5.md #5) -- only a 'stop' sets it, and any other action clears it right
+        # away so a quick restart is never left suppressed by a stale stop.
         if ($action -eq 'stop') {
             $script:RecentlyStoppedIds[$vmId] = [DateTime]::UtcNow
         }
@@ -4689,10 +4721,10 @@ function Handle-GuestControl {
 #
 # Deliberately does NOT touch the VmId-level clone-state entry (Get-CloneStateEntry /
 # Remove-CloneStateEntry) -- only the task-level entry in $script:TaskContext. The VmId
-# entry stays in place so ConvertTo-RasGuestObject's name substitution keeps working for
-# as long as Proxmox's cluster/resources view might still show a stale placeholder name,
-# independent of what tasks/get has already told RAS. Get-ActiveCloneCount is unaffected
-# either way -- it re-checks the
+# entry stays in place so ConvertTo-RasGuestObject's name substitution (the fix behind
+# CHAIN-ANALYSIS-2026-09-05.md) keeps working for as long as Proxmox's cluster/resources
+# view might still show a stale placeholder name, independent of what tasks/get has
+# already told RAS. Get-ActiveCloneCount is unaffected either way -- it re-checks the
 # real Proxmox task itself (see $script:CloneTaskCompletionCache) rather than relying on
 # this entry's presence.
 function Complete-ProxmoxCloneTask {
@@ -4714,7 +4746,7 @@ function Complete-ProxmoxCloneTask {
 
     # Handle-GuestList gates a tracked clone's visibility on this, not on whatever name
     # Proxmox happens to be reporting at the moment -- see that function's tracked-clone
-    # branch.
+    # branch and CHAIN-ANALYSIS-2026-09-05-RUN3.md.
     Set-CloneReportedCompleted -VmId $CloneId
 
     return @{
@@ -5095,11 +5127,12 @@ function Handle-GuestSnapshotsRevert {
         return New-ErrorResponse -Code $script:ErrorCodes.InvalidParams -Message "$($script:ProviderNamePrefix) Invalid guest id"
     }
 
-    # Only reachable under template_method='versioning' (see the Framework Test Kit's
+    # Only reachable under template_method='versioning' (see the RAS test kit's
     # Test-CreateTemplate.ps1) -- this provider advertises 'basic'. There is no Proxmox
-    # state to revert to, so answering success would be a quiet lie. Erroring loudly
-    # instead means a real appearance of this call in a log is a signal the contract
-    # differs from what the test kit models, not a silently wrong guest.
+    # state to revert to, so answering success would be exactly the kind of quiet lie
+    # that has already cost this project two debugging rounds (see AGENTS.md). Erroring
+    # loudly instead means a real appearance of this call in a log is a signal the
+    # contract differs from what the test kit models, not a silently wrong guest.
     $vmId = [string]$Params.id
     Write-DebugLog "guests/snapshots/revert requested for VM [$vmId] name [$($Params.name)] -- not supported at template_method=basic." -Level 'W' -Component '07' -Ref $vmId
     return New-ErrorResponse -Code $script:ErrorCodes.InvalidParams -Message "$($script:ProviderNamePrefix) Snapshot revert is not supported (template_method=basic has no versioned state to revert to)"
@@ -5167,8 +5200,8 @@ function Handle-GuestClone {
         # defensively: the official Test-GuestsClone.ps1 omits 'snapshot' and
         # 'is_link_clone' entirely for a plain full clone rather than sending empty
         # values, and under Set-StrictMode a direct property read on an absent
-        # PSCustomObject property throws -- an unguarded read here would crash
-        # guests/clone with -32603 on every ordinary full clone.
+        # PSCustomObject property throws -- this exact bug already crashed guests/clone
+        # with -32603 on ordinary full clones in the HPE v1 provider (AGENTS.md fix21).
         $snapshotName = ''
         if ((Get-MemberNames -Object $Params) -contains 'snapshot') { $snapshotName = [string]$Params.snapshot }
         $explicitLink = $null
@@ -5282,6 +5315,15 @@ function Handle-GuestClone {
         # the REAL clone task before attempting a start; when the context resolves from
         # memory (the common case right after this call) rather than from the file, a
         # missing task_id makes that check silently no-op and the guard do nothing.
+        # expected_pool: the pool this provider itself requested for the clone (empty
+        # string, not $null, when inheritance didn't apply -- matches every other
+        # string-typed context field here). Stashed so Test-ProxmoxVmInPoolScope can use
+        # it as a fallback for THIS specific vmid if cluster/resources briefly reports the
+        # clone back with no pool at all right after it lands -- see POOL-SCOPING.md
+        # "Propagation lag on a freshly-cloned VM" and the same reasoning
+        # Get-RasGuestObjectForCloneAwareFlow already applies to the clone's name.
+        $expectedPool = if ($inheritPool) { $sourcePool } else { '' }
+
         if (-not [string]::IsNullOrWhiteSpace($taskId)) {
             $script:TaskContext[$taskId] = @{
                 type               = 'clone'
@@ -5291,6 +5333,7 @@ function Handle-GuestClone {
                 name               = $cloneName
                 full               = -not $isLinked
                 clone_node         = $cloneLandingNode
+                expected_pool      = $expectedPool
                 start_issued       = $false
                 start_task_id      = $null
                 start_pending      = $false
@@ -5309,6 +5352,7 @@ function Handle-GuestClone {
             name               = $cloneName
             full               = -not $isLinked
             clone_node         = $cloneLandingNode
+            expected_pool      = $expectedPool
             start_issued       = $false
             start_task_id      = $null
             start_pending      = $false
