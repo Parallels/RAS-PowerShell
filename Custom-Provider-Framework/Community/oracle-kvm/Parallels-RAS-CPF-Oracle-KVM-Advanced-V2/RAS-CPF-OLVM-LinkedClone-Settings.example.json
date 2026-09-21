@@ -1,0 +1,28 @@
+{
+  "_comment": "Copy to RAS-CPF-OLVM-Settings.json next to OLVM-CustomProvider-LinkedClone.ps1. Credentials remain in Parallels RAS provider settings, never in this file.",
+  "schema_version": 1,
+  "locations": {
+    "data_directory": { "value": "C:\\CFP Scripts", "default": "C:\\CFP Scripts", "description": "Directory for provider log and persistent state." },
+    "log_file": { "value": "OLVM-RAS-Provider.log", "default": "OLVM-RAS-Provider.log", "description": "Log filename, relative to data_directory unless absolute." },
+    "task_state_file": { "value": "OLVM-RAS-TaskState.json", "default": "OLVM-RAS-TaskState.json", "description": "Persistent asynchronous task state." },
+    "template_state_file": { "value": "OLVM-RAS-TemplateFlagState.json", "default": "OLVM-RAS-TemplateFlagState.json", "description": "Persistent RAS template flags for source VMs." },
+    "linked_template_state_file": { "value": "OLVM-RAS-LinkedTemplateState.json", "default": "OLVM-RAS-LinkedTemplateState.json", "description": "Maps RAS template versions to immutable OLVM templates used by linked clones." }
+  },
+  "capabilities": {
+    "can_suspend_guests": { "value": true, "default": true, "description": "Advertise OLVM suspend support." },
+    "guests_polling_rate": { "value": 15, "default": 15, "description": "Seconds between RAS guest polls." },
+    "tasks_polling_rate": { "value": 5, "default": 5, "description": "Seconds between RAS asynchronous task polls." },
+    "tasks_polling_retries": { "value": 360, "default": 360, "description": "Allows up to 30 minutes at the default five-second polling rate." },
+    "template_method": { "value": "versioning", "default": "versioning", "description": "RAS versions use named snapshots plus immutable OLVM templates." },
+    "can_link_clones": { "value": true, "default": true, "description": "Advertise thin copy-on-write clones backed by immutable OLVM templates." }
+  },
+  "tasks": {
+    "max_age_minutes": { "value": 30, "default": 30, "description": "Hard ceiling for clone, snapshot, and template tasks." }
+  },
+  "snapshots": {
+    "persist_memory": { "value": false, "default": false, "description": "Must remain false for Windows 11 VMs with virtual TPM." }
+  },
+  "inventory": {
+    "excluded_vm_names": { "value": ["HostedEngine"], "default": ["HostedEngine"], "description": "VM names hidden from RAS inventory." }
+  }
+}
