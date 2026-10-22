@@ -219,7 +219,7 @@ $Domains | ForEach-Object {
                 Add-RASThemeGroupFilter `
                     -SiteId $SiteId `
                     -Name $Domain.name `
-                    -GroupName "$($_.netbios)\Domain Users" `
+                    -GroupName "$($Domain.netbios)\Domain Users" `
                     -ErrorAction Stop
 
             }
@@ -312,6 +312,8 @@ $Domains | ForEach-Object {
                     -ConnectionBroker $Broker
 
                 foreach($SessionHost in $SessionHosts) {
+
+                    $RASHost = $null
 
                     [PSCustomObject]@{
                         ConnectionBroker = $AppServer.host
@@ -1094,7 +1096,7 @@ if($LetsEncryptCerts.length -gt 0) {
         "You can find this online.`n`n" `
         "Confirm your choice:`n" `
         "1. Accept.`n" `
-        "2. Reject (no migration will happen)`n`n" `
+        "2. Reject (skip Let's Encrypt certificates; other migration changes are kept)`n`n" `
         "Enter number"
 
     if($Option -eq "1") {
@@ -1111,21 +1113,20 @@ if($LetsEncryptCerts.length -gt 0) {
             -TermsAccepted $true `
             -ExpirationEmails $Email
         
+        $LetsEncryptCerts | ForEach-Object {
+
+            # In PSW, one Let's Encrypt certificate only has one name.
+            New-RASCertificate `
+                -SiteId $SiteId `
+                -Name $_.subject_names `
+                -CommonName $_.subject_names `
+                -LetsEncrypt
+
+        }
     }
-
-    $LetsEncryptCerts | ForEach-Object {
-
-        # In PSW, one Let's Encrypt certificate only has one name.
-        New-RASCertificate `
-            -SiteId $SiteId `
-            -Name $_.subject_names `
-            -CommonName $_.subject_names `
-            -LetsEncrypt
-
+    else {
+        Write-Warning "Let's Encrypt terms were not accepted. Certificate migration is skipped; other migration changes are kept. Configure certificates manually before using RAS."
     }
-
-
-
 }
 
 # Safety. Apply any unsaved changes.
