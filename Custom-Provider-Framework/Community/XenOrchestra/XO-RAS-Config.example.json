@@ -1,0 +1,29 @@
+{
+  "_comment": "Xen Orchestra CPF settings. Every leaf is {value, default, description}; only value is read. Host and API token come from RAS provider/connect and never belong here.",
+  "schema_version": 2,
+  "connection": {
+    "_comment": "XO REST transport. Host and API token come from RAS custom settings.",
+    "request_timeout_seconds": { "value": 60, "default": 60, "description": "Timeout for an XO REST request. Range: 5-300." },
+    "skip_tls_default": { "value": false, "default": false, "description": "Keep false outside an isolated lab." }
+  },
+  "capabilities": {
+    "_comment": "Values advertised to RAS by provider/initialize.",
+    "can_suspend_guests": { "value": true, "default": true, "description": "Advertise suspend support." },
+    "guests_polling_rate": { "value": 30, "default": 30, "description": "Seconds between RAS inventory polls. Range: 5-600." },
+    "tasks_polling_rate": { "value": 5, "default": 5, "description": "Seconds between task polls. Range: 5-300." },
+    "tasks_polling_retries": { "value": 180, "default": 180, "description": "Maximum task polls. Range: 1-180." },
+    "template_method": { "value": "basic", "default": "basic", "description": "CPF template workflow. basic uses REST cloning. versioning resolves the exact RAS snapshot through REST and clones it through XO JSON-RPC vm.clone. Allowed: basic, versioning." }
+  },
+  "inventory": {
+    "_comment": "VMs and templates returned to RAS.",
+    "include_templates": { "value": true, "default": true, "description": "Include user templates in RAS inventory." },
+    "name_filter": { "value": "", "default": "", "description": "Optional PowerShell wildcard applied to VM names." }
+  },
+  "logging": {
+    "_comment": "Diagnostics go to a file; CPF stdout remains JSON only.",
+    "log_file": { "value": "XenOrchestra-RAS-Provider.log", "default": "XenOrchestra-RAS-Provider.log", "description": "Relative paths resolve beside the provider." },
+    "log_level": { "value": "extended", "default": "extended", "description": "standard = lifecycle/errors; extended = per-operation route, status and timing; debug = sanitized request/response details. Allowed: standard, extended, debug." },
+    "log_rotate_max_mb": { "value": 20, "default": 20, "description": "Rotate the log when it reaches this size in MiB. Range: 1-2048." },
+    "log_rotate_max_generations": { "value": 3, "default": 3, "description": "Rotated generations retained as .1, .2, etc. Range: 1-20." }
+  }
+}
